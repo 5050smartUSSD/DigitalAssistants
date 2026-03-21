@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZoomBot — Keke & Okada Ride Hailing</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#0D9488; --teal2:#0F766E; --teal3:#14B8A6; --teal4:#2DD4BF;
+  --teal-g:rgba(13,148,136,0.15);
+  --lime:#A3E635; --lime2:#84CC16; --lime3:#BEF264; --lime-g:rgba(163,230,53,0.15);
+  --char:#111827; --char2:#1F2937; --char3:#374151; --char4:#4B5563;
+  --bg:#0C1118; --surface:#151E2A; --surface2:#1C2735; --surface3:#243040;
+  --border:rgba(13,148,136,0.2); --border2:rgba(255,255,255,0.06);
+  --text:#F0FDF4; --text-muted:#9CA3AF; --text-dim:#374151;
+  --green:#22C55E; --green-g:rgba(34,197,94,0.14);
+  --amber:#F59E0B; --amber-g:rgba(245,158,11,0.14);
+  --red:#F43F5E; --red-g:rgba(244,63,94,0.14);
+  --blue:#60A5FA; --blue-g:rgba(96,165,250,0.13);
+  --wa:#25D366; --wa2:#128C7E;
+  --shadow:0 4px 24px rgba(0,0,0,0.7); --shadow-lg:0 16px 56px rgba(0,0,0,0.8);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;color:var(--text);}
+::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:rgba(13,148,136,0.35);border-radius:3px;}
+
+/* PAGE */
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse at 20% 10%,rgba(13,148,136,0.12) 0%,transparent 55%),
+    radial-gradient(ellipse at 80% 90%,rgba(163,230,53,0.07) 0%,transparent 50%);}
+/* Grid texture */
+body::before{content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(13,148,136,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(13,148,136,0.04) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;}
+
+/* MOVING ROAD DASHES */
+.road{position:fixed;bottom:0;left:0;right:0;height:50px;pointer-events:none;overflow:hidden;z-index:0;}
+.dash{position:absolute;height:3px;border-radius:2px;
+  background:linear-gradient(90deg,var(--teal3),var(--lime));opacity:0;
+  animation:dashMove 3.5s linear infinite;}
+.dash:nth-child(1){width:40px;top:30%;animation-delay:0s;}
+.dash:nth-child(2){width:28px;top:60%;animation-delay:1.1s;}
+.dash:nth-child(3){width:50px;top:80%;animation-delay:2.2s;}
+.dash:nth-child(4){width:20px;top:15%;animation-delay:.6s;}
+.dash:nth-child(5){width:35px;top:50%;animation-delay:1.8s;}
+@keyframes dashMove{0%{left:-60px;opacity:0;}10%{opacity:.6;}90%{opacity:.4;}100%{left:110%;opacity:0;}}
+
+/* WINDOW */
+.window{width:100%;max-width:434px;height:97vh;max-height:868px;
+  background:var(--surface);border-radius:22px;
+  border:1px solid rgba(13,148,136,0.25);
+  box-shadow:var(--shadow-lg),0 0 0 1px rgba(163,230,53,0.05),inset 0 1px 0 rgba(13,148,136,0.15);
+  display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:2;
+  animation:windowIn .48s cubic-bezier(.22,1,.36,1);}
+@keyframes windowIn{from{opacity:0;transform:translateY(22px) scale(.97);}to{opacity:1;transform:none;}}
+
+/* HEADER */
+.hdr{background:linear-gradient(160deg,var(--char2) 0%,var(--char) 100%);
+  border-bottom:1px solid var(--border);padding:13px 15px 12px;flex-shrink:0;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--teal),var(--lime),var(--teal3));
+  animation:hdrLine 3s linear infinite alternate;}
+@keyframes hdrLine{0%{background-position:0;}100%{background-position:200px;}}
+.hdr::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 50%,rgba(163,230,53,0.04),transparent 60%);pointer-events:none;}
+.hdr-inner{display:flex;align-items:center;gap:11px;position:relative;z-index:1;}
+.hdr-av{width:46px;height:46px;border-radius:14px;
+  background:linear-gradient(135deg,var(--teal2),var(--teal3));
+  display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0;
+  box-shadow:0 0 0 2px rgba(163,230,53,0.25),0 4px 16px rgba(13,148,136,0.4);
+  animation:avGlow 2.8s ease-in-out infinite;}
+@keyframes avGlow{0%,100%{box-shadow:0 0 0 2px rgba(163,230,53,0.25),0 4px 16px rgba(13,148,136,0.4);}50%{box-shadow:0 0 0 3px rgba(163,230,53,0.5),0 4px 24px rgba(13,148,136,0.65);}}
+.hdr-title{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;letter-spacing:2px;
+  background:linear-gradient(90deg,var(--teal3),var(--lime));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.hdr-tagline{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);
+  margin-top:2px;letter-spacing:.5px;}
+.hdr-right{margin-left:auto;display:flex;gap:6px;}
+.hbtn{width:33px;height:33px;border-radius:10px;background:rgba(13,148,136,0.12);
+  border:1px solid rgba(13,148,136,0.28);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:14px;transition:.18s;position:relative;color:var(--text);}
+.hbtn:hover{background:rgba(13,148,136,0.25);border-color:var(--teal3);}
+.hbtn-badge{position:absolute;top:-4px;right:-4px;width:15px;height:15px;border-radius:50%;
+  background:var(--lime);color:var(--char);font-size:8px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;}
+
+/* LIVE STRIP */
+.live-strip{background:rgba(13,148,136,0.07);border-bottom:1px solid var(--border);
+  padding:5px 14px;display:none;align-items:center;gap:8px;flex-shrink:0;}
+.live-strip.show{display:flex;}
+.ls-pulse{width:8px;height:8px;border-radius:50%;background:var(--lime);
+  box-shadow:0 0 8px var(--lime);animation:pulse .9s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.3);opacity:.6;}}
+.ls-text{font-size:11px;font-weight:700;color:var(--teal3);font-family:'JetBrains Mono',monospace;flex:1;}
+.ls-btn{font-size:10px;color:var(--lime);cursor:pointer;font-weight:800;padding:2px 8px;
+  background:rgba(163,230,53,0.1);border-radius:5px;border:1px solid rgba(163,230,53,0.25);}
+
+/* MESSAGES */
+.msgs{flex:1;overflow-y:auto;padding:13px 11px;display:flex;flex-direction:column;gap:10px;}
+
+/* BUBBLES */
+.msg{display:flex;gap:8px;animation:msgIn .22s ease;max-width:100%;}
+.msg.user{flex-direction:row-reverse;}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.av{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;margin-top:2px;}
+.msg.bot .av{background:linear-gradient(135deg,var(--teal2),var(--teal3));
+  box-shadow:0 0 10px rgba(13,148,136,0.4);}
+.msg.user .av{background:var(--surface3);border:1px solid var(--border2);}
+.mcol{display:flex;flex-direction:column;max-width:88%;}
+.msg.user .mcol{align-items:flex-end;}
+.bbl{padding:10px 14px;border-radius:17px;font-size:13.5px;line-height:1.62;}
+.msg.bot .bbl{background:var(--surface2);border:1px solid var(--border);border-top-left-radius:4px;}
+.msg.user .bbl{background:linear-gradient(135deg,var(--teal2),var(--teal));color:#fff;
+  border-top-right-radius:4px;box-shadow:0 3px 12px rgba(13,148,136,0.3);}
+.bbl b,.bbl strong{color:var(--lime);}
+.msg.user .bbl b,.msg.user .bbl strong{color:#fff;text-decoration:underline;}
+.mtime{font-size:9px;color:var(--text-dim);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+
+/* TYPING */
+.tbbl{background:var(--surface2);border:1px solid var(--border);border-radius:17px;
+  border-top-left-radius:4px;padding:11px 15px;display:flex;gap:5px;align-items:center;}
+.td{width:7px;height:7px;border-radius:50%;background:var(--teal3);animation:tdB 1.2s infinite;}
+.td:nth-child(2){animation-delay:.2s;background:var(--lime2);}
+.td:nth-child(3){animation-delay:.4s;}
+@keyframes tdB{0%,60%,100%{transform:translateY(0);opacity:.3;}30%{transform:translateY(-5px);opacity:1;}}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.chip{background:rgba(13,148,136,0.08);border:1.5px solid rgba(13,148,136,0.25);color:var(--teal3);
+  padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.18s;font-family:'Nunito',sans-serif;}
+.chip:hover{background:var(--teal);border-color:var(--teal);color:#fff;transform:translateY(-1px);}
+.chip.lime{border-color:rgba(163,230,53,0.35);color:var(--lime);background:var(--lime-g);}
+.chip.lime:hover{background:var(--lime2);color:var(--char);border-color:var(--lime);}
+.chip.amber{border-color:rgba(245,158,11,0.3);color:var(--amber);background:var(--amber-g);}
+.chip.amber:hover{background:var(--amber);color:var(--char);border-color:var(--amber);}
+.chip.red{border-color:rgba(244,63,94,0.3);color:var(--red);background:var(--red-g);}
+.chip.red:hover{background:var(--red);color:#fff;border-color:var(--red);}
+.chip.blue{border-color:rgba(96,165,250,0.3);color:var(--blue);background:var(--blue-g);}
+.chip.blue:hover{background:var(--blue);color:var(--char);border-color:var(--blue);}
+.chip.green{border-color:rgba(34,197,94,0.3);color:var(--green);background:var(--green-g);}
+.chip.green:hover{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* VEHICLE CARDS GRID */
+.veh-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;width:100%;}
+.vc{background:var(--surface2);border:1.5px solid var(--border);border-radius:15px;
+  padding:13px 10px;cursor:pointer;transition:.22s;text-align:center;position:relative;overflow:hidden;}
+.vc::after{content:'';position:absolute;inset:0;border-radius:13px;
+  background:linear-gradient(135deg,rgba(13,148,136,0.06),transparent);opacity:0;transition:.22s;}
+.vc:hover,.vc.sel{border-color:var(--teal3);transform:translateY(-2px);
+  box-shadow:0 6px 22px rgba(13,148,136,0.18);}
+.vc:hover::after,.vc.sel::after{opacity:1;}
+.vc.sel{background:rgba(13,148,136,0.1);}
+.vc-top-line{position:absolute;top:0;left:0;right:0;height:2.5px;border-radius:2px;
+  background:linear-gradient(90deg,var(--teal),var(--lime));opacity:0;transition:.22s;}
+.vc:hover .vc-top-line,.vc.sel .vc-top-line{opacity:1;}
+.vc-em{font-size:34px;margin-bottom:6px;display:block;filter:drop-shadow(0 2px 8px rgba(13,148,136,0.35));}
+.vc-name{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:.8px;color:var(--text);}
+.vc-desc{font-size:10px;color:var(--text-muted);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.vc-fare{font-size:12px;font-weight:800;color:var(--lime);margin-top:5px;font-family:'Rajdhani',sans-serif;letter-spacing:.5px;}
+.vc-badge{position:absolute;top:7px;right:7px;font-size:8px;font-weight:800;
+  padding:2px 6px;border-radius:5px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;}
+.vb-fast{background:rgba(163,230,53,0.18);color:var(--lime);border:1px solid rgba(163,230,53,0.3);}
+.vb-cheap{background:rgba(13,148,136,0.18);color:var(--teal3);border:1px solid rgba(13,148,136,0.3);}
+.vb-vip{background:rgba(245,158,11,0.18);color:var(--amber);border:1px solid rgba(245,158,11,0.3);}
+
+/* SLIDING GALLERY */
+.gal-wrap{width:100%;margin-top:10px;}
+.gal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.gal-title{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;
+  color:var(--text-muted);text-transform:uppercase;letter-spacing:1.3px;}
+.gal-cnt{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--text-dim);}
+.gal-outer{overflow:hidden;border-radius:14px;}
+.gal-track{display:flex;transition:transform .42s cubic-bezier(.4,0,.2,1);}
+.gal-slide{min-width:100%;}
+
+/* RIDE CARD (gallery) */
+.rc{background:var(--surface2);border:1.5px solid var(--border);border-radius:15px;overflow:hidden;}
+.rc-banner{height:138px;display:flex;align-items:center;justify-content:center;
+  font-size:72px;position:relative;overflow:hidden;cursor:pointer;}
+.rc-banner::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 45%,rgba(12,17,24,0.72));}
+.rc-badge{position:absolute;top:9px;left:10px;z-index:2;
+  font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;
+  padding:3px 10px;border-radius:6px;letter-spacing:.8px;}
+.rb-keke{background:rgba(13,148,136,0.9);color:#fff;}
+.rb-okada{background:rgba(163,230,53,0.9);color:var(--char);}
+.rb-taxi{background:rgba(96,165,250,0.9);color:var(--char);}
+.rb-charter{background:rgba(245,158,11,0.88);color:var(--char);}
+.rb-exec{background:rgba(244,63,94,0.85);color:#fff;}
+.rc-eta-pill{position:absolute;bottom:8px;right:10px;z-index:2;
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,.8);}
+.rc-body{padding:12px 13px;}
+.rc-name{font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;letter-spacing:1px;margin-bottom:3px;}
+.rc-desc{font-size:11.5px;color:var(--text-muted);line-height:1.45;margin-bottom:8px;}
+.rc-bottom{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.rc-price{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;
+  letter-spacing:.5px;color:var(--lime);}
+.rc-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.rc-tag{font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.rt-avail{background:var(--green-g);color:var(--green);border:1px solid rgba(34,197,94,0.22);}
+.rt-fast{background:var(--teal-g);color:var(--teal3);border:1px solid rgba(13,148,136,0.22);}
+.rt-lime{background:var(--lime-g);color:var(--lime2);border:1px solid rgba(163,230,53,0.22);}
+.rc-btns{display:flex;gap:7px;}
+.rc-btn{flex:1;padding:9px;border-radius:10px;border:none;cursor:pointer;font-size:12.5px;
+  font-weight:800;font-family:'Nunito',sans-serif;transition:.18s;}
+.btn-teal{background:linear-gradient(135deg,var(--teal2),var(--teal3));color:#fff;
+  box-shadow:0 3px 12px rgba(13,148,136,0.3);}
+.btn-teal:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(13,148,136,0.45);}
+.btn-lime{background:linear-gradient(135deg,var(--lime2),var(--lime));color:var(--char);
+  box-shadow:0 3px 10px rgba(163,230,53,0.25);}
+.btn-lime:hover{transform:translateY(-1px);}
+.btn-ghost{background:rgba(13,148,136,0.08);border:1.5px solid rgba(13,148,136,0.25);color:var(--teal3);}
+.btn-ghost:hover{border-color:var(--teal3);}
+
+/* GAL NAV */
+.gal-nav{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:9px;}
+.garrow{width:28px;height:28px;border-radius:50%;background:var(--surface2);
+  border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:11px;color:var(--teal3);transition:.18s;}
+.garrow:hover{background:var(--teal);border-color:var(--teal);color:#fff;}
+.gdots{display:flex;gap:5px;}
+.gdot{width:5px;height:5px;border-radius:50%;background:var(--surface3);transition:.25s;cursor:pointer;}
+.gdot.on{width:14px;border-radius:3px;background:var(--teal3);}
+
+/* RIDER CARD */
+.rider-item{background:var(--surface2);border:1.5px solid var(--border);border-radius:13px;
+  padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.2s;margin-bottom:7px;}
+.rider-item:hover{border-color:var(--teal3);box-shadow:0 4px 16px rgba(13,148,136,0.14);}
+.ri-av{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;
+  justify-content:center;font-size:22px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--teal2),var(--teal4));}
+.ri-name{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:.6px;margin-bottom:2px;}
+.ri-info{font-size:11px;color:var(--text-muted);}
+.ri-meta{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;}
+.rm{font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.rm-avail{background:var(--green-g);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+.rm-star{background:var(--lime-g);color:var(--lime2);border:1px solid rgba(163,230,53,0.2);}
+.rm-trips{background:var(--teal-g);color:var(--teal3);border:1px solid rgba(13,148,136,0.2);}
+.ri-right{margin-left:auto;text-align:right;flex-shrink:0;}
+.ri-price{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--lime);}
+.ri-per{font-size:9.5px;color:var(--text-dim);}
+
+/* TRACKING CARD */
+.track-card{background:var(--surface2);border:1.5px solid rgba(13,148,136,0.3);border-radius:14px;
+  padding:14px;margin-top:8px;width:100%;position:relative;overflow:hidden;}
+.track-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--teal),var(--lime),var(--teal3));
+  animation:trkLine 2s ease-in-out infinite alternate;}
+@keyframes trkLine{0%{opacity:.5;}100%{opacity:1;}}
+.trk-hdr{display:flex;align-items:center;gap:8px;margin-bottom:11px;}
+.trk-dot{width:10px;height:10px;border-radius:50%;background:var(--lime);
+  box-shadow:0 0 10px var(--lime);animation:pulse .9s ease-in-out infinite;}
+.trk-status{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;
+  letter-spacing:1px;color:var(--lime);}
+.trk-steps{display:flex;margin:10px 0;}
+.ts{flex:1;text-align:center;position:relative;}
+.ts::after{content:'';position:absolute;top:10px;left:50%;width:100%;height:2px;
+  background:var(--surface3);z-index:0;}
+.ts:last-child::after{display:none;}
+.ts-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--surface3);
+  background:var(--surface2);margin:0 auto 4px;display:flex;align-items:center;
+  justify-content:center;font-size:8px;position:relative;z-index:1;}
+.ts-dot.done{background:var(--teal);border-color:var(--teal);color:#fff;}
+.ts-dot.act{background:var(--lime2);border-color:var(--lime);color:var(--char);
+  animation:actPulse 1.1s ease-in-out infinite;}
+@keyframes actPulse{0%,100%{box-shadow:0 0 0 0 rgba(163,230,53,0.5);}50%{box-shadow:0 0 0 6px rgba(163,230,53,0.1);}}
+.ts.done::after{background:var(--teal);}
+.ts-lbl{font-size:8.5px;color:var(--text-muted);line-height:1.3;}
+.trk-rider-bar{display:flex;align-items:center;gap:9px;padding:10px 0;
+  border-top:1px solid var(--border2);margin-top:9px;}
+.trk-ri-av{width:36px;height:36px;border-radius:9px;
+  background:linear-gradient(135deg,var(--teal2),var(--lime2));
+  display:flex;align-items:center;justify-content:center;font-size:18px;}
+.trk-ri-name{font-weight:800;font-size:13px;}
+.trk-ri-sub{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--teal3);}
+
+/* VERIFY CARD */
+.verify-card{background:var(--surface2);border:1.5px solid rgba(13,148,136,0.3);border-radius:13px;padding:14px;margin-top:8px;width:100%;}
+.vf-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.vf-av{font-size:28px;}
+.vf-nm{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:.8px;}
+.vf-inf{font-size:11px;color:var(--text-muted);}
+.vf-grid{display:flex;flex-direction:column;gap:6px;}
+.vf-row{display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;background:var(--surface3);border-radius:9px;}
+.vfr-l{font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;}
+.vfr-v{font-size:12px;font-weight:700;}
+.vfr-b{font-size:9px;font-weight:800;padding:2px 8px;border-radius:5px;font-family:'JetBrains Mono',monospace;}
+.vb-ok{background:var(--green-g);color:var(--green);border:1px solid rgba(34,197,94,0.25);}
+.vb-live{background:var(--lime-g);color:var(--lime2);border:1px solid rgba(163,230,53,0.25);}
+
+/* FARE BANNER */
+.fare-banner{background:linear-gradient(135deg,var(--teal2),var(--teal),var(--teal3));
+  border-radius:14px;padding:15px;margin-top:8px;width:100%;position:relative;overflow:hidden;}
+.fare-banner::before{content:'₦';position:absolute;right:-6px;bottom:-10px;
+  font-family:'Rajdhani',sans-serif;font-size:90px;font-weight:700;
+  color:rgba(255,255,255,0.07);}
+.fb-lbl{font-size:10px;color:rgba(255,255,255,0.65);font-family:'JetBrains Mono',monospace;
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.fb-price{font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:700;color:#fff;line-height:1;}
+.fb-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px;}
+.fb-stats{display:flex;gap:16px;margin-top:11px;}
+.fb-st{text-align:center;}
+.fb-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#fff;}
+.fb-key{font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-top:1px;}
+
+/* INFO CARD */
+.info-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:11px 13px;margin-top:8px;width:100%;}
+.ir{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border2);}
+.ir:last-child{border-bottom:none;}
+.ir-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.ir-text{font-size:12.5px;line-height:1.55;flex:1;color:var(--text-muted);}
+.ir-text b,.ir-text strong{color:var(--text);}
+
+/* ACHIEVEMENT */
+.ach{background:linear-gradient(135deg,rgba(13,148,136,0.1),rgba(163,230,53,0.06));
+  border:1.5px solid rgba(163,230,53,0.2);border-radius:12px;
+  padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:8px;width:100%;}
+.ach-em{font-size:24px;}
+.ach-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.8px;color:var(--lime);}
+.ach-desc{font-size:11px;color:var(--text-muted);}
+
+/* TRIP HISTORY */
+.trip-item{display:flex;align-items:center;gap:9px;padding:9px 10px;
+  background:var(--surface2);border-radius:10px;margin-bottom:6px;border:1px solid var(--border2);transition:.18s;}
+.trip-item:hover{border-color:var(--border);}
+.trip-em{font-size:20px;width:34px;text-align:center;}
+.trip-info{flex:1;}
+.trip-route{font-size:12.5px;font-weight:700;}
+.trip-meta{font-size:10.5px;color:var(--text-muted);}
+.trip-price{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--lime);flex-shrink:0;}
+
+/* PROMO CARD */
+.promo-item{display:flex;align-items:center;gap:10px;padding:10px 12px;
+  background:var(--surface2);border:1px solid rgba(163,230,53,0.2);border-radius:10px;margin-bottom:7px;}
+.promo-em{font-size:20px;}
+.promo-text{flex:1;font-size:12.5px;font-weight:700;}
+.promo-code{font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  background:rgba(163,230,53,0.12);border:1px solid rgba(163,230,53,0.28);
+  padding:3px 9px;border-radius:6px;color:var(--lime);cursor:pointer;transition:.18s;}
+.promo-code:hover{background:rgba(163,230,53,0.22);}
+
+/* WA BUTTON */
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:9px;padding:12px 18px;
+  background:linear-gradient(135deg,var(--wa2),var(--wa));color:#fff;border:none;
+  border-radius:13px;font-size:14px;font-weight:800;cursor:pointer;width:100%;margin-top:10px;
+  font-family:'Nunito',sans-serif;transition:.2s;box-shadow:0 4px 16px rgba(37,211,102,0.22);}
+.wa-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(37,211,102,0.38);}
+.wa-ghost{background:transparent;border:1.5px solid var(--wa);color:var(--wa);box-shadow:none;}
+.wa-ghost:hover{background:rgba(37,211,102,0.08);}
+.wa-lime{background:linear-gradient(135deg,var(--lime2),var(--lime));color:var(--char);}
+.wa-lime:hover{box-shadow:0 7px 22px rgba(163,230,53,0.3);}
+
+/* INPUT AREA */
+.inp-area{border-top:1px solid rgba(13,148,136,0.18);padding:10px 11px;
+  background:var(--char2);display:flex;gap:7px;align-items:flex-end;flex-shrink:0;}
+.inp-box{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:13px;
+  display:flex;align-items:flex-end;padding:8px 11px;transition:.2s;}
+.inp-box:focus-within{border-color:rgba(13,148,136,0.6);box-shadow:0 0 0 3px rgba(13,148,136,0.1);}
+.txt-inp{flex:1;background:none;border:none;outline:none;color:var(--text);
+  font-size:13.5px;font-family:'Nunito',sans-serif;resize:none;max-height:80px;line-height:1.5;}
+.txt-inp::placeholder{color:var(--text-dim);}
+.snd{width:38px;height:38px;border-radius:11px;
+  background:linear-gradient(135deg,var(--teal2),var(--teal3));
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:#fff;box-shadow:0 3px 12px rgba(13,148,136,0.4);transition:.18s;flex-shrink:0;}
+.snd:hover{transform:scale(1.08);box-shadow:0 5px 18px rgba(13,148,136,0.55);}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(5px);
+  z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:434px;
+  max-height:93vh;display:flex;flex-direction:column;overflow:hidden;
+  border:1px solid rgba(13,148,136,0.22);border-bottom:none;
+  box-shadow:0 -8px 44px rgba(13,148,136,0.1);
+  animation:sUp .32s cubic-bezier(.34,1.2,.64,1);}
+@keyframes sUp{from{transform:translateY(100%);}to{transform:none;}}
+.shdl{width:38px;height:3px;border-radius:3px;
+  background:linear-gradient(90deg,var(--teal),var(--lime));margin:11px auto 0;opacity:.6;}
+.sh-hdr{padding:13px 18px 11px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;}
+.sh-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:1px;
+  background:linear-gradient(90deg,var(--teal3),var(--lime));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sh-x{width:28px;height:28px;border-radius:8px;background:var(--surface2);
+  border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:12px;color:var(--text-muted);}
+.sh-body{flex:1;overflow-y:auto;padding:15px 17px;}
+.sh-foot{padding:13px 17px;border-top:1px solid var(--border2);}
+
+/* FORMS */
+.fg{margin-bottom:13px;}
+.fl{font-size:10px;font-weight:800;color:var(--text-muted);margin-bottom:4px;display:block;
+  text-transform:uppercase;letter-spacing:.6px;font-family:'JetBrains Mono',monospace;}
+.fi,.fs,.fta{width:100%;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:10px;padding:10px 13px;color:var(--text);font-size:13px;
+  font-family:'Nunito',sans-serif;outline:none;transition:.2s;}
+.fi:focus,.fs:focus,.fta:focus{border-color:rgba(13,148,136,0.6);box-shadow:0 0 0 3px rgba(13,148,136,0.1);}
+.fta{resize:vertical;min-height:74px;}
+.fs option{background:var(--surface);}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sec-hdr{display:flex;align-items:center;gap:8px;padding:5px 0;margin-top:4px;}
+.sec-line{flex:1;height:1px;background:var(--border2);}
+.sec-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+.alert-box{background:rgba(13,148,136,0.07);border:1px solid rgba(13,148,136,0.2);
+  border-radius:10px;padding:11px;font-size:12px;color:var(--text-muted);
+  line-height:1.6;margin-bottom:12px;}
+.alert-box b{color:var(--text);}
+</style>
+</head>
+<body>
+
+<div class="road">
+  <div class="dash"></div><div class="dash"></div><div class="dash"></div>
+  <div class="dash"></div><div class="dash"></div>
+</div>
+
+<div class="window">
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-inner">
+      <div class="hdr-av">🛺</div>
+      <div>
+        <div class="hdr-title">ZOOMBOT</div>
+        <div class="hdr-tagline">KEKE · OKADA · TAXI · CHARTER · DISPATCH</div>
+      </div>
+      <div class="hdr-right">
+        <div class="hbtn" onclick="go('trips')" title="My Trips">📋</div>
+        <div class="hbtn" style="position:relative;" onclick="openCart()">🛒
+          <span class="hbtn-badge" id="cartBadge">0</span>
+        </div>
+        <div class="hbtn" onclick="openSearch()">🔍</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE STRIP -->
+  <div class="live-strip" id="liveStrip">
+    <div class="ls-pulse"></div>
+    <span class="ls-text" id="liveText">🛺 Ride active</span>
+    <span class="ls-btn" onclick="showTrackDemo()">📍 TRACK</span>
+  </div>
+
+  <div class="msgs" id="msgs"></div>
+
+  <div class="inp-area">
+    <div class="inp-box">
+      <textarea class="txt-inp" id="inp" rows="1" placeholder="Where to? Type a destination..."></textarea>
+    </div>
+    <button class="snd" onclick="send()">➤</button>
+  </div>
+</div>
+
+<!-- ══ BOOK RIDE ══ -->
+<div class="overlay" id="ovBook">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🛺 BOOK A RIDE</div><div class="sh-x" onclick="closeOv('ovBook')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="bkName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="bkPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Ride Type</label>
+        <select class="fs" id="bkType">
+          <option>🛺 Keke NAPEP (Tricycle)</option>
+          <option>🏍️ Okada (Motorcycle)</option>
+          <option>🚗 Taxi / Cab</option>
+          <option>🚐 Minibus / Danfo</option>
+          <option>🚙 Executive Ride (AC)</option>
+          <option>🚌 Charter Bus</option>
+          <option>📦 Dispatch / Delivery Rider</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Pickup Location</label>
+        <input class="fi" id="bkPickup" placeholder="Your current location / nearest landmark"></div>
+      <div class="fg"><label class="fl">Destination</label>
+        <input class="fi" id="bkDest" placeholder="Where are you going?"></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">When</label>
+          <select class="fs" id="bkWhen">
+            <option>Now (ASAP)</option><option>In 15 mins</option>
+            <option>In 30 mins</option><option>In 1 hour</option><option>Schedule</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Passengers</label>
+          <select class="fs" id="bkPax"><option>1</option><option>2</option><option>3</option><option>4+</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Special Request</label>
+        <textarea class="fta" id="bkNote" placeholder="Female rider, luggage, stop-overs, AC, helmet..."></textarea></div>
+      <div class="fg"><label class="fl">Payment Method</label>
+        <select class="fs" id="bkPay">
+          <option>Cash on Arrival</option><option>Bank Transfer</option>
+          <option>POS / Card</option><option>Opay / Palmpay</option>
+          <option>Airtime (USSD)</option>
+        </select>
+      </div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitBook()">📲 Book Ride via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ SCHEDULE ══ -->
+<div class="overlay" id="ovSchedule">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">📅 SCHEDULE RIDE</div><div class="sh-x" onclick="closeOv('ovSchedule')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="scName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="scPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Ride Type</label>
+        <select class="fs" id="scType">
+          <option>🛺 Keke NAPEP</option><option>🏍️ Okada</option>
+          <option>🚗 Taxi / Cab</option><option>🚙 Executive (AC)</option><option>🚌 Charter</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Pickup</label><input class="fi" id="scPickup" placeholder="Pickup point / landmark"></div>
+      <div class="fg"><label class="fl">Destination</label><input class="fi" id="scDest" placeholder="Destination"></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Date</label><input class="fi" id="scDate" type="date"></div>
+        <div class="fg"><label class="fl">Time</label><input class="fi" id="scTime" type="time" value="07:00"></div>
+      </div>
+      <div class="fg"><label class="fl">Repeat</label>
+        <select class="fs" id="scRepeat"><option>One time</option><option>Daily</option><option>Weekdays</option><option>Weekends</option><option>Weekly</option></select>
+      </div>
+      <div class="fg"><label class="fl">Notes</label><textarea class="fta" id="scNote" placeholder="Any special instructions..."></textarea></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitSchedule()">📲 Schedule via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ CHARTER ══ -->
+<div class="overlay" id="ovCharter">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🚌 CHARTER / HIRE</div><div class="sh-x" onclick="closeOv('ovCharter')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Name / Organisation</label><input class="fi" id="chName" placeholder="Name or company"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="chPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Vehicle Type</label>
+        <select class="fs" id="chVeh">
+          <option>Hiace Bus (14 seater)</option><option>Coaster Bus (30 seater)</option>
+          <option>Full Bus (60 seater)</option><option>Executive SUV</option>
+          <option>Luxury Sedan (AC)</option><option>Pickup Truck</option>
+          <option>Group Keke / Okada</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Purpose</label>
+        <select class="fs" id="chPurpose">
+          <option>Wedding / Event</option><option>School Trip</option><option>Corporate / Staff</option>
+          <option>Airport Transfer</option><option>Long Distance</option><option>Church / Religious Event</option>
+          <option>Tourism / Excursion</option><option>Funeral</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Date</label><input class="fi" id="chDate" type="date"></div>
+        <div class="fg"><label class="fl">Duration</label>
+          <select class="fs" id="chDur"><option>Half day (4 hrs)</option><option>Full day</option><option>2 days</option><option>3+ days</option><option>Weekly</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Pickup</label><input class="fi" id="chPickup" placeholder="Starting location"></div>
+      <div class="fg"><label class="fl">Route / Destinations</label><textarea class="fta" id="chRoute" placeholder="List all stops or describe the route..."></textarea></div>
+      <div class="fg"><label class="fl">Number of Passengers</label><input class="fi" id="chPax" type="number" placeholder="e.g. 30"></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn wa-lime" onclick="submitCharter()">📲 Request Charter via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ DELIVERY ══ -->
+<div class="overlay" id="ovDelivery">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">📦 DISPATCH / DELIVERY</div><div class="sh-x" onclick="closeOv('ovDelivery')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Sender Name</label><input class="fi" id="dlSender" placeholder="Your full name"></div>
+      <div class="fg"><label class="fl">Sender Phone / WhatsApp</label><input class="fi" id="dlPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Recipient Name</label><input class="fi" id="dlRecipient" placeholder="Recipient's name"></div>
+      <div class="fg"><label class="fl">Recipient Phone</label><input class="fi" id="dlRecPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Pickup Address</label><input class="fi" id="dlPickup" placeholder="Where to collect item"></div>
+      <div class="fg"><label class="fl">Delivery Address</label><input class="fi" id="dlDrop" placeholder="Delivery destination"></div>
+      <div class="fg"><label class="fl">Item Description</label><textarea class="fta" id="dlItem" placeholder="What is being delivered? (size, weight, fragile?)"></textarea></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Speed</label>
+          <select class="fs" id="dlSpeed"><option>Express (1–2 hrs)</option><option>Standard (Same day)</option><option>Next Day</option></select>
+        </div>
+        <div class="fg"><label class="fl">Who Pays</label>
+          <select class="fs" id="dlWho"><option>Sender pays</option><option>Recipient pays</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitDelivery()">📲 Book Dispatch via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ PAY ══ -->
+<div class="overlay" id="ovPay">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">💳 PAY FOR RIDE</div><div class="sh-x" onclick="closeOv('ovPay')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Passenger Name</label><input class="fi" id="pyName" placeholder="Your name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="pyPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Booking Ref / Rider Name</label><input class="fi" id="pyRef" placeholder="e.g. ZB-20240318 or Emeka Okafor"></div>
+      <div class="fg"><label class="fl">Amount (₦)</label><input class="fi" id="pyAmount" type="number" placeholder="e.g. 500"></div>
+      <div class="fg"><label class="fl">Route Travelled</label><input class="fi" id="pyRoute" placeholder="e.g. Wuse → Maitama"></div>
+      <div class="fg"><label class="fl">Payment Method</label>
+        <select class="fs" id="pyMethod">
+          <option>Bank Transfer</option><option>Opay / Palmpay</option>
+          <option>POS / Card</option><option>USSD (*737#, *822#)</option>
+          <option>Cash confirmed</option><option>Crypto (USDT)</option>
+        </select>
+      </div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitPay()">📲 Confirm Payment via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ TRACK ══ -->
+<div class="overlay" id="ovTrack">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">📍 TRACK RIDER</div><div class="sh-x" onclick="closeOv('ovTrack')">✕</div></div>
+    <div class="sh-body">
+      <div class="alert-box">📍 Your rider will share their <b>live WhatsApp location</b> once dispatched. Enter your booking reference to connect.</div>
+      <div class="fg"><label class="fl">Booking Reference or Your Phone</label>
+        <input class="fi" id="tkRef" placeholder="e.g. ZB-20240318 or +234..."></div>
+    </div>
+    <div class="sh-foot">
+      <button class="wa-btn" onclick="submitTrack()">📲 Get Live Location via WhatsApp</button>
+      <button class="wa-btn wa-ghost" style="margin-top:8px;" onclick="closeOv('ovTrack');showTrackDemo()">📍 See Demo Tracking</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VERIFY ══ -->
+<div class="overlay" id="ovVerify">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">✅ VERIFY RIDER</div><div class="sh-x" onclick="closeOv('ovVerify')">✕</div></div>
+    <div class="sh-body">
+      <div class="alert-box">Always verify your rider's <b>name, plate number</b> and <b>vehicle type</b> before boarding. It only takes 10 seconds and keeps you safe.</div>
+      <div class="fg"><label class="fl">Verification Method</label>
+        <select class="fs" id="vfType">
+          <option>By Rider Name</option><option>By Plate Number</option>
+          <option>By Phone Number</option><option>Report Fake Rider</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Rider Name / Plate / Phone</label>
+        <input class="fi" id="vfQuery" placeholder="e.g. Emeka Okafor / KJA-234-ZB"></div>
+      <div class="fg"><label class="fl">Your Phone (for response)</label>
+        <input class="fi" id="vfPhone" type="tel" placeholder="+234 800 000 0000"></div>
+    </div>
+    <div class="sh-foot">
+      <button class="wa-btn" onclick="submitVerify()">📲 Verify via WhatsApp</button>
+      <button class="wa-btn wa-ghost" style="margin-top:8px;" onclick="closeOv('ovVerify');openOv('ovReport')">🚨 Report Fake / Unsafe Rider</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REPORT ══ -->
+<div class="overlay" id="ovReport">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🚨 REPORT ISSUE</div><div class="sh-x" onclick="closeOv('ovReport')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="rpName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Your Phone / WhatsApp</label><input class="fi" id="rpPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Issue Type</label>
+        <select class="fs" id="rpType">
+          <option>Overcharging / Wrong fare</option><option>Rude or aggressive rider</option>
+          <option>Unsafe / reckless driving</option><option>Wrong route / detour</option>
+          <option>Theft / missing item</option><option>Harassment / assault</option>
+          <option>Rider no-show</option><option>Fake / unregistered rider</option>
+          <option>Accident / injury</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Rider Name / Plate (if known)</label>
+        <input class="fi" id="rpRider" placeholder="e.g. Ibrahim / KJA-234-ZB"></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Date</label><input class="fi" id="rpDate" type="date"></div>
+        <div class="fg"><label class="fl">Time</label><input class="fi" id="rpTime" type="time"></div>
+      </div>
+      <div class="fg"><label class="fl">What Happened</label>
+        <textarea class="fta" id="rpDesc" placeholder="Describe the incident in detail..."></textarea></div>
+    </div>
+    <div class="sh-foot">
+      <button class="wa-btn" style="background:linear-gradient(135deg,#9F1239,#F43F5E);" onclick="submitReport()">🚨 Submit Report via WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RATE RIDE ══ -->
+<div class="overlay" id="ovRate">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">⭐ RATE YOUR RIDE</div><div class="sh-x" onclick="closeOv('ovRate')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="rtName" placeholder="Name (optional)"></div>
+      <div class="fg"><label class="fl">Rider / Plate</label><input class="fi" id="rtRider" placeholder="Rider name or plate number"></div>
+      <div class="fg"><label class="fl">Ride Type</label>
+        <select class="fs" id="rtType"><option>🛺 Keke NAPEP</option><option>🏍️ Okada</option><option>🚗 Taxi</option><option>🚌 Charter</option><option>🚙 Executive</option></select>
+      </div>
+      <div class="fg"><label class="fl">Rating</label>
+        <div style="display:flex;gap:10px;margin-top:6px;" id="starRow">
+          <span style="font-size:30px;cursor:pointer;" onclick="setStar(1)">⭐</span>
+          <span style="font-size:30px;cursor:pointer;" onclick="setStar(2)">⭐</span>
+          <span style="font-size:30px;cursor:pointer;" onclick="setStar(3)">⭐</span>
+          <span style="font-size:30px;cursor:pointer;" onclick="setStar(4)">⭐</span>
+          <span style="font-size:30px;cursor:pointer;" onclick="setStar(5)">⭐</span>
+        </div>
+        <input type="hidden" id="rtStars" value="5">
+      </div>
+      <div class="fg"><label class="fl">Review</label><textarea class="fta" id="rtText" placeholder="Was the ride safe, affordable, comfortable?"></textarea></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitRate()">📲 Submit Rating via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ SEARCH ══ -->
+<div class="overlay" id="ovSearch">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🔍 SEARCH</div><div class="sh-x" onclick="closeOv('ovSearch')">✕</div></div>
+    <div class="sh-body">
+      <input class="fi" id="srchInp" placeholder="Search rides, riders, destinations..." oninput="liveSearch(this.value)" style="margin-bottom:12px;">
+      <div id="srchRes"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CART (BOOKINGS) ══ -->
+<div class="overlay" id="ovCart">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">📋 MY BOOKINGS</div><div class="sh-x" onclick="closeOv('ovCart')">✕</div></div>
+    <div class="sh-body" id="cartBody"></div>
+    <div class="sh-foot" id="cartFoot"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════
+// CONFIG
+const WA = '2348000000000'; // ← Replace with your WhatsApp number
+
+// ══════════════════════
+// DATA
+const rideTypes = [
+  {id:'keke',em:'🛺',name:'KEKE NAPEP',desc:'Tricycle — city routes, 3 passengers, cheapest option',price:'₦150–₦800',eta:'3–8 min',cat:'keke',tag:'Cheapest',available:true},
+  {id:'okada',em:'🏍️',name:'OKADA',desc:'Motorcycle — fastest, beats traffic, 1 passenger',price:'₦200–₦1,200',eta:'2–5 min',cat:'okada',tag:'Fastest',available:true},
+  {id:'taxi',em:'🚗',name:'TAXI / CAB',desc:'Saloon car — comfortable, 4 passengers, AC optional',price:'₦800–₦4,500',eta:'5–12 min',cat:'taxi',tag:'Comfortable',available:true},
+  {id:'exec',em:'🚙',name:'EXECUTIVE',desc:'Premium AC ride — airport, VIP, long distance',price:'₦3,500–₦15,000',eta:'8–18 min',cat:'exec',tag:'VIP',available:true},
+  {id:'danfo',em:'🚐',name:'DANFO / BUS',desc:'14-seat minibus — shared or full charter',price:'₦200–₦3,000',eta:'8–20 min',cat:'danfo',tag:'Popular',available:true},
+  {id:'charter',em:'🚌',name:'CHARTER BUS',desc:'Full bus hire — events, schools, corporate trips',price:'₦15k–₦150k',eta:'Schedule',cat:'charter',tag:'Events',available:true},
+  {id:'dispatch',em:'📦',name:'DISPATCH RIDER',desc:'Okada courier — documents, food, parcels',price:'₦300–₦2,000',eta:'15–45 min',cat:'okada',tag:'Delivery',available:true},
+  {id:'bike',em:'🛵',name:'POWER BIKE',desc:'Performance motorcycle — urgent, interstate',price:'₦500–₦3,500',eta:'5–10 min',cat:'okada',tag:'Express',available:true},
+];
+
+const riders = [
+  {id:'r1',av:'👨',name:'EMEKA OKAFOR',info:'Keke · 7 yrs · Abuja',plate:'ABJ-345-ZB',trips:'2,340',rating:'4.9',status:'Available',fare:'₦180/km'},
+  {id:'r2',av:'👩',name:'AMINAT YUSUF',info:'Okada · Female · 5 yrs',plate:'FCT-122-ZB',trips:'1,820',rating:'4.8',status:'Available',fare:'₦220/km'},
+  {id:'r3',av:'👨',name:'CHUKWUDI NWOSU',info:'Taxi · AC Car · 9 yrs',plate:'KJA-788-ZB',trips:'4,120',rating:'4.9',status:'1 km away',fare:'₦320/km'},
+  {id:'r4',av:'👨',name:'IBRAHIM MUSA',info:'Keke · Night rides · 4 yrs',plate:'ABJ-201-ZB',trips:'980',rating:'4.7',status:'Available',fare:'₦160/km'},
+  {id:'r5',av:'👨',name:'SEUN ADEYEMI',info:'Executive SUV · VIP · 6 yrs',plate:'LND-001-ZB',trips:'3,450',rating:'5.0',status:'Available',fare:'₦480/km'},
+];
+
+const faqs={
+  fare:'💰 <strong>Fare Guide</strong><br><br>• <b>Keke:</b> ₦150–₦800 · ₦70–₦120/km<br>• <b>Okada:</b> ₦200–₦1,200 · ₦100–₦180/km<br>• <b>Taxi:</b> ₦800–₦4,500 · ₦250–₦400/km<br>• <b>Executive:</b> ₦3,500–₦15,000 · ₦400–₦600/km<br>• <b>Charter Bus:</b> ₦15,000–₦150,000<br><br>⚠️ Always confirm fare with rider <b>before boarding</b> to avoid disputes.',
+  safety:'🛡️ <strong>Rider Safety Tips</strong><br><br>• All riders are <b>background-checked & verified</b><br>• Always wear a helmet on Okada<br>• Verify rider name & plate before entering<br>• Share your live location with a contact<br>• Never share your account PIN with riders<br>• Rate every trip to protect other passengers<br>• If unsafe, exit vehicle & call <b>112</b>',
+};
+
+// ══════════════════════
+// STATE
+let bookings=[], starVal=5, activeRide=null;
+
+// ══════════════════════
+// HELPERS
+function toWA(msg){window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`,'_blank');}
+function ts(){return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});}
+
+// ══════════════════════
+// CHAT ENGINE
+function botMsg(html,extra=''){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div');d.className='msg bot';
+  d.innerHTML=`<div class="av">🛺</div><div class="mcol"><div class="bbl">${html}</div>${extra}<div class="mtime">${ts()}</div></div>`;
+  a.appendChild(d);a.scrollTop=a.scrollHeight;
+}
+function userMsg(t){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div');d.className='msg user';
+  d.innerHTML=`<div class="av">👤</div><div class="mcol"><div class="bbl">${t}</div><div class="mtime">${ts()}</div></div>`;
+  a.appendChild(d);a.scrollTop=a.scrollHeight;
+}
+function typing(cb,ms=700){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div');d.className='msg bot';d.id='typ';
+  d.innerHTML=`<div class="av">🛺</div><div class="mcol"><div class="tbbl"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
+  a.appendChild(d);a.scrollTop=a.scrollHeight;
+  setTimeout(()=>{document.getElementById('typ')?.remove();cb();},ms+Math.random()*180);
+}
+
+// ══════════════════════
+// GALLERY
+function buildGallery(items,title){
+  window._galItems=items; window._galIdx=0;
+  const bgs={keke:'linear-gradient(160deg,#071A18,#0D4038)',okada:'linear-gradient(160deg,#1A1A07,#3D3D0A)',taxi:'linear-gradient(160deg,#071218,#0A2040)',exec:'linear-gradient(160deg,#1A0818,#3D1040)',danfo:'linear-gradient(160deg,#0A1818,#123030)',charter:'linear-gradient(160deg,#1A1007,#3D2A0A)',dispatch:'linear-gradient(160deg,#0A0A1A,#181030)'};
+  const catBadge={keke:'rb-keke',okada:'rb-okada',taxi:'rb-taxi',charter:'rb-charter',exec:'rb-exec',danfo:'rb-keke'};
+  const slides=items.map(r=>`
+    <div class="gal-slide">
+      <div class="rc">
+        <div class="rc-banner" style="background:${bgs[r.cat]||bgs.keke};" onclick="rideInfo('${r.id}')">
+          <span style="font-size:72px;filter:drop-shadow(0 4px 16px rgba(13,148,136,0.4));position:relative;z-index:0;">${r.em}</span>
+          <span class="rc-badge ${catBadge[r.cat]||'rb-keke'}">${r.name}</span>
+          <span class="rc-eta-pill">⏱ ${r.eta}</span>
+        </div>
+        <div class="rc-body">
+          <div class="rc-name">${r.em} ${r.name}</div>
+          <div class="rc-desc">${r.desc}</div>
+          <div class="rc-bottom">
+            <div class="rc-price">${r.price}</div>
+            <div class="rc-tags">
+              <span class="rc-tag rt-avail">● Live</span>
+              <span class="rc-tag ${r.tag==='Fastest'||r.tag==='Express'?'rt-fast':'rt-lime'}">${r.tag}</span>
+            </div>
+          </div>
+          <div class="rc-btns">
+            <button class="rc-btn btn-ghost" onclick="rideInfo('${r.id}')">ℹ Info</button>
+            <button class="rc-btn ${r.cat==='charter'?'btn-lime':'btn-teal'}" onclick="bookRide('${r.id}')">🛺 Book</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+  const dots=items.map((_,i)=>`<div class="gdot ${i===0?'on':''}" onclick="goSlide(${i})"></div>`).join('');
+  return `<div class="gal-wrap">
+    <div class="gal-hdr"><span class="gal-title">${title} — ${items.length} types</span><span class="gal-cnt" id="galCnt">1 / ${items.length}</span></div>
+    <div class="gal-outer" id="galOut"><div class="gal-track" id="galTrk">${slides}</div></div>
+    <div class="gal-nav">
+      <div class="garrow" onclick="shiftGal(-1)">◀</div>
+      <div class="gdots" id="galDts">${dots}</div>
+      <div class="garrow" onclick="shiftGal(1)">▶</div>
+    </div>
+  </div>`;
+}
+
+function shiftGal(d){const it=window._galItems||[];window._galIdx=(window._galIdx+d+it.length)%it.length;updateGal();}
+function goSlide(i){window._galIdx=i;updateGal();}
+function updateGal(){
+  const i=window._galIdx,it=window._galItems||[];
+  document.getElementById('galTrk')?.style.setProperty('transform',`translateX(-${i*100}%)`);
+  const c=document.getElementById('galCnt');if(c)c.textContent=`${i+1} / ${it.length}`;
+  document.querySelectorAll('.gdot').forEach((d,j)=>d.classList.toggle('on',j===i));
+}
+let tS=0;
+document.addEventListener('touchstart',e=>{if(e.target.closest('#galOut'))tS=e.touches[0].clientX;});
+document.addEventListener('touchend',e=>{if(e.target.closest('#galOut')&&tS){const dx=e.changedTouches[0].clientX-tS;if(Math.abs(dx)>40)shiftGal(dx<0?1:-1);tS=0;}});
+
+// ══════════════════════
+// MAIN MENU
+function mainMenu(){
+  return `<div class="chips">
+    <div class="chip" onclick="go('book')">🛺 Book a Ride</div>
+    <div class="chip lime" onclick="go('gallery')">🖼️ Browse Rides</div>
+    <div class="chip" onclick="go('riders')">👤 Find a Rider</div>
+    <div class="chip" onclick="go('schedule')">📅 Schedule Ride</div>
+    <div class="chip amber" onclick="go('charter')">🚌 Charter / Hire</div>
+    <div class="chip green" onclick="go('delivery')">📦 Dispatch</div>
+    <div class="chip" onclick="go('track')">📍 Track Rider</div>
+    <div class="chip blue" onclick="go('verify')">✅ Verify Rider</div>
+    <div class="chip" onclick="go('pay')">💳 Pay for Ride</div>
+    <div class="chip lime" onclick="go('fare')">💰 Fare Estimate</div>
+    <div class="chip" onclick="go('trips')">📋 My Trips</div>
+    <div class="chip amber" onclick="go('promo')">🎁 Promos</div>
+    <div class="chip red" onclick="go('report')">🚨 Report Issue</div>
+    <div class="chip" onclick="go('rate')">⭐ Rate Rider</div>
+    <div class="chip blue" onclick="go('safety')">🛡️ Safety Tips</div>
+  </div>`;
+}
+
+function go(a){
+  const labels={book:'🛺 Book a Ride',gallery:'🖼️ Browse Ride Types',riders:'👤 Find a Rider',schedule:'📅 Schedule Ride',charter:'🚌 Charter / Hire',delivery:'📦 Dispatch / Delivery',track:'📍 Track Rider',verify:'✅ Verify Rider',pay:'💳 Pay for Ride',fare:'💰 Fare Estimate',trips:'📋 My Trips',promo:'🎁 Promo Codes',report:'🚨 Report Issue',rate:'⭐ Rate Rider',safety:'🛡️ Safety Tips'};
+  if(labels[a]) userMsg(labels[a]);
+  switch(a){
+    case 'book': openOv('ovBook'); break;
+    case 'gallery': doGallery(); break;
+    case 'riders': doRiders(); break;
+    case 'schedule': openOv('ovSchedule'); break;
+    case 'charter': openOv('ovCharter'); break;
+    case 'delivery': openOv('ovDelivery'); break;
+    case 'track': doTrack(); break;
+    case 'verify': openOv('ovVerify'); break;
+    case 'pay': openOv('ovPay'); break;
+    case 'fare': doFare(); break;
+    case 'trips': doTrips(); break;
+    case 'promo': doPromo(); break;
+    case 'report': openOv('ovReport'); break;
+    case 'rate': openOv('ovRate'); break;
+    case 'safety': doFAQ('safety'); break;
+  }
+}
+
+// ══════════════════════
+// FEATURES
+function doGallery(){
+  typing(()=>{
+    botMsg('🖼️ <strong>All Ride Types</strong> — swipe through options:',
+      buildGallery(rideTypes,'Ride Types')+
+      `<div class="sec-hdr" style="margin-top:9px;"><div class="sec-line"></div><div class="sec-lbl">Filter</div><div class="sec-line"></div></div>
+      <div class="chips">
+        <div class="chip" onclick="filterRides('keke')">🛺 Keke</div>
+        <div class="chip" onclick="filterRides('okada')">🏍️ Okada</div>
+        <div class="chip blue" onclick="filterRides('taxi')">🚗 Taxi</div>
+        <div class="chip amber" onclick="filterRides('charter')">🚌 Charter</div>
+        <div class="chip green" onclick="filterRides('dispatch')">📦 Dispatch</div>
+      </div>`);
+  });
+}
+
+function filterRides(id){
+  userMsg(id.toUpperCase());
+  const list=rideTypes.filter(r=>r.cat===id||r.id===id);
+  typing(()=>{botMsg(`<strong>${id.toUpperCase()}</strong> rides:`,buildGallery(list.length?list:rideTypes.slice(0,3),'Filtered'));});
+}
+
+function rideInfo(id){
+  const r=rideTypes.find(x=>x.id===id);if(!r)return;
+  typing(()=>{
+    botMsg(`${r.em} <strong>${r.name}</strong>`,
+      `<div class="info-card">
+        <div class="ir"><div class="ir-icon">💰</div><div class="ir-text"><b>Fare:</b> ${r.price}</div></div>
+        <div class="ir"><div class="ir-icon">⏱</div><div class="ir-text"><b>Pickup:</b> ${r.eta}</div></div>
+        <div class="ir"><div class="ir-icon">📝</div><div class="ir-text">${r.desc}</div></div>
+        <div class="ir"><div class="ir-icon">🏷️</div><div class="ir-text"><b>Best for:</b> ${r.tag} trips</div></div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="bookRide('${r.id}')">🛺 Book Now</div>
+        <div class="chip lime" onclick="go('fare')">💰 Fare Estimate</div>
+      </div>`);
+  },450);
+}
+
+function bookRide(id){
+  const r=rideTypes.find(x=>x.id===id);
+  if(r) document.getElementById('bkType').value=`${r.em} ${r.name}`;
+  if(id==='charter') openOv('ovCharter');
+  else if(id==='dispatch') openOv('ovDelivery');
+  else openOv('ovBook');
+}
+
+function doRiders(){
+  typing(()=>{
+    botMsg('👤 <strong>Available Riders Near You</strong>:',
+      `<div style="margin-top:8px;">${riders.map(r=>`
+        <div class="rider-item" onclick="pickRider('${r.id}')">
+          <div class="ri-av">${r.av}</div>
+          <div style="flex:1;">
+            <div class="ri-name">${r.name}</div>
+            <div class="ri-info">${r.info} · ${r.plate}</div>
+            <div class="ri-meta">
+              <span class="rm rm-avail">${r.status}</span>
+              <span class="rm rm-star">★ ${r.rating}</span>
+              <span class="rm rm-trips">${r.trips} trips</span>
+            </div>
+          </div>
+          <div class="ri-right"><div class="ri-price">${r.fare}</div><div class="ri-per">per km</div></div>
+        </div>`).join('')}</div>
+      <div class="chips" style="margin-top:8px;"><div class="chip blue" onclick="openOv('ovVerify')">✅ Verify Before Boarding</div></div>`);
+  });
+}
+
+function pickRider(id){
+  const r=riders.find(x=>x.id===id);if(!r)return;
+  userMsg(`Book: ${r.name}`);
+  document.getElementById('bkNote').value=`Requested rider: ${r.name} (${r.plate})`;
+  typing(()=>{
+    botMsg(`${r.av} <strong>${r.name}</strong> — ★ ${r.rating}`,
+      `<div class="verify-card">
+        <div class="vf-head"><span class="vf-av">${r.av}</span><div><div class="vf-nm">${r.name}</div><div class="vf-inf">${r.info}</div></div></div>
+        <div class="vf-grid">
+          <div class="vf-row"><span class="vfr-l">Plate</span><span class="vfr-v">${r.plate}</span><span class="vfr-b vb-ok">✓ Verified</span></div>
+          <div class="vf-row"><span class="vfr-l">Trips</span><span class="vfr-v">${r.trips}</span><span class="vfr-b vb-live">Active</span></div>
+          <div class="vf-row"><span class="vfr-l">Rating</span><span class="vfr-v">★ ${r.rating}</span><span class="vfr-b vb-ok">Top Rated</span></div>
+          <div class="vf-row"><span class="vfr-l">Status</span><span class="vfr-v">${r.status}</span><span class="vfr-b vb-live">Online</span></div>
+        </div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="openOv('ovBook')">🛺 Book This Rider</div>
+        <div class="chip lime" onclick="toWA('Hi ${r.name}, I want to book a ride. Please confirm availability. ⏰ ${ts()}')">📲 WhatsApp Rider</div>
+      </div>`);
+  },500);
+}
+
+function doTrack(){
+  typing(()=>{
+    botMsg('📍 <strong>Track Your Rider</strong>',
+      `<div class="chips">
+        <div class="chip" onclick="openOv('ovTrack')">🔢 Enter Booking Ref</div>
+        <div class="chip lime" onclick="closeOv('ovTrack');showTrackDemo()">🗺️ See Demo Track</div>
+      </div>`);
+  });
+}
+
+function showTrackDemo(){
+  userMsg('📍 Show Live Track Demo');
+  typing(()=>{
+    botMsg('📍 <strong>Live Tracking — Emeka is on his way!</strong>',
+      `<div class="track-card">
+        <div class="trk-hdr"><div class="trk-dot"></div><div class="trk-status">EN ROUTE TO PICKUP</div></div>
+        <div class="trk-steps">
+          ${['Booked','Assigned','En Route','Arrived','In Trip','Done'].map((s,i)=>`
+            <div class="ts ${i<3?'done':''}">
+              <div class="ts-dot ${i===2?'act':i<2?'done':''}">${i<2?'✓':i===2?'🛺':''}</div>
+              <div class="ts-lbl">${s}</div>
+            </div>`).join('')}
+        </div>
+        <div class="trk-rider-bar">
+          <div class="trk-ri-av">👨</div>
+          <div style="flex:1;">
+            <div class="trk-ri-name">Emeka Okafor</div>
+            <div class="trk-ri-sub">ABJ-345-ZB · 🛺 Keke · ~4 min away</div>
+          </div>
+          <div class="chips" style="margin:0;">
+            <div class="chip green" style="padding:5px 10px;" onclick="toWA('Hi Emeka, I can see you are on the way. I am waiting at the pickup point.')">📲 Call</div>
+          </div>
+        </div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip blue" onclick="openOv('ovVerify')">✅ Verify Rider</div>
+        <div class="chip red" onclick="openOv('ovReport')">🚨 Safety Issue</div>
+      </div>`);
+    document.getElementById('liveStrip').classList.add('show');
+    document.getElementById('liveText').textContent='🛺 Emeka · ABJ-345-ZB · 4 min away';
+  });
+}
+
+function doFare(){
+  typing(()=>{
+    botMsg('💰 <strong>Fare Estimator</strong>',
+      `<div class="fare-banner">
+        <div class="fb-lbl">Estimated Fare</div>
+        <div class="fb-price">₦420</div>
+        <div class="fb-sub">Wuse Market → Maitama · ~5.2 km · Keke NAPEP</div>
+        <div class="fb-stats">
+          <div class="fb-st"><div class="fb-val">5.2km</div><div class="fb-key">Distance</div></div>
+          <div class="fb-st"><div class="fb-val">~14 min</div><div class="fb-key">Duration</div></div>
+          <div class="fb-st"><div class="fb-val">₦81/km</div><div class="fb-key">Rate</div></div>
+          <div class="fb-st"><div class="fb-val">3 riders</div><div class="fb-key">Nearby</div></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="ir"><div class="ir-icon">🛺</div><div class="ir-text"><b>Keke:</b> ₦70–₦120/km · avg ₦150–₦800</div></div>
+        <div class="ir"><div class="ir-icon">🏍️</div><div class="ir-text"><b>Okada:</b> ₦100–₦180/km · avg ₦200–₦1,200</div></div>
+        <div class="ir"><div class="ir-icon">🚗</div><div class="ir-text"><b>Taxi:</b> ₦250–₦400/km · avg ₦800–₦4,500</div></div>
+        <div class="ir"><div class="ir-icon">💡</div><div class="ir-text">Always agree fare <b>before boarding</b></div></div>
+      </div>
+      <div class="chips" style="margin-top:8px;"><div class="chip" onclick="openOv('ovBook')">🛺 Book Now</div></div>`);
+  });
+}
+
+function doTrips(){
+  const trips=[
+    {em:'🛺',route:'Wuse Market → Maitama',meta:'Today 9:14am · Keke · Emeka',price:'₦350'},
+    {em:'🏍️',route:'Garki → Asokoro',meta:'Yesterday 5:48pm · Okada · Aminat',price:'₦500'},
+    {em:'🚗',route:'Airport → Maitama',meta:'Mon 11:30am · Taxi · Chukwudi',price:'₦6,500'},
+    {em:'🚙',route:'Kubwa → CBD',meta:'Sun 8:00am · Executive · Seun',price:'₦2,800'},
+  ];
+  typing(()=>{
+    botMsg('📋 <strong>My Recent Trips</strong>',
+      `<div style="margin-top:8px;">${trips.map(t=>`
+        <div class="trip-item">
+          <div class="trip-em">${t.em}</div>
+          <div class="trip-info">
+            <div class="trip-route">${t.route}</div>
+            <div class="trip-meta">${t.meta}</div>
+          </div>
+          <div class="trip-price">${t.price}</div>
+        </div>`).join('')}</div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="openOv('ovBook')">🛺 Book New Ride</div>
+        <div class="chip lime" onclick="openOv('ovRate')">⭐ Rate Last Ride</div>
+      </div>`);
+  });
+}
+
+function doPromo(){
+  const promos=[
+    {em:'🎁',text:'50% off first ride — new riders',code:'FIRSTRIDE'},
+    {em:'🛺',text:'20% off all Keke rides this week',code:'KEKE20'},
+    {em:'🌙',text:'Flat ₦500 night rides (9pm–5am)',code:'NIGHTRIDE'},
+    {em:'📦',text:'10% off dispatch/delivery',code:'DISPATCH10'},
+    {em:'👥',text:'Earn ₦500 for each referral',code:'REFER500'},
+  ];
+  typing(()=>{
+    botMsg('🎁 <strong>Active Promo Codes</strong>',
+      `<div style="margin-top:8px;">${promos.map(p=>`
+        <div class="promo-item">
+          <span class="promo-em">${p.em}</span>
+          <div class="promo-text">${p.text}</div>
+          <span class="promo-code" onclick="copyPromo(this,'${p.code}')">${p.code}</span>
+        </div>`).join('')}</div>
+      <div class="chips" style="margin-top:8px;"><div class="chip" onclick="openOv('ovBook')">🛺 Book & Apply Code</div></div>`);
+  });
+}
+
+function copyPromo(el,c){navigator.clipboard?.writeText(c).catch(()=>{});el.textContent='Copied ✓';setTimeout(()=>el.textContent=c,1600);}
+
+function doFAQ(key){
+  const f=faqs[key];if(!f)return;
+  typing(()=>{botMsg(f,`<div class="chips"><div class="chip" onclick="openOv('ovBook')">🛺 Book Ride</div><div class="chip blue" onclick="openOv('ovVerify')">✅ Verify Rider</div></div>`);});
+}
+
+// ══════════════════════
+// CART
+function openCart(){
+  if(!bookings.length){
+    document.getElementById('cartBody').innerHTML=`<div style="text-align:center;padding:44px 16px;"><div style="font-size:56px;margin-bottom:12px;">📋</div><div style="color:var(--text-muted);font-size:14px;">No bookings yet.<br>Book your first ride below!</div></div>`;
+    document.getElementById('cartFoot').innerHTML=`<button class="wa-btn" onclick="closeOv('ovCart');openOv('ovBook')">🛺 Book a Ride</button>`;
+  } else {
+    document.getElementById('cartBody').innerHTML=`
+      <div style="background:rgba(13,148,136,0.07);border:1.5px solid rgba(13,148,136,0.2);border-radius:12px;padding:12px;margin-top:4px;">
+        ${bookings.map(b=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid rgba(13,148,136,0.1);">
+          <span style="font-size:20px;">${b.em}</span>
+          <div style="flex:1;"><div style="font-size:12.5px;font-weight:800;">${b.type}</div><div style="font-size:10.5px;color:var(--text-muted);">${b.route||'Route pending'}</div></div>
+          <div style="text-align:right;"><div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--lime);">${b.price||'TBD'}</div>
+          <div style="font-size:9.5px;color:var(--red);cursor:pointer;" onclick="cancelBooking('${b.id}')">Cancel</div></div>
+        </div>`).join('')}
+      </div>`;
+    document.getElementById('cartFoot').innerHTML=`
+      <button class="wa-btn" onclick="closeOv('ovCart');showTrackDemo()">📍 Track Active Ride</button>
+      <button class="wa-btn wa-ghost" style="margin-top:8px;" onclick="bookings=[];updateBadge();openCart()">🗑 Clear All</button>`;
+  }
+  openOv('ovCart');
+}
+function cancelBooking(id){bookings=bookings.filter(b=>b.id!==id);updateBadge();openCart();}
+function updateBadge(){document.getElementById('cartBadge').textContent=bookings.length;}
+
+// ══════════════════════
+// SUBMIT → WhatsApp
+function submitBook(){
+  const name=document.getElementById('bkName').value.trim();
+  const phone=document.getElementById('bkPhone').value.trim();
+  const type=document.getElementById('bkType').value;
+  const pickup=document.getElementById('bkPickup').value.trim();
+  const dest=document.getElementById('bkDest').value.trim();
+  const when=document.getElementById('bkWhen').value;
+  const pax=document.getElementById('bkPax').value;
+  const note=document.getElementById('bkNote').value.trim();
+  const pay=document.getElementById('bkPay').value;
+  if(!name||!phone||!pickup||!dest){alert('Please fill in name, phone, pickup and destination.');return;}
+  const ref='ZB-'+Date.now().toString().slice(-7);
+  bookings.push({id:ref,em:'🛺',type,route:`${pickup} → ${dest}`,price:'TBD'});
+  updateBadge(); activeRide={type,pickup,dest};
+  toWA(`🛺 *RIDE REQUEST — ZoomBot*\n\n📋 *Ref:* ${ref}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n🚗 *Type:* ${type}\n📍 *From:* ${pickup}\n🏁 *To:* ${dest}\n⏰ *When:* ${when}\n👥 *Passengers:* ${pax}\n💳 *Payment:* ${pay}\n${note?`📝 *Notes:* ${note}\n`:''}\n🕐 Booked at ${ts()}`);
+  closeOv('ovBook');
+  document.getElementById('liveStrip').classList.add('show');
+  document.getElementById('liveText').textContent=`🛺 ${type.split(' ')[0]} ${type.split(' ')[1]||''} · ${pickup} → ${dest}`;
+  typing(()=>{
+    botMsg(`✅ <strong>Ride booked!</strong> Ref: <code style="background:rgba(163,230,53,0.15);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${ref}</code>`,
+      `<div class="ach"><div class="ach-em">🛺</div><div><div class="ach-title">RIDE CONFIRMED</div><div class="ach-desc">${type} · ${pickup} → ${dest}</div></div></div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip lime" onclick="showTrackDemo()">📍 Track Rider</div>
+        <div class="chip blue" onclick="openOv('ovVerify')">✅ Verify Rider</div>
+        <div class="chip" onclick="openOv('ovPay')">💳 Pay Now</div>
+      </div>`);
+  },550);
+}
+
+function submitSchedule(){
+  const name=document.getElementById('scName').value.trim();
+  const phone=document.getElementById('scPhone').value.trim();
+  const type=document.getElementById('scType').value;
+  const pickup=document.getElementById('scPickup').value.trim();
+  const dest=document.getElementById('scDest').value.trim();
+  const date=document.getElementById('scDate').value;
+  const time=document.getElementById('scTime').value;
+  const repeat=document.getElementById('scRepeat').value;
+  const note=document.getElementById('scNote').value.trim();
+  if(!name||!phone||!pickup){alert('Please fill in name, phone and pickup.');return;}
+  toWA(`📅 *SCHEDULED RIDE — ZoomBot*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n🚗 *Type:* ${type}\n📍 *From:* ${pickup}\n🏁 *To:* ${dest||'TBD'}\n📅 *Date:* ${date||'TBD'} at ${time}\n🔄 *Repeat:* ${repeat}\n${note?`📝 *Notes:* ${note}\n`:''}\n🕐 ${ts()}`);
+  closeOv('ovSchedule');
+  typing(()=>{botMsg(`📅 <strong>Ride scheduled!</strong> Your <strong>${type}</strong> has been set for ${date||'your chosen date'} at ${time}. We'll send a reminder and dispatch a rider at the scheduled time.`);});
+}
+
+function submitCharter(){
+  const name=document.getElementById('chName').value.trim();
+  const phone=document.getElementById('chPhone').value.trim();
+  const veh=document.getElementById('chVeh').value;
+  const purpose=document.getElementById('chPurpose').value;
+  const date=document.getElementById('chDate').value;
+  const dur=document.getElementById('chDur').value;
+  const pickup=document.getElementById('chPickup').value.trim();
+  const route=document.getElementById('chRoute').value.trim();
+  const pax=document.getElementById('chPax').value;
+  if(!name||!phone||!pickup){alert('Please fill in name, phone and pickup location.');return;}
+  toWA(`🚌 *CHARTER REQUEST — ZoomBot*\n\n👤 *Name/Org:* ${name}\n📞 *Phone:* ${phone}\n🚌 *Vehicle:* ${veh}\n🎯 *Purpose:* ${purpose}\n📅 *Date:* ${date||'TBD'} · ${dur}\n📍 *Pickup:* ${pickup}\n🗺️ *Route:* ${route||'TBD'}\n👥 *Passengers:* ${pax||'TBD'}\n\n🕐 ${ts()}`);
+  closeOv('ovCharter');
+  typing(()=>{botMsg(`🚌 <strong>Charter request sent!</strong> Our team will confirm vehicle availability, route and pricing via WhatsApp within 30 minutes.`);});
+}
+
+function submitDelivery(){
+  const sender=document.getElementById('dlSender').value.trim();
+  const phone=document.getElementById('dlPhone').value.trim();
+  const recipient=document.getElementById('dlRecipient').value.trim();
+  const recPhone=document.getElementById('dlRecPhone').value.trim();
+  const pickup=document.getElementById('dlPickup').value.trim();
+  const drop=document.getElementById('dlDrop').value.trim();
+  const item=document.getElementById('dlItem').value.trim();
+  const speed=document.getElementById('dlSpeed').value;
+  const who=document.getElementById('dlWho').value;
+  if(!sender||!phone||!pickup||!drop){alert('Please fill in sender, phone, pickup and drop-off.');return;}
+  toWA(`📦 *DISPATCH / DELIVERY — ZoomBot*\n\n📤 *Sender:* ${sender}\n📞 *Phone:* ${phone}\n📥 *Recipient:* ${recipient||'N/A'}\n📞 *Rec. Phone:* ${recPhone||'N/A'}\n📍 *Pickup:* ${pickup}\n🏁 *Drop:* ${drop}\n📦 *Item:* ${item||'Not specified'}\n⚡ *Speed:* ${speed}\n💳 *Billed to:* ${who}\n\n🕐 ${ts()}`);
+  closeOv('ovDelivery');
+  typing(()=>{botMsg(`📦 <strong>Dispatch booked!</strong> A rider has been notified. Expect <strong>${speed}</strong> delivery with live updates via WhatsApp.`);});
+}
+
+function submitPay(){
+  const name=document.getElementById('pyName').value.trim();
+  const phone=document.getElementById('pyPhone').value.trim();
+  const ref=document.getElementById('pyRef').value.trim();
+  const amount=document.getElementById('pyAmount').value;
+  const route=document.getElementById('pyRoute').value.trim();
+  const method=document.getElementById('pyMethod').value;
+  if(!name||!phone){alert('Please fill in name and phone.');return;}
+  toWA(`💳 *RIDE PAYMENT — ZoomBot*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📋 *Ref:* ${ref||'N/A'}\n🗺️ *Route:* ${route||'N/A'}\n💰 *Amount:* ₦${amount?Number(amount).toLocaleString():'TBD'}\n💳 *Method:* ${method}\n\n🕐 ${ts()}`);
+  closeOv('ovPay');
+  typing(()=>{botMsg(`💳 <strong>Payment confirmed!</strong> ₦${amount?Number(amount).toLocaleString():'TBD'} via <strong>${method}</strong> has been sent to our team. Receipt will follow via WhatsApp.`);});
+}
+
+function submitTrack(){
+  const ref=document.getElementById('tkRef').value.trim();
+  if(!ref){alert('Please enter your booking reference or phone number.');return;}
+  toWA(`📍 *TRACK RIDE — ZoomBot*\n\n📋 *Ref / Phone:* ${ref}\n\nPlease share my rider's live location. 🕐 ${ts()}`);
+  closeOv('ovTrack');
+  typing(()=>{botMsg('📍 Connected! Your rider will share their <strong>live WhatsApp location</strong> now. Keep the chat open and monitor the map.');});
+}
+
+function submitVerify(){
+  const type=document.getElementById('vfType').value;
+  const query=document.getElementById('vfQuery').value.trim();
+  const phone=document.getElementById('vfPhone').value.trim();
+  if(!query||!phone){alert('Please fill in rider details and your phone.');return;}
+  toWA(`✅ *RIDER VERIFICATION — ZoomBot*\n\n🔍 *Type:* ${type}\n📋 *Query:* ${query}\n📞 *My Phone:* ${phone}\n\n🕐 ${ts()}`);
+  closeOv('ovVerify');
+  typing(()=>{
+    botMsg(`✅ <strong>Verification sent!</strong> Our system is checking <strong>${query}</strong> against our registered rider database.`,
+      `<div class="verify-card" style="margin-top:8px;">
+        <div class="vf-head"><span class="vf-av">🔍</span><div><div class="vf-nm">${query}</div><div class="vf-inf">${type}</div></div></div>
+        <div class="vf-grid">
+          <div class="vf-row"><span class="vfr-l">Status</span><span class="vfr-v">Checking...</span><span class="vfr-b vb-live">Pending</span></div>
+          <div class="vf-row"><span class="vfr-l">Response</span><span class="vfr-v">Via WhatsApp</span><span class="vfr-b vb-ok">< 30 secs</span></div>
+        </div>
+      </div>
+      <div class="chips" style="margin-top:8px;"><div class="chip red" onclick="openOv('ovReport')">🚨 Report if Fake</div></div>`);
+  });
+}
+
+function submitReport(){
+  const name=document.getElementById('rpName').value.trim();
+  const phone=document.getElementById('rpPhone').value.trim();
+  const type=document.getElementById('rpType').value;
+  const rider=document.getElementById('rpRider').value.trim();
+  const date=document.getElementById('rpDate').value;
+  const time=document.getElementById('rpTime').value;
+  const desc=document.getElementById('rpDesc').value.trim();
+  if(!name||!phone||!desc){alert('Please fill in name, phone and description.');return;}
+  toWA(`🚨 *INCIDENT REPORT — ZoomBot*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n❗ *Issue:* ${type}\n🏍️ *Rider:* ${rider||'Unknown'}\n📅 *When:* ${date||'Today'} ${time||''}\n📝 *Details:*\n${desc}\n\n🕐 ${ts()}`);
+  closeOv('ovReport');
+  typing(()=>{botMsg(`🚨 <strong>Report submitted!</strong> Our safety team will investigate and respond within <strong>2 hours</strong>. If this is an emergency, call <strong>112</strong> immediately.`);});
+}
+
+function submitRate(){
+  const name=document.getElementById('rtName').value.trim()||'Anonymous';
+  const rider=document.getElementById('rtRider').value.trim();
+  const type=document.getElementById('rtType').value;
+  const stars=document.getElementById('rtStars').value;
+  const text=document.getElementById('rtText').value.trim();
+  if(!rider||!text){alert('Please fill in rider name/plate and your review.');return;}
+  toWA(`⭐ *RIDE RATING — ZoomBot*\n\n👤 *Passenger:* ${name}\n🏍️ *Rider:* ${rider}\n🚗 *Type:* ${type}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n💬 *Review:*\n${text}\n\n🕐 ${ts()}`);
+  closeOv('ovRate');
+  typing(()=>{botMsg(`⭐ <strong>Rating submitted!</strong> Thank you — your feedback makes ZoomBot safer and better for everyone. 🙏`);});
+}
+
+// ══════════════════════
+// SEARCH
+function openSearch(){openOv('ovSearch');setTimeout(()=>document.getElementById('srchInp').focus(),300);}
+function liveSearch(q){
+  const el=document.getElementById('srchRes');
+  if(!q.trim()){el.innerHTML='';return;}
+  const rl=rideTypes.filter(r=>r.name.toLowerCase().includes(q.toLowerCase())||r.desc.toLowerCase().includes(q.toLowerCase()));
+  const rd=riders.filter(r=>r.name.toLowerCase().includes(q.toLowerCase())||r.plate.toLowerCase().includes(q.toLowerCase()));
+  let html='';
+  if(rl.length){
+    html+=`<div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);text-transform:uppercase;margin-bottom:7px;letter-spacing:1px;">Ride Types</div>`;
+    html+=rl.map(r=>`<div class="rider-item" style="margin-bottom:7px;" onclick="rideInfo('${r.id}');closeOv('ovSearch')"><div class="ri-av" style="font-size:22px;">${r.em}</div><div style="flex:1;"><div class="ri-name" style="font-size:13px;">${r.name}</div><div class="ri-info">${r.price}</div></div><button class="rc-btn btn-teal" style="width:auto;padding:7px 11px;font-size:11px;flex-shrink:0;" onclick="event.stopPropagation();bookRide('${r.id}');closeOv('ovSearch')">Book</button></div>`).join('');
+  }
+  if(rd.length){
+    html+=`<div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);text-transform:uppercase;margin:9px 0 7px;letter-spacing:1px;">Riders</div>`;
+    html+=rd.map(r=>`<div class="rider-item" style="margin-bottom:7px;" onclick="pickRider('${r.id}')"><div class="ri-av">${r.av}</div><div style="flex:1;"><div class="ri-name" style="font-size:13px;">${r.name}</div><div class="ri-info">${r.info}</div></div><div class="ri-right"><div class="ri-price">${r.fare}</div></div></div>`).join('');
+  }
+  el.innerHTML=html||`<div style="text-align:center;padding:24px;color:var(--text-muted);">No results for "<b style="color:var(--text);">${q}</b>"<br><br><button class="wa-btn" style="width:auto;padding:9px 16px;" onclick="toWA('I need a ride for: ${q}')">📲 Ask via WhatsApp</button></div>`;
+}
+
+// ══════════════════════
+// STARS
+function setStar(n){
+  starVal=n;document.getElementById('rtStars').value=n;
+  document.querySelectorAll('#starRow span').forEach((s,i)=>{s.style.filter=i<n?'none':'grayscale(1) opacity(.3)';});
+}
+
+// ══════════════════════
+// OVERLAYS
+function openOv(id){document.getElementById(id).classList.add('open');}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+document.getElementById('inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+document.getElementById('inp').addEventListener('input',function(){this.style.height='auto';this.style.height=this.scrollHeight+'px';});
+
+// ══════════════════════
+// FREE TEXT CHAT
+function send(){
+  const inp=document.getElementById('inp');
+  const t=inp.value.trim();if(!t)return;
+  inp.value='';inp.style.height='auto';
+  userMsg(t);const l=t.toLowerCase();
+  if(/^(hi|hello|hey|good|morn|afternoon|evening)/i.test(l)){typing(()=>{botMsg(`Hello! 👋 Welcome to <strong>ZoomBot</strong> — where are you headed?`,mainMenu());});}
+  else if(/keke|tricycle|napep/i.test(l)){userMsg('');bookRide('keke');}
+  else if(/okada|bike|motorcycle/i.test(l)){userMsg('');bookRide('okada');}
+  else if(/taxi|cab/i.test(l)){userMsg('');bookRide('taxi');}
+  else if(/exec|premium|vip|suv|ac ride/i.test(l)){userMsg('');bookRide('exec');}
+  else if(/charter|bus|hire|event/i.test(l)){openOv('ovCharter');}
+  else if(/deliver|dispatch|send|package|parcel|courier/i.test(l)){openOv('ovDelivery');}
+  else if(/track|where.*rider|location|live/i.test(l)){doTrack();}
+  else if(/verify|check.*rider|confirm.*rider|legit|fake/i.test(l)){openOv('ovVerify');}
+  else if(/pay|payment|transfer|bill/i.test(l)){openOv('ovPay');}
+  else if(/schedul|tomorrow|later|book.*later|next/i.test(l)){openOv('ovSchedule');}
+  else if(/fare|price|cost|how much|₦/i.test(l)){doFare();}
+  else if(/rider|driver|find.*rider|available/i.test(l)){doRiders();}
+  else if(/trip|history|past|previous/i.test(l)){doTrips();}
+  else if(/promo|discount|code|offer|deal/i.test(l)){doPromo();}
+  else if(/report|complain|problem|harass|stole|unsafe|danger/i.test(l)){openOv('ovReport');}
+  else if(/rate|review|feedback|star|opinion/i.test(l)){openOv('ovRate');}
+  else if(/safe|safety|tip|helmet/i.test(l)){doFAQ('safety');}
+  else if(/all.*ride|browse|option|type/i.test(l)){doGallery();}
+  else if(/book|ride|order|get.*keke|get.*okada|need.*ride/i.test(l)){openOv('ovBook');}
+  else{typing(()=>{botMsg(`Where to? Tell me your destination and I'll find you a ride! 🛺`,mainMenu());});}
+}
+
+// ══════════════════════
+// INIT
+window.onload=()=>{
+  const h=new Date().getHours();
+  const gr=h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙';
+  const peak=(h>=7&&h<=9)||(h>=17&&h<=20);
+  setTimeout(()=>{
+    botMsg(`${gr}! I'm <strong>ZoomBot</strong> — your instant ride-hailing assistant for <strong>Keke, Okada, Taxi, Charter</strong> and Dispatch rides across the city.<br><br>Book, pay, track and verify rides — all confirmed via WhatsApp in real time. 🛺🏍️${peak?`<br><br><span style="color:var(--lime);font-weight:800;">⚡ Peak hours active — book fast before riders fill up!</span>`:''}`);
+  },400);
+  setTimeout(()=>{typing(()=>{botMsg('Where are you headed today? 👇',mainMenu());},1300);},1400);
+};
+</script>
+</body>
+</html>
