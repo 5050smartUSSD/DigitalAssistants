@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediBot — Smart Medical Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#D1222A; --red2:#A81B22; --red3:#E63946; --red-g:rgba(209,34,42,0.14);
+  --blue:#1E6FA8; --blue2:#155E95; --blue3:#3A8FCA; --blue-g:rgba(30,111,168,0.14);
+  --teal:#0D9488; --teal-g:rgba(13,148,136,0.14);
+  --bg:#F8FAFC; --surface:#FFFFFF; --surface2:#F1F5F9; --surface3:#E8EEF5;
+  --border:#CBD5E1; --border2:#E2E8F0;
+  --text:#0F172A; --text-muted:#475569; --text-dim:#94A3B8;
+  --green:#16A34A; --green-g:rgba(22,163,74,0.12);
+  --amber:#D97706; --amber-g:rgba(217,119,6,0.12);
+  --shadow:0 2px 16px rgba(15,23,42,0.08); --shadow-lg:0 12px 48px rgba(15,23,42,0.14);
+  --wa:#25D366; --wa2:#128C7E;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'Figtree',sans-serif;color:var(--text);overflow:hidden;}
+::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+/* PAGE */
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:linear-gradient(155deg,#EFF6FF 0%,#F8FAFC 40%,#FFF1F2 100%);}
+body::before{content:'';position:fixed;inset:0;
+  background-image:radial-gradient(rgba(209,34,42,0.04) 1px,transparent 1px);
+  background-size:32px 32px;pointer-events:none;}
+body::after{content:'';position:fixed;top:-100px;right:-80px;width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle,rgba(209,34,42,0.07),transparent 65%);pointer-events:none;}
+
+/* PULSE RING (Emergency animation) */
+.pulse-ring{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:600px;height:600px;border-radius:50%;pointer-events:none;z-index:0;
+  border:1px solid rgba(209,34,42,0.06);animation:ringPulse 4s ease-out infinite;}
+@keyframes ringPulse{0%{transform:translate(-50%,-50%) scale(.6);opacity:.7;}100%{transform:translate(-50%,-50%) scale(1.2);opacity:0;}}
+
+/* WINDOW */
+.window{width:100%;max-width:440px;height:97vh;max-height:870px;
+  background:var(--surface);border-radius:24px;
+  box-shadow:var(--shadow-lg),0 0 0 1px rgba(209,34,42,0.08);
+  display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:2;
+  animation:emerge .45s cubic-bezier(.34,1.4,.64,1);}
+@keyframes emerge{from{opacity:0;transform:translateY(20px) scale(.97);}to{opacity:1;transform:none;}}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,var(--red2),var(--red),var(--red3));
+  padding:14px 16px 12px;flex-shrink:0;position:relative;overflow:hidden;}
+.hdr::before{content:'✚';position:absolute;right:-12px;top:-12px;font-size:80px;
+  color:rgba(255,255,255,0.06);font-weight:900;}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);}
+.hdr-inner{display:flex;align-items:center;gap:11px;position:relative;z-index:1;}
+.hdr-av{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);}
+.hdr-title{font-family:'Instrument Serif',serif;font-size:20px;font-weight:400;color:#fff;line-height:1;}
+.hdr-sub{font-size:11px;color:rgba(255,255,255,.78);margin-top:3px;display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#86EFAC;animation:blink 1.8s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+.hdr-right{margin-left:auto;display:flex;gap:6px;}
+.hbtn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;transition:.18s;}
+.hbtn:hover{background:rgba(255,255,255,.28);}
+.hbtn-rel{position:relative;}
+.hbtn-badge{position:absolute;top:-4px;right:-4px;width:15px;height:15px;border-radius:50%;
+  background:#FDE047;color:var(--red2);font-size:8px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;}
+
+/* EMERGENCY STRIP */
+.emrg-strip{background:linear-gradient(90deg,var(--red-g),transparent);
+  border-bottom:2px solid rgba(209,34,42,0.2);padding:7px 16px;
+  display:none;align-items:center;gap:8px;flex-shrink:0;}
+.emrg-strip.show{display:flex;}
+.es-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:blink .9s infinite;}
+.es-text{font-size:11.5px;font-weight:700;color:var(--red2);}
+.es-change{margin-left:auto;font-size:10.5px;color:var(--text-muted);cursor:pointer;text-decoration:underline;}
+
+/* CONTEXT STRIP */
+.ctx-strip{background:rgba(30,111,168,0.05);border-bottom:1px solid var(--border2);
+  padding:6px 14px;display:none;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;}
+.ctx-strip.show{display:flex;}
+.ctx-pill{font-size:9.5px;font-family:'JetBrains Mono',monospace;font-weight:700;padding:2px 8px;border-radius:8px;}
+.cp-patient{background:rgba(30,111,168,0.1);color:var(--blue);border:1px solid rgba(30,111,168,0.2);}
+.cp-location{background:rgba(13,148,136,0.1);color:var(--teal);border:1px solid rgba(13,148,136,0.2);}
+.cp-status{background:var(--green-g);color:var(--green);border:1px solid rgba(22,163,74,0.2);}
+
+/* MESSAGES */
+.msgs{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px;}
+
+/* BUBBLES */
+.msg{display:flex;gap:8px;animation:popUp .22s ease;max-width:100%;}
+.msg.user{flex-direction:row-reverse;}
+@keyframes popUp{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:none;}}
+.av{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;margin-top:2px;}
+.msg.bot .av{background:linear-gradient(135deg,var(--red2),var(--red3));box-shadow:0 2px 8px rgba(209,34,42,0.25);}
+.msg.user .av{background:var(--surface2);border:1px solid var(--border);}
+.mcol{display:flex;flex-direction:column;max-width:87%;}
+.msg.user .mcol{align-items:flex-end;}
+.bbl{padding:10px 14px;border-radius:17px;font-size:13.5px;line-height:1.65;}
+.msg.bot .bbl{background:var(--surface2);border:1px solid var(--border2);border-top-left-radius:5px;}
+.msg.user .bbl{background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;
+  border-top-right-radius:5px;box-shadow:0 3px 12px rgba(209,34,42,0.22);}
+.bbl b,.bbl strong{color:var(--red2);}
+.msg.user .bbl b,.msg.user .bbl strong{color:#FFD6D6;}
+.mtime{font-size:9.5px;color:var(--text-dim);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+
+/* TYPING */
+.tbbl{background:var(--surface2);border:1px solid var(--border2);border-radius:17px;border-top-left-radius:5px;
+  padding:11px 15px;display:flex;gap:5px;align-items:center;}
+.td{width:6px;height:6px;border-radius:50%;background:var(--red);animation:tdB 1.1s infinite;}
+.td:nth-child(2){animation-delay:.18s;}.td:nth-child(3){animation-delay:.36s;}
+@keyframes tdB{0%,60%,100%{transform:translateY(0);opacity:.3;}30%{transform:translateY(-5px);opacity:1;}}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.chip{background:var(--surface);border:1.5px solid var(--border);color:var(--red2);
+  padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.18s;}
+.chip:hover{background:var(--red);border-color:var(--red);color:#fff;transform:translateY(-1px);}
+.chip.blue{border-color:rgba(30,111,168,0.35);color:var(--blue);background:var(--blue-g);}
+.chip.blue:hover{background:var(--blue);color:#fff;border-color:var(--blue);}
+.chip.green{border-color:rgba(22,163,74,0.3);color:var(--green);background:var(--green-g);}
+.chip.green:hover{background:var(--green);color:#fff;border-color:var(--green);}
+.chip.amber{border-color:rgba(217,119,6,0.3);color:var(--amber);background:var(--amber-g);}
+.chip.amber:hover{background:var(--amber);color:#fff;border-color:var(--amber);}
+.chip.teal{border-color:rgba(13,148,136,0.3);color:var(--teal);background:var(--teal-g);}
+.chip.teal:hover{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+/* EMERGENCY BUTTON */
+.emrg-btn{background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff;
+  border:none;border-radius:14px;padding:14px 20px;font-size:15px;font-weight:800;
+  cursor:pointer;width:100%;margin-top:8px;font-family:'Figtree',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 4px 18px rgba(209,34,42,0.35);transition:.2s;animation:emergePulse 2s ease-in-out infinite;}
+@keyframes emergePulse{0%,100%{box-shadow:0 4px 18px rgba(209,34,42,0.35);}50%{box-shadow:0 4px 28px rgba(209,34,42,0.6);}}
+.emrg-btn:hover{transform:scale(1.02);box-shadow:0 6px 24px rgba(209,34,42,0.5);}
+
+/* HOSPITAL CARDS */
+.hosp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;width:100%;}
+.hc{background:var(--surface);border:1.5px solid var(--border);border-radius:13px;
+  padding:12px 10px;cursor:pointer;transition:.2s;text-align:center;position:relative;overflow:hidden;}
+.hc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--red),var(--blue));opacity:0;transition:.2s;}
+.hc:hover{border-color:var(--red);transform:translateY(-2px);box-shadow:0 5px 18px var(--red-g);}
+.hc:hover::after{opacity:1;}
+.hc.sel{border-color:var(--red);background:var(--red-g);}
+.hc-icon{font-size:26px;display:block;margin-bottom:5px;}
+.hc-name{font-family:'Instrument Serif',serif;font-size:12.5px;font-weight:400;color:var(--text);}
+.hc-type{font-size:9.5px;color:var(--text-muted);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.hc-tag{font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;margin-top:4px;display:inline-block;}
+.ht-open{background:var(--green-g);color:var(--green);border:1px solid rgba(22,163,74,0.25);}
+.ht-24h{background:var(--blue-g);color:var(--blue);border:1px solid rgba(30,111,168,0.25);}
+.ht-emrg{background:var(--red-g);color:var(--red2);border:1px solid rgba(209,34,42,0.25);}
+
+/* SLIDING GALLERY */
+.gal-wrap{width:100%;margin-top:10px;}
+.gal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.gal-title{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+  color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+.gal-cnt{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--text-dim);}
+.gal-outer{overflow:hidden;border-radius:14px;}
+.gal-track{display:flex;transition:transform .42s cubic-bezier(.4,0,.2,1);}
+.gal-slide{min-width:100%;}
+
+/* SERVICE CARD */
+.svc-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.svc-top{height:130px;display:flex;align-items:center;justify-content:center;font-size:64px;
+  position:relative;overflow:hidden;}
+.svc-top::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 50%,rgba(15,23,42,0.55));}
+.svc-cat{position:absolute;top:9px;left:10px;z-index:2;font-size:9px;font-weight:800;
+  padding:2px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.5px;}
+.sc-emrg{background:rgba(209,34,42,0.9);color:#fff;}
+.sc-pharm{background:rgba(22,163,74,0.9);color:#fff;}
+.sc-consult{background:rgba(30,111,168,0.9);color:#fff;}
+.sc-lab{background:rgba(13,148,136,0.9);color:#fff;}
+.sc-amb{background:rgba(217,119,6,0.9);color:#000;}
+.svc-price-badge{position:absolute;bottom:8px;right:10px;z-index:2;
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;color:rgba(255,255,255,.85);}
+.svc-body{padding:12px 13px;}
+.svc-name{font-family:'Instrument Serif',serif;font-size:15px;margin-bottom:3px;}
+.svc-desc{font-size:11.5px;color:var(--text-muted);line-height:1.45;margin-bottom:8px;}
+.svc-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.svc-tag{font-size:9.5px;padding:2px 7px;border-radius:5px;font-weight:700;}
+.st-avail{background:var(--green-g);color:var(--green);border:1px solid rgba(22,163,74,0.2);}
+.st-fast{background:var(--blue-g);color:var(--blue);border:1px solid rgba(30,111,168,0.2);}
+.st-24h{background:var(--amber-g);color:var(--amber);border:1px solid rgba(217,119,6,0.2);}
+.svc-btns{display:flex;gap:7px;}
+.svc-btn{flex:1;padding:9px;border-radius:10px;border:none;cursor:pointer;font-size:12.5px;
+  font-weight:700;font-family:'Figtree',sans-serif;transition:.18s;}
+.btn-red{background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;box-shadow:0 3px 10px var(--red-g);}
+.btn-red:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(209,34,42,0.35);}
+.btn-blue{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff;box-shadow:0 3px 10px var(--blue-g);}
+.btn-blue:hover{transform:translateY(-1px);}
+.btn-ghost{background:var(--surface2);border:1.5px solid var(--border);color:var(--text-muted);}
+.btn-ghost:hover{border-color:var(--red);color:var(--red);}
+
+/* GAL NAV */
+.gal-nav{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:9px;}
+.garrow{width:29px;height:29px;border-radius:50%;background:var(--surface);
+  border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:11px;color:var(--red2);transition:.18s;}
+.garrow:hover{background:var(--red);border-color:var(--red);color:#fff;}
+.gdots{display:flex;gap:5px;}
+.gdot{width:5px;height:5px;border-radius:50%;background:var(--surface3);transition:.25s;cursor:pointer;}
+.gdot.on{width:14px;border-radius:3px;background:var(--red2);}
+
+/* DRUG CARD */
+.drug-list{display:flex;flex-direction:column;gap:7px;margin-top:8px;width:100%;}
+.drug-item{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;
+  padding:11px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.18s;}
+.drug-item:hover{border-color:var(--green);box-shadow:0 3px 12px var(--green-g);}
+.di-icon{font-size:24px;width:42px;height:42px;background:var(--surface2);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.di-info{flex:1;}
+.di-name{font-size:13px;font-weight:700;}
+.di-brand{font-size:11px;color:var(--text-muted);}
+.di-price{font-size:14px;font-weight:800;color:var(--green);flex-shrink:0;}
+.di-add{width:28px;height:28px;border-radius:8px;background:var(--green);border:none;cursor:pointer;
+  color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.18s;flex-shrink:0;}
+.di-add:hover{background:#15803D;transform:scale(1.1);}
+
+/* FIRSTAID CARD */
+.fa-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:13px;margin-top:8px;width:100%;}
+.fa-step{display:flex;align-items:flex-start;gap:10px;padding:8px 0;position:relative;}
+.fa-step::after{content:'';position:absolute;left:14px;top:34px;width:1px;
+  height:calc(100% - 18px);background:linear-gradient(to bottom,var(--red),transparent);opacity:.3;}
+.fa-step:last-child::after{display:none;}
+.fa-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--red2),var(--red));
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+  color:#fff;flex-shrink:0;box-shadow:0 2px 8px var(--red-g);}
+.fa-text{font-size:12.5px;line-height:1.5;color:var(--text-muted);flex:1;}
+.fa-text b{color:var(--text);}
+.fa-dist{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--amber);margin-top:2px;}
+
+/* INFO CARD */
+.info-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:11px 14px;margin-top:8px;width:100%;}
+.ir{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border2);}
+.ir:last-child{border-bottom:none;}
+.ir-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.ir-text{font-size:12.5px;line-height:1.55;flex:1;color:var(--text-muted);}
+.ir-text b{color:var(--text);}
+
+/* VITALS CARD */
+.vitals-card{background:linear-gradient(135deg,var(--blue2),var(--blue),var(--blue3));
+  border-radius:14px;padding:15px;margin-top:8px;width:100%;position:relative;overflow:hidden;}
+.vitals-card::before{content:'❤️';position:absolute;right:-5px;bottom:-5px;font-size:72px;opacity:.12;}
+.vc-title{font-family:'Instrument Serif',serif;font-size:14px;color:rgba(255,255,255,.85);margin-bottom:10px;}
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.vital-box{background:rgba(255,255,255,.15);border-radius:10px;padding:9px 11px;text-align:center;}
+.vb-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:800;color:#fff;}
+.vb-lbl{font-size:9.5px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.vb-status{font-size:9px;font-weight:700;margin-top:3px;}
+.vb-normal{color:#86EFAC;} .vb-warn{color:#FDE047;} .vb-danger{color:#FCA5A5;}
+
+/* PAYMENT CARD */
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;width:100%;}
+.pay-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;
+  padding:12px;cursor:pointer;transition:.2s;text-align:center;}
+.pay-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 5px 16px var(--blue-g);}
+.pay-icon{font-size:26px;display:block;margin-bottom:5px;}
+.pay-name{font-size:12.5px;font-weight:700;}
+.pay-desc{font-size:10.5px;color:var(--text-muted);margin-top:2px;}
+
+/* PROMO BAR */
+.promo-bar{background:linear-gradient(135deg,var(--blue2),var(--teal));border-radius:12px;
+  padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:8px;width:100%;}
+.pb-text{font-size:12.5px;font-weight:700;color:#fff;flex:1;}
+.pb-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,255,255,.25);
+  padding:3px 9px;border-radius:6px;color:#fff;cursor:pointer;}
+
+/* CART SUM */
+.cart-sum{background:var(--green-g);border:1.5px solid rgba(22,163,74,0.25);
+  border-radius:12px;padding:12px;margin-top:8px;width:100%;}
+.ci-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(22,163,74,0.15);}
+.ci-row:last-of-type{border-bottom:none;}
+.ci-em{font-size:18px;}
+.ci-nm{font-size:12px;font-weight:700;flex:1;}
+.ci-pr{font-size:12.5px;font-weight:800;color:var(--green);}
+.ct-row{display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;
+  border-top:1.5px solid rgba(22,163,74,0.2);}
+
+/* WA BUTTON */
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:9px;padding:12px 18px;
+  background:linear-gradient(135deg,var(--wa2),var(--wa));color:#fff;border:none;
+  border-radius:13px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:10px;
+  font-family:'Figtree',sans-serif;transition:.2s;box-shadow:0 4px 16px rgba(37,211,102,0.25);}
+.wa-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(37,211,102,0.4);}
+.wa-ghost{background:transparent;border:1.5px solid var(--wa);color:var(--wa2);box-shadow:none;}
+.wa-ghost:hover{background:rgba(37,211,102,0.08);}
+
+/* INPUT */
+.inp-area{border-top:1px solid var(--border2);padding:11px 12px;background:var(--surface);
+  display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.inp-box{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:13px;
+  display:flex;align-items:flex-end;gap:7px;padding:8px 12px;transition:.2s;}
+.inp-box:focus-within{border-color:rgba(209,34,42,0.45);box-shadow:0 0 0 3px rgba(209,34,42,0.08);}
+.txt-inp{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13.5px;
+  font-family:'Figtree',sans-serif;resize:none;max-height:80px;line-height:1.5;}
+.txt-inp::placeholder{color:var(--text-dim);}
+.snd{width:38px;height:38px;border-radius:11px;
+  background:linear-gradient(135deg,var(--red2),var(--red));
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:#fff;box-shadow:0 3px 10px var(--red-g);transition:.18s;flex-shrink:0;}
+.snd:hover{transform:scale(1.07);box-shadow:0 5px 16px rgba(209,34,42,0.4);}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,0.55);backdrop-filter:blur(4px);
+  z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:440px;
+  max-height:92vh;display:flex;flex-direction:column;overflow:hidden;
+  border:1px solid var(--border);border-bottom:none;
+  box-shadow:0 -8px 40px rgba(209,34,42,0.08);
+  animation:sUp .3s cubic-bezier(.34,1.15,.64,1);}
+@keyframes sUp{from{transform:translateY(100%);}to{transform:none;}}
+.shdl{width:36px;height:3px;border-radius:3px;background:var(--border);margin:11px auto 0;}
+.sh-hdr{padding:14px 18px 12px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;}
+.sh-title{font-family:'Instrument Serif',serif;font-size:16px;color:var(--red2);}
+.sh-close{width:27px;height:27px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);
+  cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);}
+.sh-body{flex:1;overflow-y:auto;padding:16px 18px;}
+.sh-foot{padding:14px 18px;border-top:1px solid var(--border2);}
+
+/* FORMS */
+.fg{margin-bottom:13px;}
+.fl{font-size:10.5px;font-weight:800;color:var(--text-muted);margin-bottom:5px;display:block;
+  text-transform:uppercase;letter-spacing:.5px;font-family:'JetBrains Mono',monospace;}
+.fi,.fs,.fta{width:100%;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:10px;padding:10px 13px;color:var(--text);font-size:13px;
+  font-family:'Figtree',sans-serif;outline:none;transition:.2s;}
+.fi:focus,.fs:focus,.fta:focus{border-color:rgba(209,34,42,0.45);box-shadow:0 0 0 3px rgba(209,34,42,0.07);}
+.fta{resize:vertical;min-height:76px;}
+.fs option{background:var(--surface);}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.div{height:1px;background:var(--border2);margin:8px 0;}
+.sec-hdr{display:flex;align-items:center;gap:8px;padding:6px 0;margin-top:4px;}
+.sec-line{flex:1;height:1px;background:var(--border2);}
+.sec-label{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+.ach-card{background:linear-gradient(135deg,rgba(209,34,42,0.05),rgba(30,111,168,0.05));
+  border:1.5px solid rgba(209,34,42,0.2);border-radius:12px;
+  padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:8px;width:100%;}
+.ach-icon{font-size:22px;}
+.ach-title{font-family:'Instrument Serif',serif;font-size:13px;color:var(--red2);}
+.ach-desc{font-size:11px;color:var(--text-muted);}
+</style>
+</head>
+<body>
+<div class="pulse-ring"></div>
+
+<div class="window">
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-inner">
+      <div class="hdr-av">🏥</div>
+      <div>
+        <div class="hdr-title">MediBot</div>
+        <div class="hdr-sub"><div class="live-dot"></div>SMART MEDICAL ASSISTANT · 24/7</div>
+      </div>
+      <div class="hdr-right">
+        <div class="hbtn hbtn-rel" onclick="openCart()" title="My Orders">🛒<span class="hbtn-badge" id="cartBadge">0</span></div>
+        <div class="hbtn" onclick="openSearch()" title="Search">🔍</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMERGENCY STRIP -->
+  <div class="emrg-strip" id="emrgStrip">
+    <div class="es-dot"></div>
+    <span class="es-text" id="emrgText">🚨 Emergency mode active</span>
+    <span class="es-change" onclick="closeEmergency()">Dismiss</span>
+  </div>
+
+  <!-- CONTEXT STRIP -->
+  <div class="ctx-strip" id="ctxStrip">
+    <span class="ctx-pill cp-patient" id="ctxPatient">👤 Patient</span>
+    <span class="ctx-pill cp-location" id="ctxLoc">📍 Location</span>
+    <span class="ctx-pill cp-status" id="ctxStatus">✅ Active</span>
+  </div>
+
+  <div class="msgs" id="msgs"></div>
+
+  <div class="inp-area">
+    <div class="inp-box">
+      <textarea class="txt-inp" id="inp" rows="1" placeholder="Describe symptoms or ask anything..."></textarea>
+    </div>
+    <button class="snd" onclick="send()">➤</button>
+  </div>
+</div>
+
+<!-- ══ EMERGENCY SHEET ══ -->
+<div class="overlay" id="ovEmerg">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🚨 Emergency — Call for Help</div><div class="sh-close" onclick="closeOv('ovEmerg')">✕</div></div>
+    <div class="sh-body">
+      <div style="background:rgba(209,34,42,0.06);border:1.5px solid rgba(209,34,42,0.25);border-radius:12px;padding:13px;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:800;color:var(--red2);margin-bottom:3px;">⚠️ Life-Threatening Emergency?</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">If someone is in immediate danger, <b style="color:var(--text);">call 112 or 199 now</b> while we connect you to our team.</div>
+      </div>
+      <div class="fg"><label class="fl">Patient Name</label><input class="fi" id="emName" placeholder="Patient full name"></div>
+      <div class="fg"><label class="fl">Your Phone / WhatsApp</label><input class="fi" id="emPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Emergency Type</label>
+        <select class="fs" id="emType">
+          <option>Cardiac arrest / Chest pain</option><option>Difficulty breathing</option>
+          <option>Severe bleeding / Trauma</option><option>Unconscious / Unresponsive</option>
+          <option>Stroke (sudden weakness / speech loss)</option><option>Severe allergic reaction</option>
+          <option>Poisoning / Overdose</option><option>Seizure / Convulsion</option>
+          <option>Choking</option><option>Severe burn</option><option>Childbirth emergency</option>
+          <option>Other emergency</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Exact Location</label><textarea class="fta" id="emLoc" placeholder="Street address, nearest landmark, area..."></textarea></div>
+      <div class="fg"><label class="fl">Number of Patients</label>
+        <select class="fs" id="emCount"><option>1</option><option>2</option><option>3</option><option>4+</option></select>
+      </div>
+    </div>
+    <div class="sh-foot">
+      <button class="emrg-btn" onclick="submitEmergency()">🚨 Alert Emergency Team via WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AMBULANCE SHEET ══ -->
+<div class="overlay" id="ovAmbulance">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🚑 Order Ambulance</div><div class="sh-close" onclick="closeOv('ovAmbulance')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Patient Name</label><input class="fi" id="ambName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="ambPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Pickup Location</label><textarea class="fta" id="ambPickup" placeholder="Street, building, landmark..."></textarea></div>
+      <div class="fg"><label class="fl">Destination Hospital</label>
+        <select class="fs" id="ambDest">
+          <option>Nearest Hospital (Auto)</option><option>National Hospital Abuja</option>
+          <option>University of Abuja Teaching Hospital</option><option>Wuse General Hospital</option>
+          <option>Maitama District Hospital</option><option>Garki Hospital</option>
+          <option>Asokoro District Hospital</option><option>Other (specify in notes)</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Ambulance Type</label>
+        <select class="fs" id="ambType">
+          <option>Basic Life Support (BLS) Ambulance</option>
+          <option>Advanced Life Support (ALS) Ambulance</option>
+          <option>Patient Transport (Non-emergency)</option>
+          <option>Air Ambulance (Critical)</option>
+        </select>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Urgency</label>
+          <select class="fs" id="ambUrgency"><option>🔴 Immediate (ASAP)</option><option>🟡 Urgent (30 min)</option><option>🟢 Scheduled</option></select>
+        </div>
+        <div class="fg"><label class="fl">Condition Brief</label><input class="fi" id="ambCondition" placeholder="e.g. Chest pain"></div>
+      </div>
+      <div class="fg"><label class="fl">Additional Notes</label><textarea class="fta" id="ambNotes" placeholder="Medical history, allergies, special needs..."></textarea></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitAmbulance()">📲 Request Ambulance via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ BOOK APPOINTMENT SHEET ══ -->
+<div class="overlay" id="ovAppt">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">📅 Book Appointment</div><div class="sh-close" onclick="closeOv('ovAppt')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Patient Name</label><input class="fi" id="apName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="apPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Age</label><input class="fi" id="apAge" type="number" placeholder="e.g. 35"></div>
+      <div class="fg"><label class="fl">Hospital / Clinic</label>
+        <select class="fs" id="apHosp">
+          <option>National Hospital Abuja</option><option>Maitama District Hospital</option>
+          <option>Wuse General Hospital</option><option>Asokoro District Hospital</option>
+          <option>Garki Hospital</option><option>Kubwa General Hospital</option>
+          <option>University of Abuja Teaching Hospital</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Specialty / Department</label>
+        <select class="fs" id="apSpec">
+          <option>General Practice (GP)</option><option>Cardiology (Heart)</option>
+          <option>Orthopaedics (Bones/Joints)</option><option>Gynaecology / Obstetrics</option>
+          <option>Paediatrics (Children)</option><option>Neurology (Brain/Nerves)</option>
+          <option>Ophthalmology (Eye)</option><option>ENT (Ear, Nose, Throat)</option>
+          <option>Dermatology (Skin)</option><option>Urology</option>
+          <option>Oncology (Cancer)</option><option>Psychiatry / Mental Health</option>
+          <option>Dentistry</option><option>Emergency Medicine</option>
+        </select>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Preferred Date</label><input class="fi" id="apDate" type="date"></div>
+        <div class="fg"><label class="fl">Preferred Time</label><input class="fi" id="apTime" type="time" value="09:00"></div>
+      </div>
+      <div class="fg"><label class="fl">Reason for Visit</label><textarea class="fta" id="apReason" placeholder="Describe your symptoms or reason for appointment..."></textarea></div>
+      <div class="fg"><label class="fl">HMO / Insurance</label>
+        <select class="fs" id="apHMO">
+          <option>Self-pay (No HMO)</option><option>NHIA (National HMO)</option>
+          <option>AIICO</option><option>Hygeia HMO</option><option>AXA Mansard</option>
+          <option>Leadway Assurance</option><option>NNPC/FIRS Health Scheme</option>
+          <option>Other HMO</option>
+        </select>
+      </div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitAppt()">📲 Book Appointment via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ ORDER DRUGS SHEET ══ -->
+<div class="overlay" id="ovDrugs">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">💊 Order Medications</div><div class="sh-close" onclick="closeOv('ovDrugs')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="drName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="drPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Delivery Address</label><textarea class="fta" id="drAddr" placeholder="Street, area, landmark..."></textarea></div>
+      <div class="fg"><label class="fl">Medications Needed</label><textarea class="fta" id="drMeds" placeholder="List medications, dosage, quantity... or upload prescription below"></textarea></div>
+      <div class="fg"><label class="fl">Prescription Available?</label>
+        <select class="fs" id="drRx"><option>Yes — I have a prescription</option><option>No — OTC medications only</option><option>I need a prescription first</option></select>
+      </div>
+      <div class="fg"><label class="fl">Delivery Time</label>
+        <select class="fs" id="drTime"><option>Express (2–4 hours)</option><option>Standard (Same day)</option><option>Next day delivery</option><option>Pickup at pharmacy</option></select>
+      </div>
+      <div class="fg"><label class="fl">Payment Method</label>
+        <select class="fs" id="drPay"><option>Bank Transfer</option><option>Pay on Delivery</option><option>Card Payment</option><option>HMO / Insurance</option></select>
+      </div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitDrugs()">📲 Order Medications via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ PAY SERVICES SHEET ══ -->
+<div class="overlay" id="ovPay">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">💳 Pay for Medical Services</div><div class="sh-close" onclick="closeOv('ovPay')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Patient Name</label><input class="fi" id="pyName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="pyPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Hospital / Provider</label>
+        <select class="fs" id="pyHosp">
+          <option>National Hospital Abuja</option><option>Maitama District Hospital</option>
+          <option>Wuse General Hospital</option><option>Asokoro District Hospital</option>
+          <option>Garki Hospital</option><option>Private Clinic / Other</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Service / Bill Type</label>
+        <select class="fs" id="pyService">
+          <option>Outpatient Consultation</option><option>Laboratory / Diagnostics</option>
+          <option>Radiology (X-ray, Scan, MRI)</option><option>Surgical Procedure</option>
+          <option>Admission / Inpatient</option><option>Pharmacy / Medications</option>
+          <option>Ambulance Service</option><option>Vaccination</option>
+          <option>Antenatal / Maternity</option><option>Other Medical Bill</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Amount (₦)</label><input class="fi" id="pyAmount" type="number" placeholder="e.g. 15000"></div>
+      <div class="fg"><label class="fl">Invoice / Receipt No. (optional)</label><input class="fi" id="pyInvoice" placeholder="e.g. INV-20240318"></div>
+      <div class="fg"><label class="fl">Payment Method</label>
+        <select class="fs" id="pyMethod">
+          <option>Bank Transfer</option><option>Card Payment (Online)</option>
+          <option>USSD</option><option>HMO / Insurance Claim</option>
+          <option>NHIA Card</option><option>Crypto (USDT)</option>
+        </select>
+      </div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitPayment()">📲 Process Payment via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ TELECONSULT SHEET ══ -->
+<div class="overlay" id="ovTele">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">📞 Teleconsultation</div><div class="sh-close" onclick="closeOv('ovTele')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Patient Name</label><input class="fi" id="tlName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Age & Gender</label>
+        <div style="display:flex;gap:8px;">
+          <input class="fi" id="tlAge" type="number" placeholder="Age" style="flex:1;">
+          <select class="fs" id="tlGender" style="flex:1;"><option>Male</option><option>Female</option><option>Other</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="tlPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Specialty Needed</label>
+        <select class="fs" id="tlSpec">
+          <option>General Practitioner</option><option>Cardiologist</option>
+          <option>Gynaecologist</option><option>Paediatrician</option>
+          <option>Neurologist</option><option>Psychiatrist / Therapist</option>
+          <option>Dermatologist</option><option>Nutritionist / Dietitian</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Consultation Mode</label>
+        <select class="fs" id="tlMode"><option>WhatsApp Video Call</option><option>WhatsApp Voice Call</option><option>Zoom / Google Meet</option><option>Text / Chat only</option></select>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Preferred Date</label><input class="fi" id="tlDate" type="date"></div>
+        <div class="fg"><label class="fl">Preferred Time</label><input class="fi" id="tlTime" type="time" value="10:00"></div>
+      </div>
+      <div class="fg"><label class="fl">Describe Your Symptoms</label><textarea class="fta" id="tlSymptoms" placeholder="Describe your symptoms, how long, severity..."></textarea></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitTele()">📲 Book Teleconsult via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ LAB TEST SHEET ══ -->
+<div class="overlay" id="ovLab">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🔬 Lab Tests & Diagnostics</div><div class="sh-close" onclick="closeOv('ovLab')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Patient Name</label><input class="fi" id="lbName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="lbPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Tests Required</label>
+        <select class="fs" id="lbTests">
+          <option>Full Blood Count (FBC)</option><option>Malaria Parasite Test</option>
+          <option>Blood Group & Genotype</option><option>HIV Test</option>
+          <option>Hepatitis B & C</option><option>Random Blood Sugar</option>
+          <option>Fasting Blood Sugar</option><option>HBA1c (Diabetes)</option>
+          <option>Lipid Profile</option><option>Kidney Function Test (KFT)</option>
+          <option>Liver Function Test (LFT)</option><option>Thyroid Function Test</option>
+          <option>Pregnancy Test (hCG)</option><option>Urinalysis</option>
+          <option>Stool Analysis</option><option>COVID-19 PCR / Antigen</option>
+          <option>X-Ray</option><option>Ultrasound Scan</option>
+          <option>CT Scan</option><option>MRI Scan</option>
+          <option>ECG (Heart)</option><option>Other (specify below)</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Additional Tests / Notes</label><textarea class="fta" id="lbNotes" placeholder="Specify additional tests or doctor's instructions..."></textarea></div>
+      <div class="fg"><label class="fl">Service Type</label>
+        <select class="fs" id="lbService"><option>Home Sample Collection</option><option>Walk-in at Lab/Hospital</option><option>Hospital Lab (with referral)</option></select>
+      </div>
+      <div class="fg"><label class="fl">Preferred Date</label><input class="fi" id="lbDate" type="date"></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitLab()">📲 Request Lab Test via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ MENTAL HEALTH SHEET ══ -->
+<div class="overlay" id="ovMental">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🧠 Mental Health Support</div><div class="sh-close" onclick="closeOv('ovMental')">✕</div></div>
+    <div class="sh-body">
+      <div style="background:rgba(30,111,168,0.06);border:1px solid rgba(30,111,168,0.18);border-radius:10px;padding:12px;margin-bottom:14px;font-size:12.5px;color:var(--text-muted);line-height:1.6;">
+        💙 Your mental health matters. All sessions are <b style="color:var(--text);">completely confidential</b>. You are not alone.
+      </div>
+      <div class="fg"><label class="fl">Your Name (or Anonymous)</label><input class="fi" id="mhName" placeholder="Name or 'Anonymous'"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="mhPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">What are you experiencing?</label>
+        <select class="fs" id="mhType">
+          <option>Anxiety / Panic attacks</option><option>Depression / Sadness</option>
+          <option>Stress / Burnout</option><option>Grief / Bereavement</option>
+          <option>Relationship issues</option><option>Trauma / PTSD</option>
+          <option>Sleep disorders</option><option>Addiction / Substance use</option>
+          <option>Suicidal thoughts (crisis support)</option><option>General wellbeing check</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Session Type</label>
+        <select class="fs" id="mhSession"><option>WhatsApp Chat (Text)</option><option>Voice Call</option><option>Video Session</option><option>In-person Therapy</option></select>
+      </div>
+      <div class="fg"><label class="fl">Tell us more (optional)</label><textarea class="fta" id="mhDesc" placeholder="Share what you're going through at your own pace..."></textarea></div>
+    </div>
+    <div class="sh-foot">
+      <button class="wa-btn" onclick="submitMental()">📲 Connect with Therapist via WhatsApp</button>
+      <button class="wa-btn wa-ghost" style="margin-top:8px;" onclick="callCrisis()">🆘 Crisis Helpline (Free)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REPORT SHEET ══ -->
+<div class="overlay" id="ovReport">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">📊 Medical Report / Record</div><div class="sh-close" onclick="closeOv('ovReport')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Patient Name</label><input class="fi" id="rpName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="rpPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Request Type</label>
+        <select class="fs" id="rpType">
+          <option>Medical Summary / History</option><option>Lab Result Retrieval</option>
+          <option>Radiology Report</option><option>Discharge Summary</option>
+          <option>Referral Letter</option><option>Insurance Pre-authorization</option>
+          <option>Death Certificate</option><option>Medical Fitness Certificate</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Hospital / Provider</label><input class="fi" id="rpHosp" placeholder="Name of hospital or clinic"></div>
+      <div class="fg"><label class="fl">Date of Service (approx)</label><input class="fi" id="rpDate" type="date"></div>
+      <div class="fg"><label class="fl">Purpose of Request</label><textarea class="fta" id="rpPurpose" placeholder="Why do you need this report?..."></textarea></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitReport()">📲 Request Report via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ FEEDBACK SHEET ══ -->
+<div class="overlay" id="ovFeedback">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">⭐ Rate Our Service</div><div class="sh-close" onclick="closeOv('ovFeedback')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="fbName" placeholder="Name (optional)"></div>
+      <div class="fg"><label class="fl">Service Reviewed</label><input class="fi" id="fbService" placeholder="e.g. Ambulance, Doctor Consult, Pharmacy"></div>
+      <div class="fg"><label class="fl">Rating</label>
+        <div style="display:flex;gap:10px;margin-top:6px;" id="starRow">
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(1)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(2)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(3)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(4)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(5)">⭐</span>
+        </div>
+        <input type="hidden" id="fbStars" value="5">
+      </div>
+      <div class="fg"><label class="fl">Your Feedback</label><textarea class="fta" id="fbText" placeholder="Tell us about your experience..."></textarea></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitFeedback()">📲 Submit Feedback via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ SEARCH SHEET ══ -->
+<div class="overlay" id="ovSearch">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🔍 Search Services</div><div class="sh-close" onclick="closeOv('ovSearch')">✕</div></div>
+    <div class="sh-body">
+      <input class="fi" id="srchInp" placeholder="Search services, drugs, hospitals..." oninput="liveSearch(this.value)" style="margin-bottom:12px;">
+      <div id="srchRes"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CART SHEET ══ -->
+<div class="overlay" id="ovCart">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🛒 My Orders</div><div class="sh-close" onclick="closeOv('ovCart')">✕</div></div>
+    <div class="sh-body" id="cartBody"></div>
+    <div class="sh-foot" id="cartFoot"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════
+// CONFIG
+const WA = '2348000000000'; // ← Change to your WhatsApp number
+const CRISIS_LINE = '08000-HEALTH'; // National crisis line
+
+// ════════════════════════════════
+// DATA
+// ════════════════════════════════
+const hospitals = [
+  {id:'nh',icon:'🏥',name:'National Hospital',loc:'Central Area, Abuja',type:'FEDERAL TERTIARY',tag:'24h',tag2:'emrg'},
+  {id:'mh',icon:'🏨',name:'Maitama District Hospital',loc:'Maitama, Abuja',type:'DISTRICT HOSPITAL',tag:'open',tag2:''},
+  {id:'wg',icon:'🏪',name:'Wuse General Hospital',loc:'Wuse, Abuja',type:'GENERAL HOSPITAL',tag:'open',tag2:'24h'},
+  {id:'as',icon:'🏦',name:'Asokoro District Hospital',loc:'Asokoro, Abuja',type:'DISTRICT HOSPITAL',tag:'open',tag2:''},
+  {id:'gk',icon:'🏩',name:'Garki Hospital',loc:'Garki, Abuja',type:'GENERAL HOSPITAL',tag:'24h',tag2:'emrg'},
+  {id:'ub',icon:'🎓',name:'UATH',loc:'Gwagwalada, Abuja',type:'TEACHING HOSPITAL',tag:'24h',tag2:''},
+];
+
+const services = [
+  {id:'s1',icon:'🚨',name:'Emergency Response',desc:'Immediate dispatch of emergency medical team to your location.',cat:'emrg',price:'FREE',tag:'24/7 Available',tag2:'Fast'},
+  {id:'s2',icon:'🚑',name:'Ambulance Service',desc:'Basic and advanced life support ambulances with trained paramedics.',cat:'amb',price:'From ₦15,000',tag:'Available',tag2:'GPS Tracked'},
+  {id:'s3',icon:'📅',name:'Doctor Appointment',desc:'Book consultations with specialists across all medical departments.',cat:'consult',price:'From ₦3,500',tag:'Same Day',tag2:'HMO Accepted'},
+  {id:'s4',icon:'📞',name:'Teleconsultation',desc:'Video/voice consultations with licensed doctors from your home.',cat:'consult',price:'From ₦2,500',tag:'Online',tag2:'24/7'},
+  {id:'s5',icon:'💊',name:'Drug Delivery',desc:'Same-day prescription and OTC medication delivery to your door.',cat:'pharm',price:'From ₦500 delivery',tag:'Express 2-4hr',tag2:'Verified Pharmacy'},
+  {id:'s6',icon:'🔬',name:'Lab Tests & Scans',desc:'Home sample collection and walk-in diagnostics across 50+ tests.',cat:'lab',price:'From ₦2,000',tag:'Home Visit',tag2:'NAFDAC Certified'},
+  {id:'s7',icon:'💉',name:'Vaccination & Immunisation',desc:'All WHO-recommended vaccines including travel and child vaccines.',cat:'pharm',price:'From ₦3,000',tag:'Available',tag2:'NAFDAC Approved'},
+  {id:'s8',icon:'🧠',name:'Mental Health & Therapy',desc:'Confidential therapy sessions with licensed psychologists.',cat:'consult',price:'From ₦4,000',tag:'Private',tag2:'Confidential'},
+  {id:'s9',icon:'🤱',name:'Antenatal & Maternity',desc:'Full antenatal care packages, delivery support and postnatal care.',cat:'consult',price:'From ₦25,000',tag:'Package',tag2:'Midwife Available'},
+  {id:'s10',icon:'🦷',name:'Dental Services',desc:'Consultations, fillings, extractions, teeth cleaning and whitening.',cat:'consult',price:'From ₦4,500',tag:'Available',tag2:''},
+  {id:'s11',icon:'👁️',name:'Eye Care / Optometry',desc:'Eye exams, prescription glasses, contact lenses and eye surgery referrals.',cat:'consult',price:'From ₦3,500',tag:'Available',tag2:''},
+  {id:'s12',icon:'🩺',name:'Home Visit Doctor',desc:'Certified GP visits to your home for consultations, IV, injections.',cat:'consult',price:'From ₦8,000',tag:'Home Visit',tag2:''},
+];
+
+const drugs = [
+  {id:'d1',icon:'💊',name:'Paracetamol 500mg',brand:'Panadol/Generic',price:'₦500',num:500,cat:'OTC'},
+  {id:'d2',icon:'🔵',name:'Amoxicillin 500mg (10 caps)',brand:'Ampiclox / Generic',price:'₦2,500',num:2500,cat:'Rx'},
+  {id:'d3',icon:'🩺',name:'Metformin 500mg (30 tabs)',brand:'Glucophage',price:'₦3,800',num:3800,cat:'Rx'},
+  {id:'d4',icon:'❤️',name:'Amlodipine 5mg (30 tabs)',brand:'Norvasc / Generic',price:'₦4,200',num:4200,cat:'Rx'},
+  {id:'d5',icon:'🌡️',name:'Ibuprofen 400mg (10 tabs)',brand:'Brufen / Advil',price:'₦700',num:700,cat:'OTC'},
+  {id:'d6',icon:'💉',name:'Artesunate + Amodiaquine',brand:'Coartem / ASAQ',price:'₦1,800',num:1800,cat:'Rx'},
+  {id:'d7',icon:'😴',name:'Vitamin C 1000mg (30 tabs)',brand:'Berocca / Generic',price:'₦3,500',num:3500,cat:'OTC'},
+  {id:'d8',icon:'🧴',name:'Omeprazole 20mg (30 caps)',brand:'Losec / Prilosec',price:'₦2,900',num:2900,cat:'Rx'},
+  {id:'d9',icon:'🌿',name:'Folic Acid 5mg (30 tabs)',brand:'Generic',price:'₦800',num:800,cat:'OTC'},
+  {id:'d10',icon:'🔴',name:'Salbutamol Inhaler 100mcg',brand:'Ventolin',price:'₦5,500',num:5500,cat:'Rx'},
+];
+
+const firstAidGuides = {
+  cpr:{title:'CPR — Cardiac Arrest',steps:[
+    {t:'Check Safety & Responsiveness',d:'Ensure the scene is safe. Tap the person\'s shoulders firmly and shout "Are you OK?"'},
+    {t:'Call for Help',d:'Shout for someone to call <b>112</b> immediately. Activate speakerphone if alone.'},
+    {t:'30 Chest Compressions',d:'Place hands on centre of chest. Push hard and fast — at least <b>5cm deep</b>, 100–120/min.'},
+    {t:'2 Rescue Breaths',d:'Tilt head back, lift chin, pinch nose, cover mouth and give <b>2 full breaths</b> for 1 second each.'},
+    {t:'Continue Until Help Arrives',d:'Keep repeating <b>30 compressions : 2 breaths</b> until EMS arrives or AED is available.'},
+  ]},
+  choking:{title:'Choking — Adult',steps:[
+    {t:'Encourage Coughing',d:'If person is coughing forcefully, encourage them to keep coughing — do NOT intervene yet.'},
+    {t:'5 Back Blows',d:'Stand behind, lean them forward and give <b>5 sharp blows</b> between shoulder blades with heel of hand.'},
+    {t:'5 Abdominal Thrusts',d:'Stand behind, make a fist above navel, grasp with other hand and thrust <b>sharply inward and upward</b>.'},
+    {t:'Alternate & Repeat',d:'Alternate between 5 back blows and 5 abdominal thrusts until object is dislodged.'},
+    {t:'Call 112 If Unconscious',d:'If person loses consciousness, call <b>112</b> immediately and begin CPR.'},
+  ]},
+  bleeding:{title:'Severe Bleeding',steps:[
+    {t:'Apply Direct Pressure',d:'Use a clean cloth or bandage. Press <b>firmly and continuously</b> on the wound — do not remove the cloth.'},
+    {t:'Elevate the Wound',d:'If possible, raise the injured area <b>above the level of the heart</b> to slow blood flow.'},
+    {t:'Add More Layers',d:'If blood soaks through, add more cloth on top. Do NOT remove the first layer.'},
+    {t:'Apply a Tourniquet (Limbs Only)',d:'If bleeding is life-threatening on an arm or leg, apply a tourniquet <b>5–7 cm above the wound</b>. Note the time.'},
+    {t:'Call Emergency Services',d:'Call <b>112</b> immediately. Keep the patient calm, warm and lying down until help arrives.'},
+  ]},
+  burns:{title:'Burns — First Aid',steps:[
+    {t:'Cool the Burn',d:'Run <b>cool (not cold) water</b> over the burned area for at least 20 minutes. Do NOT use ice.'},
+    {t:'Remove Jewellery/Clothing',d:'Carefully remove rings, watches and clothing from near the burn before swelling starts.'},
+    {t:'Cover Loosely',d:'Cover with a <b>clean, non-fluffy material</b> (cling film is ideal). Do NOT use cotton wool or adhesive bandage.'},
+    {t:'Do NOT Burst Blisters',d:'Blisters protect against infection. Never pop or peel them.'},
+    {t:'Seek Medical Help',d:'Call <b>112</b> for large, deep or facial burns. Do NOT apply butter, toothpaste or cream.'},
+  ]},
+  stroke:{title:'Stroke — FAST Test',steps:[
+    {t:'F — FACE',d:'Ask the person to smile. Does one side of their <b>face droop</b>?'},
+    {t:'A — ARMS',d:'Ask them to raise both arms. Does one <b>arm drift downward</b>?'},
+    {t:'S — SPEECH',d:'Ask them to repeat a simple phrase. Is their speech <b>slurred or strange</b>?'},
+    {t:'T — TIME',d:'If you spot ANY of these signs, call <b>112 immediately</b>. Time lost = brain cells lost.'},
+    {t:'While Waiting',d:'Keep the person calm, do NOT give food/water, note the exact time symptoms started.'},
+  ]},
+};
+
+const faqs = {
+  hmo:{q:'🏥 HMO / Insurance',a:'We accept most major HMOs including <b>NHIA, Hygeia, AXA Mansard, AIICO, Leadway, NNPC Health Scheme</b> and more.<br><br>Present your HMO card at the hospital or mention your HMO when booking with us. We will verify your cover and liaise with your insurer.'},
+  cost:{q:'💰 Service Costs',a:'Costs vary by service:<br>• GP Consultation: <b>₦3,500 – ₦8,000</b><br>• Specialist: <b>₦8,000 – ₦25,000</b><br>• Ambulance: <b>₦15,000 – ₦80,000</b><br>• Lab Tests: <b>₦2,000 – ₦45,000</b><br>• Drug Delivery: <b>₦500 delivery fee</b><br><br>HMO and government subsidies available.'},
+  delivery:{q:'🚚 Drug Delivery',a:'We deliver medications across Abuja FCT:<br>• <b>Express 2–4 hours</b>: Available for verified pharmacies<br>• <b>Same day</b>: Order before 3pm<br>• <b>Next day</b>: For specialised medications<br><br>Prescription medications require a valid prescription. We verify with licensed pharmacists.'},
+  emergency:{q:'🚨 Emergency Response',a:'Emergency services are available <b>24/7</b>.<br><br>For life-threatening emergencies, <b>call 112 or 199 first</b>. Our MediBot team will dispatch emergency responders and keep you connected via WhatsApp throughout.<br><br>Response time: <b>8–15 minutes</b> in FCT Abuja.'},
+};
+
+// ════════════════════════════════
+// STATE
+// ════════════════════════════════
+let cart=[], starVal=5, patientProfile=null;
+const WA_NUM=WA;
+
+// ════════════════════════════════
+// WA
+// ════════════════════════════════
+function toWA(msg){window.open(`https://wa.me/${WA_NUM}?text=${encodeURIComponent(msg)}`,'_blank');}
+function ts(){return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});}
+
+// ════════════════════════════════
+// CHAT
+// ════════════════════════════════
+function botMsg(html,extra=''){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div');d.className='msg bot';
+  d.innerHTML=`<div class="av">🏥</div><div class="mcol"><div class="bbl">${html}</div>${extra}<div class="mtime">${ts()}</div></div>`;
+  a.appendChild(d);a.scrollTop=a.scrollHeight;
+}
+function userMsg(t){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div');d.className='msg user';
+  d.innerHTML=`<div class="av">👤</div><div class="mcol"><div class="bbl">${t}</div><div class="mtime">${ts()}</div></div>`;
+  a.appendChild(d);a.scrollTop=a.scrollHeight;
+}
+function typing(cb,ms=750){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div');d.className='msg bot';d.id='typ';
+  d.innerHTML=`<div class="av">🏥</div><div class="mcol"><div class="tbbl"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
+  a.appendChild(d);a.scrollTop=a.scrollHeight;
+  setTimeout(()=>{document.getElementById('typ')?.remove();cb();},ms+Math.random()*200);
+}
+
+// ════════════════════════════════
+// CONTEXT STRIP
+// ════════════════════════════════
+function updateCtx(name,loc,status){
+  if(name) document.getElementById('ctxPatient').textContent=`👤 ${name}`;
+  if(loc) document.getElementById('ctxLoc').textContent=`📍 ${loc}`;
+  if(status) document.getElementById('ctxStatus').textContent=status;
+  document.getElementById('ctxStrip').classList.add('show');
+}
+
+function closeEmergency(){
+  document.getElementById('emrgStrip').classList.remove('show');
+}
+
+// ════════════════════════════════
+// GALLERY
+// ════════════════════════════════
+function buildGallery(items,title){
+  if(!items.length) return '';
+  window._galItems=items; window._galIdx=0;
+  const bgMap={emrg:'linear-gradient(135deg,#1A0507,#3D0B10)',amb:'linear-gradient(135deg,#1A1200,#3D2B00)',consult:'linear-gradient(135deg,#0A1525,#0F2640)',pharm:'linear-gradient(135deg,#061A10,#0D3320)',lab:'linear-gradient(135deg,#071818,#0A2E2E)'};
+  const slides=items.map((s,i)=>`
+    <div class="gal-slide">
+      <div class="svc-card">
+        <div class="svc-top" style="background:${bgMap[s.cat]||bgMap.consult};" onclick="openServiceDetail('${s.id}')">
+          <span style="font-size:68px;position:relative;z-index:0;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.4));">${s.icon}</span>
+          <span class="svc-cat sc-${s.cat}">${s.cat==='emrg'?'EMERGENCY':s.cat==='amb'?'AMBULANCE':s.cat==='pharm'?'PHARMACY':s.cat==='lab'?'DIAGNOSTICS':'MEDICAL'}</span>
+          <span class="svc-price-badge">💰 ${s.price}</span>
+        </div>
+        <div class="svc-body">
+          <div class="svc-name">${s.icon} ${s.name}</div>
+          <div class="svc-desc">${s.desc}</div>
+          <div class="svc-meta">
+            <span class="svc-tag st-avail">${s.tag}</span>
+            ${s.tag2?`<span class="svc-tag st-fast">${s.tag2}</span>`:''}
+            <span class="svc-tag st-24h">${s.price}</span>
+          </div>
+          <div class="svc-btns">
+            <button class="svc-btn btn-ghost" onclick="openServiceDetail('${s.id}')">ℹ️ Info</button>
+            <button class="svc-btn ${s.cat==='emrg'?'btn-red':s.cat==='pharm'||s.cat==='lab'?'btn-blue':'btn-red'}" onclick="bookService('${s.id}')">Book Now</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+  const dots=items.map((_,i)=>`<div class="gdot ${i===0?'on':''}" onclick="goSlide(${i})" id="gd-${i}"></div>`).join('');
+  return `<div class="gal-wrap">
+    <div class="gal-hdr"><span class="gal-title">${title} — ${items.length}</span><span class="gal-cnt" id="galCnt">1 / ${items.length}</span></div>
+    <div class="gal-outer" id="galOut"><div class="gal-track" id="galTrk">${slides}</div></div>
+    <div class="gal-nav">
+      <div class="garrow" onclick="shiftGal(-1)">◀</div>
+      <div class="gdots" id="galDts">${dots}</div>
+      <div class="garrow" onclick="shiftGal(1)">▶</div>
+    </div>
+  </div>`;
+}
+
+function shiftGal(d){const items=window._galItems||[];if(!items.length)return;window._galIdx=(window._galIdx+d+items.length)%items.length;updateGal();}
+function goSlide(i){window._galIdx=i;updateGal();}
+function updateGal(){
+  const i=window._galIdx,items=window._galItems||[];
+  const tr=document.getElementById('galTrk');if(tr)tr.style.transform=`translateX(-${i*100}%)`;
+  const cnt=document.getElementById('galCnt');if(cnt)cnt.textContent=`${i+1} / ${items.length}`;
+  document.querySelectorAll('.gdot').forEach((d,j)=>d.classList.toggle('on',j===i));
+}
+let tS=0;
+document.addEventListener('touchstart',e=>{if(e.target.closest('#galOut'))tS=e.touches[0].clientX;});
+document.addEventListener('touchend',e=>{if(e.target.closest('#galOut')&&tS){const dx=e.changedTouches[0].clientX-tS;if(Math.abs(dx)>40)shiftGal(dx<0?1:-1);tS=0;}});
+
+// ════════════════════════════════
+// SERVICE DETAIL
+// ════════════════════════════════
+function openServiceDetail(id){
+  const s=services.find(x=>x.id===id);if(!s)return;
+  typing(()=>{
+    botMsg(`<strong>${s.icon} ${s.name}</strong>`,
+      `<div class="info-card">
+        <div class="ir"><div class="ir-icon">📋</div><div class="ir-text"><b>Description:</b> ${s.desc}</div></div>
+        <div class="ir"><div class="ir-icon">💰</div><div class="ir-text"><b>Cost:</b> ${s.price}</div></div>
+        <div class="ir"><div class="ir-icon">⏰</div><div class="ir-text"><b>Availability:</b> ${s.tag} · ${s.tag2||'Contact for details'}</div></div>
+        <div class="ir"><div class="ir-icon">✅</div><div class="ir-text"><b>HMO Accepted:</b> Yes — most major schemes</div></div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="bookService('${s.id}')">📲 Book Now</div>
+        <div class="chip blue" onclick="go('pay')">💳 Pay Online</div>
+      </div>`);
+  },500);
+}
+
+function bookService(id){
+  const s=services.find(x=>x.id===id);if(!s)return;
+  userMsg(`Book: ${s.name}`);
+  switch(s.cat){
+    case 'emrg': openOv('ovEmerg'); break;
+    case 'amb': openOv('ovAmbulance'); break;
+    case 'pharm':
+      if(s.id==='s7') doVaccine();
+      else openOv('ovDrugs');
+      break;
+    case 'lab': openOv('ovLab'); break;
+    case 'consult':
+      if(s.id==='s4') openOv('ovTele');
+      else if(s.id==='s8') openOv('ovMental');
+      else openOv('ovAppt');
+      break;
+    default: openOv('ovAppt');
+  }
+}
+
+// ════════════════════════════════
+// MAIN MENU
+// ════════════════════════════════
+function mainMenu(){
+  return `<div class="chips">
+    <div class="chip" style="background:var(--red-g);border-color:rgba(209,34,42,0.4);animation:emergePulse 2.5s ease-in-out infinite;" onclick="go('emergency')">🚨 Emergency</div>
+    <div class="chip" onclick="go('ambulance')">🚑 Ambulance</div>
+    <div class="chip" onclick="go('firstaid')">🩹 First Aid Guide</div>
+    <div class="chip blue" onclick="go('appointment')">📅 Book Appointment</div>
+    <div class="chip blue" onclick="go('tele')">📞 Teleconsult</div>
+    <div class="chip green" onclick="go('drugs')">💊 Order Drugs</div>
+    <div class="chip green" onclick="go('lab')">🔬 Lab Tests</div>
+    <div class="chip" onclick="go('pay')">💳 Pay for Services</div>
+    <div class="chip teal" onclick="go('mental')">🧠 Mental Health</div>
+    <div class="chip" onclick="go('report')">📊 Medical Reports</div>
+    <div class="chip" onclick="go('hospitals')">🏥 Find Hospital</div>
+    <div class="chip amber" onclick="go('vaccine')">💉 Vaccination</div>
+    <div class="chip" onclick="go('vitals')">❤️ Check Vitals</div>
+    <div class="chip teal" onclick="go('hmo')">🏥 HMO / Insurance</div>
+    <div class="chip" onclick="go('services')">⚕️ All Services</div>
+    <div class="chip" onclick="go('feedback')">⭐ Feedback</div>
+  </div>`;
+}
+
+function go(a){
+  const lbl={emergency:'🚨 Emergency Services',ambulance:'🚑 Order Ambulance',firstaid:'🩹 First Aid Guide',appointment:'📅 Book Appointment',tele:'📞 Teleconsultation',drugs:'💊 Order Drugs',lab:'🔬 Lab Tests & Diagnostics',pay:'💳 Pay for Services',mental:'🧠 Mental Health Support',report:'📊 Medical Reports',hospitals:'🏥 Find Hospital',vaccine:'💉 Vaccination',vitals:'❤️ Check Vitals',hmo:'🏥 HMO / Insurance',services:'⚕️ All Services',feedback:'⭐ Feedback'};
+  if(lbl[a]) userMsg(lbl[a]);
+  switch(a){
+    case 'emergency': doEmergency(); break;
+    case 'ambulance': openOv('ovAmbulance'); break;
+    case 'firstaid': doFirstAid(); break;
+    case 'appointment': openOv('ovAppt'); break;
+    case 'tele': openOv('ovTele'); break;
+    case 'drugs': doDrugs(); break;
+    case 'lab': openOv('ovLab'); break;
+    case 'pay': openOv('ovPay'); break;
+    case 'mental': openOv('ovMental'); break;
+    case 'report': openOv('ovReport'); break;
+    case 'hospitals': doHospitals(); break;
+    case 'vaccine': doVaccine(); break;
+    case 'vitals': doVitals(); break;
+    case 'hmo': showFAQ('hmo'); break;
+    case 'services': doServices(); break;
+    case 'feedback': openOv('ovFeedback'); break;
+  }
+}
+
+// ════════════════════════════════
+// EMERGENCY
+// ════════════════════════════════
+function doEmergency(){
+  document.getElementById('emrgStrip').classList.add('show');
+  document.getElementById('emrgText').textContent='🚨 Emergency mode — team on standby';
+  typing(()=>{
+    botMsg('🚨 <strong>Emergency Services — 24/7 Response</strong><br><br>⚠️ For immediate life-threatening emergencies:<br><strong style="color:var(--red2);font-size:16px;">Call 112 or 199 NOW</strong>',
+      `<button class="emrg-btn" onclick="openOv('ovEmerg')">🚨 Alert Our Emergency Team</button>
+      <div class="info-card" style="margin-top:10px;">
+        <div class="ir"><div class="ir-icon">🚑</div><div class="ir-text"><b>Response Time:</b> 8–15 minutes (FCT Abuja)</div></div>
+        <div class="ir"><div class="ir-icon">📞</div><div class="ir-text"><b>Emergency Hotline:</b> 112 · 199 · 0803-000-0000</div></div>
+        <div class="ir"><div class="ir-icon">🏥</div><div class="ir-text"><b>Nearest Emergency:</b> National Hospital, Maitama District Hospital</div></div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="go('ambulance')">🚑 Order Ambulance</div>
+        <div class="chip" onclick="go('firstaid')">🩹 First Aid Guide</div>
+      </div>`);
+  });
+}
+
+// ════════════════════════════════
+// FIRST AID
+// ════════════════════════════════
+function doFirstAid(){
+  typing(()=>{
+    botMsg('🩹 <strong>First Aid Guide</strong> — Select an emergency:',
+      `<div class="chips">
+        <div class="chip" onclick="showFirstAid('cpr')">🫀 CPR / Cardiac Arrest</div>
+        <div class="chip" onclick="showFirstAid('choking')">😮 Choking</div>
+        <div class="chip" onclick="showFirstAid('bleeding')">🩸 Severe Bleeding</div>
+        <div class="chip" onclick="showFirstAid('burns')">🔥 Burns</div>
+        <div class="chip" onclick="showFirstAid('stroke')">🧠 Stroke (FAST)</div>
+        <div class="chip blue" onclick="doEmergency()">🚨 Call Emergency Now</div>
+      </div>`);
+  });
+}
+
+function showFirstAid(key){
+  const g=firstAidGuides[key];if(!g)return;
+  userMsg(g.title);
+  typing(()=>{
+    botMsg(`🩹 <strong>${g.title}</strong>`,
+      `<div class="fa-card">${g.steps.map((s,i)=>`
+        <div class="fa-step">
+          <div class="fa-num">${i+1}</div>
+          <div class="fa-text"><b>${s.t}</b><br>${s.d}</div>
+        </div>`).join('')}
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" style="background:var(--red-g);border-color:rgba(209,34,42,0.35);animation:emergePulse 2s ease-in-out infinite;" onclick="doEmergency()">🚨 Call Emergency</div>
+        <div class="chip" onclick="go('ambulance')">🚑 Order Ambulance</div>
+        <div class="chip blue" onclick="doFirstAid()">← All Guides</div>
+      </div>`);
+  });
+}
+
+// ════════════════════════════════
+// DRUGS
+// ════════════════════════════════
+function doDrugs(){
+  typing(()=>{
+    botMsg('💊 <strong>Medication Order</strong> — Browse common medications:',
+      `<div class="drug-list">${drugs.slice(0,6).map(d=>`
+        <div class="drug-item">
+          <div class="di-icon">${d.icon}</div>
+          <div class="di-info">
+            <div class="di-name">${d.name}</div>
+            <div class="di-brand">${d.brand} · <span style="font-size:9.5px;padding:1px 5px;border-radius:4px;font-weight:700;background:${d.cat==='Rx'?'rgba(209,34,42,0.1)':'rgba(22,163,74,0.1)'};color:${d.cat==='Rx'?'var(--red2)':'var(--green)'};">${d.cat}</span></div>
+          </div>
+          <div class="di-price">${d.price}</div>
+          <button class="di-add" onclick="addToCart('${d.id}')">+</button>
+        </div>`).join('')}
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip green" onclick="openOv('ovDrugs')">📋 Custom Order / Prescription</div>
+        <div class="chip" onclick="openCart()">🛒 My Cart (${cart.length})</div>
+        <div class="chip blue" onclick="showAllDrugs()">💊 See All Drugs</div>
+      </div>`);
+  });
+}
+
+function showAllDrugs(){
+  userMsg('💊 All Medications');
+  typing(()=>{
+    botMsg('💊 <strong>All Medications Available</strong>',
+      `<div class="drug-list">${drugs.map(d=>`
+        <div class="drug-item">
+          <div class="di-icon">${d.icon}</div>
+          <div class="di-info">
+            <div class="di-name">${d.name}</div>
+            <div class="di-brand">${d.brand} · <span style="font-size:9.5px;padding:1px 5px;border-radius:4px;font-weight:700;background:${d.cat==='Rx'?'rgba(209,34,42,0.1)':'rgba(22,163,74,0.1)'};color:${d.cat==='Rx'?'var(--red2)':'var(--green)'};">${d.cat}</span></div>
+          </div>
+          <div class="di-price">${d.price}</div>
+          <button class="di-add" onclick="addToCart('${d.id}')">+</button>
+        </div>`).join('')}
+      </div>
+      <div class="chips" style="margin-top:8px;"><div class="chip green" onclick="openOv('ovDrugs')">📋 Custom Order</div><div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div></div>`);
+  });
+}
+
+function addToCart(id){
+  const d=drugs.find(x=>x.id===id);if(!d)return;
+  if(!cart.some(c=>c.id===id)){ cart.push(d); updateCartBadge(); }
+  typing(()=>{
+    botMsg(`✅ <strong>${d.name}</strong> added to cart!`,
+      `<div class="chips"><div class="chip green" onclick="openCart()">🛒 Cart (${cart.length})</div><div class="chip" onclick="checkoutCart()">⚡ Checkout</div><div class="chip blue" onclick="doDrugs()">➕ Add More</div></div>`);
+  },350);
+}
+
+function updateCartBadge(){document.getElementById('cartBadge').textContent=cart.length;}
+
+// ════════════════════════════════
+// HOSPITALS
+// ════════════════════════════════
+function doHospitals(){
+  typing(()=>{
+    botMsg('🏥 <strong>Hospitals & Clinics in Abuja</strong>',
+      `<div class="hosp-grid">${hospitals.map(h=>`
+        <div class="hc" onclick="selectHospital('${h.id}',this)">
+          <span class="hc-icon">${h.icon}</span>
+          <div class="hc-name">${h.name}</div>
+          <div class="hc-type">${h.type}</div>
+          <div class="hc-loc" style="font-size:9.5px;color:var(--text-dim);margin-top:2px;">📍 ${h.loc}</div>
+          <span class="hc-tag ht-${h.tag}">${h.tag==='24h'?'24 Hours':h.tag==='open'?'Open Now':'Emergency'}</span>
+        </div>`).join('')}</div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip blue" onclick="openOv('ovAppt')">📅 Book Appointment</div>
+        <div class="chip" onclick="go('ambulance')">🚑 Ambulance</div>
+      </div>`);
+  });
+}
+
+function selectHospital(id,el){
+  const h=hospitals.find(x=>x.id===id);
+  document.querySelectorAll('.hc').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  userMsg(`${h.icon} ${h.name}`);
+  document.getElementById('apHosp').value=h.name;
+  typing(()=>{
+    botMsg(`<strong>${h.icon} ${h.name}</strong><br>📍 ${h.loc} · ${h.type}`,
+      `<div class="chips">
+        <div class="chip blue" onclick="openOv('ovAppt')">📅 Book Appointment</div>
+        <div class="chip" onclick="openOv('ovAmbulance')">🚑 Send Ambulance Here</div>
+        <div class="chip teal" onclick="openOv('ovPay')">💳 Pay Bill</div>
+      </div>`);
+  },500);
+}
+
+// ════════════════════════════════
+// SERVICES GALLERY
+// ════════════════════════════════
+function doServices(){
+  typing(()=>{
+    botMsg('⚕️ <strong>All Medical Services</strong> — Swipe to explore:',
+      buildGallery(services,'All Services')+
+      `<div class="sec-hdr" style="margin-top:8px;"><div class="sec-line"></div><div class="sec-label">Filter by category</div><div class="sec-line"></div></div>
+      <div class="chips">
+        <div class="chip" onclick="filterServices('emrg')">🚨 Emergency</div>
+        <div class="chip amber" onclick="filterServices('amb')">🚑 Ambulance</div>
+        <div class="chip green" onclick="filterServices('pharm')">💊 Pharmacy</div>
+        <div class="chip blue" onclick="filterServices('lab')">🔬 Diagnostics</div>
+        <div class="chip teal" onclick="filterServices('consult')">👨‍⚕️ Consultations</div>
+      </div>`);
+  });
+}
+
+function filterServices(cat){
+  userMsg(cat.toUpperCase());
+  const list=services.filter(s=>s.cat===cat);
+  typing(()=>{botMsg(`<strong>${cat.toUpperCase()}</strong> — ${list.length} services:`,buildGallery(list,cat)+mainMenu());});
+}
+
+// ════════════════════════════════
+// VACCINE
+// ════════════════════════════════
+function doVaccine(){
+  typing(()=>{
+    botMsg('💉 <strong>Vaccination & Immunisation</strong>',
+      `<div class="info-card">
+        <div class="ir"><div class="ir-icon">👶</div><div class="ir-text"><b>Child Immunisation:</b> BCG, OPV, HepB, Penta, PCV, MenA, YF, Measles — ₦3,000–₦8,000/dose</div></div>
+        <div class="ir"><div class="ir-icon">✈️</div><div class="ir-text"><b>Travel Vaccines:</b> Yellow Fever, Typhoid, Meningitis ACWY, Hepatitis A — ₦5,000–₦15,000</div></div>
+        <div class="ir"><div class="ir-icon">💪</div><div class="ir-text"><b>Adult Vaccines:</b> Flu, Pneumococcal, HPV, COVID-19 boosters — ₦5,000–₦20,000</div></div>
+        <div class="ir"><div class="ir-icon">🏠</div><div class="ir-text"><b>Home Visit:</b> Available for child vaccination packages</div></div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip amber" onclick="vaccineWA()">📲 Book Vaccination via WhatsApp</div>
+        <div class="chip blue" onclick="openOv('ovAppt')">📅 Book at Hospital</div>
+      </div>`);
+  });
+}
+
+function vaccineWA(){toWA(`💉 *VACCINATION REQUEST — MediBot*\n\nHello! I would like to book a vaccination appointment.\n\nPlease advise on available dates and prices. ⏰ ${ts()}`);}
+
+// ════════════════════════════════
+// VITALS
+// ════════════════════════════════
+function doVitals(){
+  typing(()=>{
+    botMsg('❤️ <strong>Vital Signs Reference Guide</strong>',
+      `<div class="vitals-card">
+        <div class="vc-title">Normal Ranges — Adult</div>
+        <div class="vitals-grid">
+          <div class="vital-box"><div class="vb-val">120/80</div><div class="vb-lbl">Blood Pressure</div><div class="vb-status vb-normal">mmHg — Normal</div></div>
+          <div class="vital-box"><div class="vb-val">60–100</div><div class="vb-lbl">Heart Rate</div><div class="vb-status vb-normal">bpm — Normal</div></div>
+          <div class="vital-box"><div class="vb-val">36.5–37.5</div><div class="vb-lbl">Temperature</div><div class="vb-status vb-normal">°C — Normal</div></div>
+          <div class="vital-box"><div class="vb-val">95–100%</div><div class="vb-lbl">SpO₂ (Oxygen)</div><div class="vb-status vb-normal">% — Normal</div></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="ir"><div class="ir-icon">⚠️</div><div class="ir-text"><b>Warning Signs:</b> BP >140/90 · Pulse >100 or <60 · Temp >38°C · SpO₂ <94%</div></div>
+        <div class="ir"><div class="ir-icon">🚨</div><div class="ir-text"><b>Emergency Signs:</b> BP >180/120 · Pulse >150 · Temp >40°C · SpO₂ <90%</div></div>
+        <div class="ir"><div class="ir-icon">🩺</div><div class="ir-text">Use this as a guide only. <b>See a doctor</b> if readings are outside normal range.</div></div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip blue" onclick="go('tele')">📞 Consult Doctor Online</div>
+        <div class="chip" onclick="go('appointment')">📅 Book In-Person</div>
+        <div class="chip" onclick="go('lab')">🔬 Order Blood Tests</div>
+      </div>`);
+  });
+}
+
+// ════════════════════════════════
+// CART
+// ════════════════════════════════
+function openCart(){
+  if(!cart.length){
+    document.getElementById('cartBody').innerHTML=`<div style="text-align:center;padding:40px 16px;"><div style="font-size:52px;margin-bottom:12px;">🛒</div><div style="color:var(--text-muted);font-size:14px;">Your cart is empty.<br>Browse medications to add items.</div></div>`;
+    document.getElementById('cartFoot').innerHTML=`<button class="wa-btn wa-ghost" onclick="closeOv('ovCart');doDrugs()">💊 Browse Medications</button>`;
+  } else {
+    const total=cart.reduce((a,b)=>a+b.num,0);
+    document.getElementById('cartBody').innerHTML=`
+      <div class="cart-sum">
+        ${cart.map(item=>`<div class="ci-row">
+          <span class="ci-em">${item.icon}</span>
+          <div style="flex:1;"><div class="ci-nm">${item.name}</div><div style="font-size:10px;color:var(--text-muted);">${item.brand}</div></div>
+          <div><div class="ci-pr">${item.price}</div><div style="font-size:10px;color:var(--red2);cursor:pointer;text-align:right;margin-top:2px;" onclick="removeFromCart('${item.id}')">Remove</div></div>
+        </div>`).join('')}
+        <div class="ct-row"><span style="font-size:13px;font-weight:700;">Total</span><span style="font-size:17px;font-weight:800;color:var(--green);">₦${total.toLocaleString()}</span></div>
+      </div>
+      <div class="info-card" style="margin-top:10px;">
+        <div class="ir"><div class="ir-icon">🚚</div><div class="ir-text"><b>Express Delivery:</b> 2–4 hours across FCT Abuja</div></div>
+        <div class="ir"><div class="ir-icon">💊</div><div class="ir-text">Prescription items require valid Rx. We verify before dispatch.</div></div>
+      </div>`;
+    document.getElementById('cartFoot').innerHTML=`
+      <button class="wa-btn" onclick="checkoutCart()">📲 Checkout via WhatsApp</button>
+      <button class="wa-btn wa-ghost" style="margin-top:8px;" onclick="cart=[];updateCartBadge();openCart()">🗑️ Clear Cart</button>`;
+  }
+  openOv('ovCart');
+}
+
+function removeFromCart(id){ cart=cart.filter(c=>c.id!==id); updateCartBadge(); openCart(); }
+
+function checkoutCart(){
+  if(!cart.length)return;
+  const items=cart.map(d=>`• ${d.name} (${d.price})`).join('\n');
+  const total=cart.reduce((a,b)=>a+b.num,0);
+  toWA(`💊 *MEDICATION ORDER — MediBot*\n\n🛒 *Items:*\n${items}\n\n💰 *Total:* ₦${total.toLocaleString()}\n\nPlease confirm my order and delivery details. ⏰ ${ts()}`);
+  cart=[]; updateCartBadge(); closeOv('ovCart');
+  typing(()=>{botMsg('💊 <strong>Order sent!</strong> You\'ve been redirected to WhatsApp. Our pharmacist will confirm your order and delivery details within minutes.');});
+}
+
+// ════════════════════════════════
+// FAQ
+// ════════════════════════════════
+function showFAQ(key){
+  const f=faqs[key];if(!f)return;
+  typing(()=>{
+    botMsg(f.a.replace(/<b>/g,'<strong>').replace(/<\/b>/g,'</strong>'),
+      `<div class="chips"><div class="chip blue" onclick="openOv('ovAppt')">📅 Book Now</div><div class="chip" onclick="go('pay')">💳 Pay</div></div>`);
+  });
+}
+
+// ════════════════════════════════
+// SUBMIT HANDLERS → WhatsApp
+// ════════════════════════════════
+function submitEmergency(){
+  const name=document.getElementById('emName').value.trim();
+  const phone=document.getElementById('emPhone').value.trim();
+  const type=document.getElementById('emType').value;
+  const loc=document.getElementById('emLoc').value.trim();
+  const count=document.getElementById('emCount').value;
+  if(!phone||!loc){alert('Please provide your phone number and location.');return;}
+  updateCtx(name||'Patient',loc.substring(0,20)+'...','🚨 Emergency Active');
+  toWA(`🚨 *EMERGENCY ALERT — MediBot*\n\n⚠️ URGENT RESPONSE REQUIRED\n\n👤 *Patient:* ${name||'Unknown'}\n📞 *Phone:* ${phone}\n🆘 *Emergency:* ${type}\n📍 *Location:* ${loc}\n👥 *Patients:* ${count}\n\n⏰ REPORTED AT: ${ts()}\n\n🚑 Please dispatch emergency team IMMEDIATELY.`);
+  closeOv('ovEmerg');
+  typing(()=>{
+    botMsg(`🚨 <strong>Emergency alert sent!</strong> You've been connected to our emergency response team on WhatsApp.<br><br>⏱ <strong>Estimated response: 8–15 minutes</strong><br><br>Stay calm. Keep the patient still and warm. Do NOT move them unless in immediate danger.`,
+      `<div class="ach-card"><div class="ach-icon">🚑</div><div><div class="ach-title">Team Alerted</div><div class="ach-desc">Emergency team dispatched · Keep WhatsApp open</div></div></div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="showFirstAid('cpr')">🩹 CPR Guide</div>
+        <div class="chip" onclick="showFirstAid('bleeding')">🩸 Bleeding Guide</div>
+      </div>`);
+  },600);
+}
+
+function submitAmbulance(){
+  const name=document.getElementById('ambName').value.trim();
+  const phone=document.getElementById('ambPhone').value.trim();
+  const pickup=document.getElementById('ambPickup').value.trim();
+  const dest=document.getElementById('ambDest').value;
+  const type=document.getElementById('ambType').value;
+  const urgency=document.getElementById('ambUrgency').value;
+  const condition=document.getElementById('ambCondition').value.trim();
+  const notes=document.getElementById('ambNotes').value.trim();
+  if(!name||!phone||!pickup){alert('Please fill in name, phone and pickup location.');return;}
+  toWA(`🚑 *AMBULANCE REQUEST — MediBot*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n🚑 *Type:* ${type}\n⏰ *Urgency:* ${urgency}\n\n📍 *Pickup:* ${pickup}\n🏥 *Destination:* ${dest}\n🩺 *Condition:* ${condition||'Not specified'}\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()}`);
+  closeOv('ovAmbulance');
+  typing(()=>{botMsg(`🚑 <strong>Ambulance request sent!</strong> You've been connected to our dispatch team on WhatsApp. Your ambulance will be confirmed within 2 minutes.`);});
+}
+
+function submitAppt(){
+  const name=document.getElementById('apName').value.trim();
+  const phone=document.getElementById('apPhone').value.trim();
+  const hosp=document.getElementById('apHosp').value;
+  const spec=document.getElementById('apSpec').value;
+  const date=document.getElementById('apDate').value;
+  const time=document.getElementById('apTime').value;
+  const reason=document.getElementById('apReason').value.trim();
+  const hmo=document.getElementById('apHMO').value;
+  const age=document.getElementById('apAge').value;
+  if(!name||!phone){alert('Please fill in name and phone number.');return;}
+  toWA(`📅 *APPOINTMENT BOOKING — MediBot*\n\n👤 *Patient:* ${name} (Age: ${age||'N/A'})\n📞 *Phone:* ${phone}\n🏥 *Hospital:* ${hosp}\n🩺 *Specialty:* ${spec}\n📅 *Date:* ${date||'Flexible'} at ${time}\n🏥 *HMO:* ${hmo}\n💬 *Reason:* ${reason||'Not specified'}\n\n⏰ ${ts()}`);
+  closeOv('ovAppt');
+  typing(()=>{botMsg(`📅 <strong>Appointment request sent!</strong> Our team will confirm your <strong>${spec}</strong> appointment at <strong>${hosp}</strong> via WhatsApp. Please bring your HMO card and ID.`);});
+}
+
+function submitDrugs(){
+  const name=document.getElementById('drName').value.trim();
+  const phone=document.getElementById('drPhone').value.trim();
+  const addr=document.getElementById('drAddr').value.trim();
+  const meds=document.getElementById('drMeds').value.trim();
+  const rx=document.getElementById('drRx').value;
+  const dtime=document.getElementById('drTime').value;
+  const pay=document.getElementById('drPay').value;
+  if(!name||!phone||!meds){alert('Please fill in name, phone and medications.');return;}
+  toWA(`💊 *MEDICATION ORDER — MediBot*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${addr||'N/A'}\n\n💊 *Medications:*\n${meds}\n\n📋 *Prescription:* ${rx}\n🚚 *Delivery:* ${dtime}\n💳 *Payment:* ${pay}\n\n⏰ ${ts()}`);
+  closeOv('ovDrugs');
+  typing(()=>{botMsg('💊 <strong>Order submitted!</strong> Our pharmacist will verify your medications and confirm delivery details via WhatsApp.');});
+}
+
+function submitPayment(){
+  const name=document.getElementById('pyName').value.trim();
+  const phone=document.getElementById('pyPhone').value.trim();
+  const hosp=document.getElementById('pyHosp').value;
+  const service=document.getElementById('pyService').value;
+  const amount=document.getElementById('pyAmount').value;
+  const invoice=document.getElementById('pyInvoice').value.trim();
+  const method=document.getElementById('pyMethod').value;
+  if(!name||!phone){alert('Please fill in name and phone number.');return;}
+  toWA(`💳 *MEDICAL PAYMENT — MediBot*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n🏥 *Hospital:* ${hosp}\n🩺 *Service:* ${service}\n💰 *Amount:* ₦${amount?Number(amount).toLocaleString():'TBD'}\n📋 *Invoice:* ${invoice||'N/A'}\n💳 *Method:* ${method}\n\n⏰ ${ts()}`);
+  closeOv('ovPay');
+  typing(()=>{botMsg(`💳 <strong>Payment request sent!</strong> Our billing team will process your <strong>${service}</strong> payment via WhatsApp and send you a receipt.`);});
+}
+
+function submitTele(){
+  const name=document.getElementById('tlName').value.trim();
+  const phone=document.getElementById('tlPhone').value.trim();
+  const age=document.getElementById('tlAge').value;
+  const gender=document.getElementById('tlGender').value;
+  const spec=document.getElementById('tlSpec').value;
+  const mode=document.getElementById('tlMode').value;
+  const date=document.getElementById('tlDate').value;
+  const time=document.getElementById('tlTime').value;
+  const symptoms=document.getElementById('tlSymptoms').value.trim();
+  if(!name||!phone){alert('Please fill in name and phone number.');return;}
+  toWA(`📞 *TELECONSULTATION — MediBot*\n\n👤 *Patient:* ${name} (Age: ${age||'N/A'}, ${gender})\n📞 *Phone:* ${phone}\n🩺 *Specialty:* ${spec}\n📹 *Mode:* ${mode}\n📅 *Date:* ${date||'Flexible'} at ${time}\n💬 *Symptoms:*\n${symptoms||'Not specified'}\n\n⏰ ${ts()}`);
+  closeOv('ovTele');
+  typing(()=>{botMsg(`📞 <strong>Teleconsultation booked!</strong> Your <strong>${spec}</strong> doctor will contact you via ${mode.split('(')[0].trim()} at your scheduled time.`);});
+}
+
+function submitLab(){
+  const name=document.getElementById('lbName').value.trim();
+  const phone=document.getElementById('lbPhone').value.trim();
+  const tests=document.getElementById('lbTests').value;
+  const notes=document.getElementById('lbNotes').value.trim();
+  const service=document.getElementById('lbService').value;
+  const date=document.getElementById('lbDate').value;
+  if(!name||!phone){alert('Please fill in name and phone number.');return;}
+  toWA(`🔬 *LAB TEST REQUEST — MediBot*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n🧪 *Tests:* ${tests}\n${notes?`📝 *Additional:* ${notes}\n`:''}\n🏠 *Service:* ${service}\n📅 *Date:* ${date||'Flexible'}\n\n⏰ ${ts()}`);
+  closeOv('ovLab');
+  typing(()=>{botMsg(`🔬 <strong>Lab test request sent!</strong> Our diagnostics team will confirm your <strong>${tests}</strong> appointment${service.includes('Home')?' and arrange home sample collection':''} via WhatsApp.`);});
+}
+
+function submitMental(){
+  const name=document.getElementById('mhName').value.trim();
+  const phone=document.getElementById('mhPhone').value.trim();
+  const type=document.getElementById('mhType').value;
+  const session=document.getElementById('mhSession').value;
+  const desc=document.getElementById('mhDesc').value.trim();
+  if(!phone){alert('Please provide your phone number.');return;}
+  toWA(`🧠 *MENTAL HEALTH REQUEST — MediBot*\n\n👤 *Name:* ${name||'Anonymous'}\n📞 *Phone:* ${phone}\n💭 *Experiencing:* ${type}\n📹 *Session Type:* ${session}\n${desc?`💬 *Notes:*\n${desc}\n`:''}\n⚠️ All sessions are confidential.\n\n⏰ ${ts()}`);
+  closeOv('ovMental');
+  typing(()=>{botMsg('💙 <strong>Request sent!</strong> A licensed therapist will reach out to you via WhatsApp in confidence. You are not alone — help is on its way. 💙');});
+}
+
+function callCrisis(){
+  toWA(`🆘 *MENTAL HEALTH CRISIS — MediBot*\n\nI need immediate mental health support.\n\nPlease connect me with a crisis counsellor right now.\n\n⏰ ${ts()}`);
+  closeOv('ovMental');
+  typing(()=>{botMsg('🆘 <strong>Crisis team alerted!</strong> You\'ve been connected on WhatsApp. A counsellor will respond within minutes. Please stay connected. You matter. 💙');});
+}
+
+function submitReport(){
+  const name=document.getElementById('rpName').value.trim();
+  const phone=document.getElementById('rpPhone').value.trim();
+  const type=document.getElementById('rpType').value;
+  const hosp=document.getElementById('rpHosp').value.trim();
+  const date=document.getElementById('rpDate').value;
+  const purpose=document.getElementById('rpPurpose').value.trim();
+  if(!name||!phone){alert('Please fill in name and phone number.');return;}
+  toWA(`📊 *MEDICAL REPORT REQUEST — MediBot*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n📋 *Request:* ${type}\n🏥 *Hospital:* ${hosp||'N/A'}\n📅 *Date of Service:* ${date||'N/A'}\n📝 *Purpose:* ${purpose||'N/A'}\n\n⏰ ${ts()}`);
+  closeOv('ovReport');
+  typing(()=>{botMsg(`📊 <strong>Report request sent!</strong> Our records team will process your <strong>${type}</strong> request and contact you via WhatsApp within 24 hours.`);});
+}
+
+function submitFeedback(){
+  const name=document.getElementById('fbName').value.trim()||'Anonymous';
+  const service=document.getElementById('fbService').value.trim();
+  const stars=document.getElementById('fbStars').value;
+  const text=document.getElementById('fbText').value.trim();
+  if(!text){alert('Please write your feedback.');return;}
+  toWA(`⭐ *FEEDBACK — MediBot*\n\n👤 *Name:* ${name}\n🏥 *Service:* ${service||'General'}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n💬 *Feedback:*\n${text}\n\n⏰ ${ts()}`);
+  closeOv('ovFeedback');
+  typing(()=>{botMsg('⭐ <strong>Thank you for your feedback!</strong> It helps us improve medical care for everyone. 💙');});
+}
+
+// ════════════════════════════════
+// SEARCH
+// ════════════════════════════════
+function openSearch(){openOv('ovSearch');setTimeout(()=>document.getElementById('srchInp').focus(),300);}
+function liveSearch(q){
+  const el=document.getElementById('srchRes');
+  if(!q.trim()){el.innerHTML='';return;}
+  const resS=services.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||s.desc.toLowerCase().includes(q.toLowerCase()));
+  const resD=drugs.filter(d=>d.name.toLowerCase().includes(q.toLowerCase())||d.brand.toLowerCase().includes(q.toLowerCase()));
+  const resH=hospitals.filter(h=>h.name.toLowerCase().includes(q.toLowerCase())||h.loc.toLowerCase().includes(q.toLowerCase()));
+  let html='';
+  if(resS.length){
+    html+=`<div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;">Services</div>`;
+    html+=resS.map(s=>`<div class="drug-item" onclick="openServiceDetail('${s.id}');closeOv('ovSearch')"><div class="di-icon">${s.icon}</div><div class="di-info"><div class="di-name">${s.name}</div><div class="di-brand">${s.price}</div></div><button class="svc-btn btn-red" style="width:auto;padding:6px 10px;font-size:11px;flex-shrink:0;" onclick="event.stopPropagation();bookService('${s.id}');closeOv('ovSearch')">Book</button></div>`).join('');
+  }
+  if(resD.length){
+    html+=`<div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);text-transform:uppercase;margin:8px 0 6px;">Medications</div>`;
+    html+=resD.map(d=>`<div class="drug-item" onclick="addToCart('${d.id}');closeOv('ovSearch')"><div class="di-icon">${d.icon}</div><div class="di-info"><div class="di-name">${d.name}</div><div class="di-brand">${d.brand}</div></div><div class="di-price">${d.price}</div></div>`).join('');
+  }
+  if(resH.length){
+    html+=`<div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);text-transform:uppercase;margin:8px 0 6px;">Hospitals</div>`;
+    html+=resH.map(h=>`<div class="drug-item"><div class="di-icon">${h.icon}</div><div class="di-info"><div class="di-name">${h.name}</div><div class="di-brand">${h.loc}</div></div><button class="svc-btn btn-blue" style="width:auto;padding:6px 10px;font-size:11px;" onclick="document.getElementById('apHosp').value='${h.name}';closeOv('ovSearch');openOv('ovAppt')">Book</button></div>`).join('');
+  }
+  el.innerHTML=html||`<div style="text-align:center;padding:24px;color:var(--text-muted);">No results for "${q}"<br><br><button class="wa-btn" style="width:auto;padding:10px 16px;margin-top:8px;" onclick="toWA('I need help finding: ${q}')">📲 Ask via WhatsApp</button></div>`;
+}
+
+// ════════════════════════════════
+// STAR RATING
+// ════════════════════════════════
+function setStar(n){
+  starVal=n; document.getElementById('fbStars').value=n;
+  document.querySelectorAll('#starRow span').forEach((s,i)=>{s.style.filter=i<n?'none':'grayscale(1) opacity(.3)';});
+}
+
+// ════════════════════════════════
+// OVERLAYS
+// ════════════════════════════════
+function openOv(id){document.getElementById(id).classList.add('open');}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+document.getElementById('inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+document.getElementById('inp').addEventListener('input',function(){this.style.height='auto';this.style.height=this.scrollHeight+'px';});
+
+// ════════════════════════════════
+// FREE TEXT CHAT
+// ════════════════════════════════
+function send(){
+  const inp=document.getElementById('inp');
+  const t=inp.value.trim();if(!t)return;
+  inp.value='';inp.style.height='auto';
+  userMsg(t); const l=t.toLowerCase();
+  if(/^(hi|hello|hey|good|morn|afternoon|evening)/i.test(l)){
+    typing(()=>{botMsg(`Hello! 👋 Welcome to <strong>MediBot</strong>. I'm here to help with all your medical needs. How can I assist you today?`,mainMenu());});
+  }
+  else if(/emergency|urgent|help.*now|not breathing|unconscious|dying|heart.?attack/i.test(l)){ doEmergency(); }
+  else if(/ambulance|paramedic|stretcher|transport/i.test(l)){ go('ambulance'); }
+  else if(/first.?aid|cpr|choking|bleed|burn|stroke/i.test(l)){ doFirstAid(); }
+  else if(/appointment|book.*doctor|consult|see.*doctor/i.test(l)){ openOv('ovAppt'); }
+  else if(/teleconsult|online.*doctor|remote.*doctor|video.*consult/i.test(l)){ openOv('ovTele'); }
+  else if(/drug|medic|pharmacy|tablet|capsule|prescription|paracetamol|amoxicillin/i.test(l)){ doDrugs(); }
+  else if(/lab|test|blood.*test|scan|xray|mri|ultrasound|diagnos/i.test(l)){ go('lab'); }
+  else if(/pay|payment|bill|invoice|hmo|insurance|nhia/i.test(l)){ openOv('ovPay'); }
+  else if(/mental|therapy|depression|anxiety|stress|sad|psychiatri/i.test(l)){ openOv('ovMental'); }
+  else if(/hospital|clinic|health.*centre|where.*hospital/i.test(l)){ doHospitals(); }
+  else if(/vaccine|immunis|injection|jab|covid|flu.?shot/i.test(l)){ doVaccine(); }
+  else if(/vital|blood.*pressure|heart.*rate|temperature|oxygen|spo2/i.test(l)){ doVitals(); }
+  else if(/report|record|certificate|discharge|referral/i.test(l)){ go('report'); }
+  else if(/all.*service|what.*do|what.*offer|service/i.test(l)){ doServices(); }
+  else if(/feedback|rate|review/i.test(l)){ openOv('ovFeedback'); }
+  else if(/cart|order|basket/i.test(l)){ openCart(); }
+  else if(/cost|price|how.*much|fee/i.test(l)){ showFAQ('cost'); }
+  else if(/delivery|deliver/i.test(l)){ showFAQ('delivery'); }
+  else {
+    const resS=services.filter(s=>s.name.toLowerCase().includes(l)||s.desc.toLowerCase().includes(l));
+    const resD=drugs.filter(d=>d.name.toLowerCase().includes(l));
+    if(resS.length){typing(()=>{botMsg(`I found some services related to "<strong>${t}</strong>":`,buildGallery(resS,'Results'));});}
+    else if(resD.length){
+      userMsg('Searching medications...');
+      typing(()=>{botMsg(`Found medications for "<strong>${t}</strong>":`,`<div class="drug-list">${resD.map(d=>`<div class="drug-item"><div class="di-icon">${d.icon}</div><div class="di-info"><div class="di-name">${d.name}</div><div class="di-brand">${d.brand}</div></div><div class="di-price">${d.price}</div><button class="di-add" onclick="addToCart('${d.id}')">+</button></div>`).join('')}</div>`);});
+    }
+    else{
+      typing(()=>{botMsg(`I'm not sure about "<strong>${t}</strong>" specifically, but I can help with:`,mainMenu());});
+    }
+  }
+}
+
+// ════════════════════════════════
+// INIT
+// ════════════════════════════════
+window.onload=()=>{
+  const h=new Date().getHours();
+  const gr=h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙';
+  setTimeout(()=>{
+    botMsg(`${gr}! I'm <strong>MediBot</strong> — your 24/7 smart medical assistant.<br><br>
+I can help you access <strong>emergency services, order an ambulance, book doctor appointments, order medications, pay for medical bills, request lab tests</strong> and much more — all connected via WhatsApp for instant response. 🏥<br><br>
+⚠️ <em style="color:var(--red2);">For life-threatening emergencies, please call <strong>112</strong> or <strong>199</strong> immediately.</em>`);
+  },400);
+  setTimeout(()=>{
+    typing(()=>{
+      botMsg('How can I help you today? 👇',mainMenu());
+    },1400);
+  },1400);
+};
+</script>
+</body>
+</html>
