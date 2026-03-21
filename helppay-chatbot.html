@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HelpPay – Smart Payment Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #F0F4FF;
+    --white:     #FFFFFF;
+    --surface:   #FAFBFF;
+    --panel:     #EEF2FF;
+    --border:    rgba(79,70,229,0.12);
+    --border2:   rgba(0,0,0,0.06);
+    --ink:       #0F172A;
+    --ink2:      #1E293B;
+    --muted:     #94A3B8;
+    --indigo:    #4F46E5;
+    --violet:    #7C3AED;
+    --emerald:   #059669;
+    --rose:      #E11D48;
+    --amber:     #D97706;
+    --sky:       #0284C7;
+    --green:     #25D366;
+    --radius:    20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Instrument Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 16px;
+    position: relative; overflow-x: hidden;
+  }
+
+  /* Layered background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 0%, rgba(79,70,229,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 60% at 90% 100%, rgba(124,58,237,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(5,150,105,0.04) 0%, transparent 70%);
+  }
+
+  /* Fine dot pattern */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none;
+    background-image: radial-gradient(circle, rgba(79,70,229,0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    width: 100%; max-width: 500px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 14px;
+    position: relative; z-index: 2;
+  }
+  .logo {
+    width: 54px; height: 54px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 8px 28px rgba(79,70,229,0.4), 0 2px 0 rgba(255,255,255,0.3) inset;
+    animation: float 4s ease-in-out infinite alternate;
+  }
+  @keyframes float {
+    from { transform: translateY(0); box-shadow: 0 8px 28px rgba(79,70,229,0.4); }
+    to   { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(79,70,229,0.5); }
+  }
+  .header-text h1 {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 1.6rem; font-weight: 900;
+    color: var(--ink); letter-spacing: -0.03em; line-height: 1;
+  }
+  .header-text h1 span {
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .header-text p { font-size: 0.73rem; color: var(--muted); margin-top: 3px; }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(124,58,237,0.08));
+    border: 1px solid rgba(79,70,229,0.2);
+    border-radius: 100px; padding: 3px 10px;
+    font-size: 0.68rem; font-weight: 600;
+    color: var(--indigo); margin-top: 5px;
+    letter-spacing: 0.03em;
+  }
+  .live-dot { width: 6px; height: 6px; background: var(--emerald); border-radius: 50%; animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:0.6} }
+
+  /* ── CHAT WINDOW ── */
+  .chat-window {
+    width: 100%; max-width: 500px;
+    background: var(--white);
+    border-radius: 28px;
+    border: 1px solid var(--border);
+    box-shadow:
+      0 0 0 1px rgba(79,70,229,0.04),
+      0 4px 0 rgba(79,70,229,0.06),
+      0 20px 60px rgba(15,23,42,0.12),
+      0 2px 4px rgba(15,23,42,0.04);
+    overflow: hidden; display: flex; flex-direction: column;
+    height: 76vh; max-height: 660px;
+    position: relative; z-index: 2;
+  }
+
+  /* Topbar */
+  .topbar {
+    padding: 13px 18px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .agent-av {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+  }
+  .agent-info strong {
+    display: block;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.9rem; font-weight: 800;
+    color: var(--ink); letter-spacing: -0.01em;
+  }
+  .agent-info span { font-size: 0.68rem; color: var(--muted); }
+
+  /* Secure lock badge */
+  .secure-badge {
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(5,150,105,0.08);
+    border: 1px solid rgba(5,150,105,0.2);
+    border-radius: 100px; padding: 4px 10px;
+    font-size: 0.68rem; font-weight: 600; color: var(--emerald);
+  }
+
+  /* Messages */
+  .messages {
+    flex: 1; overflow-y: auto;
+    padding: 20px 16px;
+    display: flex; flex-direction: column; gap: 14px;
+    scroll-behavior: smooth;
+  }
+  .messages::-webkit-scrollbar { width: 3px; }
+  .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .msg { display: flex; align-items: flex-end; gap: 9px; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .msg.bot  { justify-content: flex-start; }
+  .msg.user { justify-content: flex-end; }
+
+  .bot-icon {
+    width: 34px; height: 34px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    box-shadow: 0 4px 12px rgba(79,70,229,0.25);
+  }
+
+  .bubble {
+    max-width: 80%; padding: 12px 16px;
+    font-size: 0.875rem; line-height: 1.65; border-radius: 18px;
+  }
+  .msg.bot .bubble {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-bottom-left-radius: 5px; color: var(--ink2);
+    box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+  }
+  .msg.user .bubble {
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border-bottom-right-radius: 5px; color: white; font-weight: 500;
+    font-size: 0.84rem;
+    box-shadow: 0 4px 14px rgba(79,70,229,0.3);
+  }
+  .bubble strong { color: var(--indigo); }
+  .bubble .em { color: var(--emerald); font-weight: 600; }
+
+  /* Chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; padding: 0 16px 12px; }
+  .chip {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--ink2); border-radius: 100px;
+    padding: 7px 15px; font-size: 0.78rem;
+    cursor: pointer; font-family: 'Instrument Sans', sans-serif;
+    font-weight: 500; transition: all 0.2s;
+  }
+  .chip:hover {
+    background: rgba(79,70,229,0.08); border-color: var(--indigo);
+    color: var(--indigo); transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(79,70,229,0.15);
+  }
+
+  /* Input */
+  .input-area {
+    display: flex; align-items: center; gap: 9px;
+    padding: 12px 15px;
+    border-top: 1px solid var(--border2);
+    background: var(--surface);
+  }
+  #userInput {
+    flex: 1; background: var(--white);
+    border: 1.5px solid var(--border); border-radius: 13px;
+    padding: 11px 15px; color: var(--ink);
+    font-family: 'Instrument Sans', sans-serif; font-size: 0.875rem;
+    outline: none; transition: all 0.2s;
+    box-shadow: 0 1px 4px rgba(15,23,42,0.05);
+  }
+  #userInput:focus {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+  }
+  #userInput::placeholder { color: var(--muted); font-size: 0.83rem; }
+
+  .send-btn {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border: none; border-radius: 13px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(79,70,229,0.35);
+  }
+  .send-btn:hover { transform: scale(1.06); box-shadow: 0 6px 22px rgba(79,70,229,0.5); }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+
+  /* Typing */
+  .typing { display: flex; align-items: center; gap: 5px; }
+  .dot { width: 7px; height: 7px; background: var(--muted); border-radius: 50%; animation: bounce 1.3s infinite; }
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
+
+  /* ── USSD INPUT BLOCK ── */
+  .ussd-input-block {
+    background: var(--panel);
+    border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 14px;
+    margin-top: 10px;
+  }
+  .ussd-label {
+    font-size: 0.72rem; color: var(--muted); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+  }
+  .ussd-row { display: flex; gap: 8px; }
+  .ussd-field {
+    flex: 1;
+    background: var(--white);
+    border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 12px 16px; color: var(--ink);
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+    letter-spacing: 0.08em; outline: none;
+    transition: all 0.2s;
+  }
+  .ussd-field:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+  .ussd-field::placeholder { color: var(--muted); font-size: 0.85rem; font-weight: 400; letter-spacing: 0; }
+  .ussd-verify-btn {
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    color: white; border: none; border-radius: 12px;
+    padding: 0 18px; font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 700; font-size: 0.85rem; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(79,70,229,0.3);
+  }
+  .ussd-verify-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,0.45); }
+
+  /* Verification states */
+  .verifying {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.8rem; color: var(--muted); margin-top: 8px;
+  }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--indigo);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── MERCHANT CARD ── */
+  .merchant-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 18px; overflow: hidden;
+    margin-top: 10px;
+    box-shadow: 0 4px 20px rgba(15,23,42,0.08);
+  }
+  .mc-header {
+    background: linear-gradient(135deg, rgba(79,70,229,0.08), rgba(124,58,237,0.05));
+    padding: 16px;
+    border-bottom: 1px solid var(--border2);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .mc-logo {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(79,70,229,0.3);
+  }
+  .mc-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 1.05rem; font-weight: 900; color: var(--ink); letter-spacing: -0.01em;
+  }
+  .mc-code {
+    font-size: 0.72rem; color: var(--muted); margin-top: 2px;
+    font-family: monospace; letter-spacing: 0.06em;
+  }
+  .mc-verified {
+    margin-left: auto; display: flex; align-items: center; gap: 4px;
+    background: rgba(5,150,105,0.08); border: 1px solid rgba(5,150,105,0.2);
+    border-radius: 100px; padding: 4px 10px;
+    font-size: 0.68rem; font-weight: 700; color: var(--emerald);
+  }
+  .mc-body { padding: 14px; }
+  .mc-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0; border-bottom: 1px solid var(--border2);
+    font-size: 0.82rem;
+  }
+  .mc-row:last-child { border: none; }
+  .mc-key { color: var(--muted); }
+  .mc-val { font-weight: 600; color: var(--ink); text-align: right; }
+  .mc-val.green { color: var(--emerald); }
+  .mc-val.indigo { color: var(--indigo); }
+  .mc-rating { display: flex; gap: 2px; }
+  .star { color: #F59E0B; font-size: 0.75rem; }
+
+  /* ── ACTION CARDS ── */
+  .action-trio {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+    margin-top: 12px;
+  }
+  .action-card {
+    background: var(--white);
+    border: 1.5px solid var(--border2);
+    border-radius: 16px; padding: 14px 10px;
+    cursor: pointer; transition: all 0.22s;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 7px; text-align: center;
+  }
+  .action-card .ac-icon { font-size: 1.6rem; }
+  .action-card .ac-label {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.8rem; font-weight: 800; color: var(--ink);
+  }
+  .action-card .ac-sub { font-size: 0.65rem; color: var(--muted); line-height: 1.3; }
+
+  .action-card.pay-card:hover {
+    border-color: var(--emerald); background: rgba(5,150,105,0.05);
+    transform: translateY(-3px); box-shadow: 0 8px 20px rgba(5,150,105,0.12);
+  }
+  .action-card.pay-card:hover .ac-label { color: var(--emerald); }
+  .action-card.details-card:hover {
+    border-color: var(--indigo); background: rgba(79,70,229,0.05);
+    transform: translateY(-3px); box-shadow: 0 8px 20px rgba(79,70,229,0.12);
+  }
+  .action-card.details-card:hover .ac-label { color: var(--indigo); }
+  .action-card.report-card:hover {
+    border-color: var(--rose); background: rgba(225,29,72,0.04);
+    transform: translateY(-3px); box-shadow: 0 8px 20px rgba(225,29,72,0.1);
+  }
+  .action-card.report-card:hover .ac-label { color: var(--rose); }
+
+  /* ── PAYMENT FLOW ── */
+  .pay-steps {
+    display: flex; gap: 6px; align-items: center; margin-bottom: 12px;
+  }
+  .pay-step {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 0.68rem; color: var(--muted);
+  }
+  .pay-step.active { color: var(--indigo); font-weight: 700; }
+  .pay-step.done   { color: var(--emerald); }
+  .pay-step-num {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--panel); border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 700;
+  }
+  .pay-step.active .pay-step-num { background: var(--indigo); color: white; border-color: var(--indigo); }
+  .pay-step.done   .pay-step-num { background: var(--emerald); color: white; border-color: var(--emerald); }
+  .pay-sep { width: 16px; height: 1px; background: var(--border2); }
+
+  /* Amount input */
+  .amount-wrap {
+    position: relative; margin-bottom: 10px;
+  }
+  .amount-currency {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-family: 'Cabinet Grotesk', sans-serif; font-size: 1rem; font-weight: 700;
+    color: var(--muted);
+  }
+  .amount-field {
+    width: 100%;
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 14px 14px 14px 36px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 1.6rem; font-weight: 900; color: var(--ink);
+    outline: none; transition: all 0.2s; letter-spacing: -0.02em;
+  }
+  .amount-field:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+  .amount-field::placeholder { color: var(--border); }
+
+  /* Quick amounts */
+  .quick-amounts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .qa-chip {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 5px 12px;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    transition: all 0.18s; color: var(--ink2);
+  }
+  .qa-chip:hover { background: var(--indigo); color: white; border-color: var(--indigo); transform: scale(1.04); }
+
+  /* Inline form fields */
+  .inline-input { display: flex; flex-direction: column; gap: 9px; }
+  .inline-field {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 11px 14px; color: var(--ink);
+    font-family: 'Instrument Sans', sans-serif; font-size: 0.875rem;
+    outline: none; width: 100%; transition: all 0.2s;
+  }
+  .inline-field:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+  .inline-field::placeholder { color: var(--muted); }
+  select.inline-field { cursor: pointer; }
+  select.inline-field option { background: white; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .pay-btn {
+    background: linear-gradient(135deg, var(--emerald), #047857);
+    color: white; border: none; border-radius: 14px;
+    padding: 14px; font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800; font-size: 0.95rem; cursor: pointer;
+    transition: all 0.2s; box-shadow: 0 6px 20px rgba(5,150,105,0.3);
+    letter-spacing: 0.01em;
+  }
+  .pay-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(5,150,105,0.42); filter: brightness(1.05); }
+
+  /* Payment receipt */
+  .receipt {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 18px; overflow: hidden; margin-top: 10px;
+    box-shadow: 0 4px 20px rgba(15,23,42,0.08);
+  }
+  .receipt-header {
+    background: linear-gradient(135deg, var(--emerald), #047857);
+    padding: 16px; text-align: center; color: white;
+  }
+  .receipt-check { font-size: 2rem; margin-bottom: 4px; }
+  .receipt-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 1rem; font-weight: 800; letter-spacing: -0.01em;
+  }
+  .receipt-amount {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 1.8rem; font-weight: 900;
+    letter-spacing: -0.03em; margin: 4px 0;
+  }
+  .receipt-ref { font-size: 0.68rem; opacity: 0.8; letter-spacing: 0.06em; font-family: monospace; }
+  .receipt-body { padding: 14px; }
+  .receipt-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0; border-bottom: 1px dashed var(--border2);
+    font-size: 0.8rem;
+  }
+  .receipt-row:last-child { border: none; }
+  .rk { color: var(--muted); }
+  .rv { font-weight: 600; color: var(--ink); text-align: right; }
+  .rv.green { color: var(--emerald); }
+  .rv.indigo { color: var(--indigo); }
+
+  /* Report form */
+  .report-types { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 10px; }
+  .rtype-card {
+    background: var(--panel); border: 1.5px solid var(--border2);
+    border-radius: 12px; padding: 10px; cursor: pointer;
+    transition: all 0.2s; text-align: center; font-size: 0.78rem;
+  }
+  .rtype-card:hover { border-color: var(--rose); background: rgba(225,29,72,0.04); color: var(--rose); }
+  .rtype-card .rt-icon { font-size: 1.2rem; margin-bottom: 3px; display: block; }
+  .rtype-card.selected { border-color: var(--rose); background: rgba(225,29,72,0.06); color: var(--rose); font-weight: 600; }
+
+  .submit-report {
+    background: linear-gradient(135deg, var(--rose), #BE123C);
+    color: white; border: none; border-radius: 12px;
+    padding: 13px; font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800; font-size: 0.875rem; cursor: pointer;
+    transition: all 0.2s; box-shadow: 0 4px 16px rgba(225,29,72,0.3);
+    margin-top: 4px;
+  }
+  .submit-report:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(225,29,72,0.4); }
+
+  /* WhatsApp btn */
+  .wa-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--green); color: white;
+    border: none; border-radius: 13px;
+    padding: 13px 20px; font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.9rem; font-weight: 800;
+    cursor: pointer; margin-top: 10px; width: 100%;
+    justify-content: center; transition: all 0.2s;
+    text-decoration: none; box-shadow: 0 5px 18px rgba(37,211,102,0.28);
+    letter-spacing: 0.01em;
+  }
+  .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(37,211,102,0.42); }
+  .wa-btn svg { width: 20px; height: 20px; fill: white; flex-shrink: 0; }
+
+  /* Badge strip */
+  .badge-strip { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+  .badge {
+    border-radius: 100px; padding: 4px 11px;
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.02em;
+  }
+  .badge.green { background: rgba(5,150,105,0.08); border: 1px solid rgba(5,150,105,0.2); color: var(--emerald); }
+  .badge.indigo { background: rgba(79,70,229,0.08); border: 1px solid rgba(79,70,229,0.2); color: var(--indigo); }
+  .badge.rose   { background: rgba(225,29,72,0.06); border: 1px solid rgba(225,29,72,0.18); color: var(--rose); }
+
+  .err { color: var(--rose); font-size: 0.76rem; margin-top: 5px; }
+
+  .footer {
+    margin-top: 10px; font-size: 0.7rem; color: var(--muted);
+    text-align: center; position: relative; z-index: 2; letter-spacing: 0.02em;
+  }
+  .footer span { color: var(--indigo); font-weight: 600; }
+
+  /* Divider line in bubble */
+  .bdivider { height: 1px; background: var(--border2); margin: 10px 0; }
+
+  /* Details expanded section */
+  .detail-section { background: var(--panel); border-radius: 12px; padding: 12px; margin-top: 8px; }
+  .detail-section-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.72rem; font-weight: 800; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+  }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .detail-item { font-size: 0.78rem; }
+  .di-label { color: var(--muted); font-size: 0.68rem; margin-bottom: 2px; }
+  .di-val { font-weight: 600; color: var(--ink); }
+  .di-val.green { color: var(--emerald); }
+
+  /* Payment method pills */
+  .method-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .method-pill {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 8px; padding: 4px 10px;
+    font-size: 0.72rem; font-weight: 500; color: var(--ink2);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">💳</div>
+  <div class="header-text">
+    <h1>Help<span>Pay</span></h1>
+    <p>Smart Customer Payment Assistant</p>
+    <div class="live-badge"><span class="live-dot"></span> SECURE · LIVE</div>
+  </div>
+</div>
+
+<div class="chat-window">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="agent-av">🤝</div>
+      <div class="agent-info">
+        <strong>HelpPay Agent</strong>
+        <span>Merchant payments made simple</span>
+      </div>
+    </div>
+    <div class="secure-badge">🔒 SSL Secured</div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+  <div class="chips" id="chips"></div>
+
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Type your message or SmartUSSD code…" autocomplete="off"/>
+    <button class="send-btn" onclick="handleSend()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="footer">[ <span>HelpPay</span> ] · Encrypted · Reports go to +2348157505037 · v2.0</div>
+
+<script>
+const WHATSAPP = "2348157505037";
+
+// ── Mock merchant database (SmartUSSD → merchant data) ──────────────────
+const MERCHANTS = {
+  "HP-1001": {
+    name: "TechMart Electronics",
+    emoji: "🖥️",
+    code: "HP-1001",
+    category: "Electronics & Gadgets",
+    owner: "Emeka Okafor",
+    address: "12 Allen Avenue, Ikeja, Lagos",
+    phone: "+234 802 123 4567",
+    email: "info@techmartng.com",
+    website: "www.techmartng.com",
+    hours: "Mon–Sat: 8am–8pm",
+    rating: 4.7,
+    reviews: 312,
+    status: "Active",
+    since: "2019",
+    minAmount: 500,
+    maxAmount: 5000000,
+    methods: ["Bank Transfer","Card","USSD","POS","Wallet"],
+    description: "Nigeria's trusted electronics retailer — laptops, phones, accessories & repairs.",
+    bank: "GTBank · 0123456789",
+    accountName: "TechMart Electronics Ltd",
+  },
+  "HP-2045": {
+    name: "FreshMart Grocery",
+    emoji: "🛒",
+    code: "HP-2045",
+    category: "Supermarket & Grocery",
+    owner: "Adaeze Williams",
+    address: "Plot 7, Wuse Zone 4, Abuja",
+    phone: "+234 803 987 6543",
+    email: "orders@freshmart.ng",
+    website: "www.freshmart.ng",
+    hours: "Daily: 7am–10pm",
+    rating: 4.5,
+    reviews: 1847,
+    status: "Active",
+    since: "2017",
+    minAmount: 200,
+    maxAmount: 500000,
+    methods: ["Bank Transfer","Card","USSD","Cash","POS"],
+    description: "Quality groceries, fresh produce, household goods delivered to your door.",
+    bank: "Access Bank · 0987654321",
+    accountName: "FreshMart Grocery Stores",
+  },
+  "HP-3300": {
+    name: "NovaMed Pharmacy",
+    emoji: "💊",
+    code: "HP-3300",
+    category: "Pharmacy & Healthcare",
+    owner: "Dr. Chukwuemeka Nwosu",
+    address: "45 Obafemi Awolowo Way, Surulere, Lagos",
+    phone: "+234 701 555 0099",
+    email: "care@novamed.ng",
+    website: "www.novamed.ng",
+    hours: "24 Hours · 7 Days",
+    rating: 4.9,
+    reviews: 624,
+    status: "Active",
+    since: "2020",
+    minAmount: 100,
+    maxAmount: 200000,
+    methods: ["Card","Bank Transfer","USSD","POS","HMO"],
+    description: "Licensed pharmacy — prescription drugs, OTC medications, health consultations.",
+    bank: "Zenith Bank · 0112233445",
+    accountName: "NovaMed Healthcare Limited",
+  },
+  "HP-4712": {
+    name: "SwiftEats Restaurant",
+    emoji: "🍽️",
+    code: "HP-4712",
+    category: "Food & Restaurant",
+    owner: "Fatimah Abdullahi",
+    address: "3 Ring Road, Kano City, Kano",
+    phone: "+234 809 444 2211",
+    email: "hello@swifteats.ng",
+    website: "www.swifteats.ng",
+    hours: "Mon–Sun: 10am–11pm",
+    rating: 4.3,
+    reviews: 890,
+    status: "Active",
+    since: "2021",
+    minAmount: 500,
+    maxAmount: 100000,
+    methods: ["Card","USSD","POS","Cash","Wallet"],
+    description: "Delicious local and continental cuisine — dine-in, takeaway & delivery.",
+    bank: "First Bank · 0456789012",
+    accountName: "SwiftEats Foods Nigeria",
+  },
+  "HP-5599": {
+    name: "BuildRight Hardware",
+    emoji: "🔨",
+    code: "HP-5599",
+    category: "Hardware & Construction",
+    owner: "Samuel Adeyemi",
+    address: "Block C, Alaba International Market, Lagos",
+    phone: "+234 812 600 3344",
+    email: "sales@buildright.ng",
+    website: "www.buildright.ng",
+    hours: "Mon–Sat: 7am–7pm",
+    rating: 4.6,
+    reviews: 445,
+    status: "Active",
+    since: "2015",
+    minAmount: 1000,
+    maxAmount: 10000000,
+    methods: ["Bank Transfer","POS","Card","Cheque"],
+    description: "Complete hardware, plumbing, electrical & construction materials store.",
+    bank: "UBA · 0789012345",
+    accountName: "BuildRight Hardware & Supplies",
+  },
+};
+
+// ── State ─────────────────────────────────────────────────────────────────
+const state = {
+  step:       "welcome",
+  ussdCode:   "",
+  merchant:   null,
+  action:     "",        // details | pay | report
+  payAmount:  "",
+  payMethod:  "",
+  payerName:  "",
+  payerPhone: "",
+  payNote:    "",
+  reportType: "",
+  reportDesc: "",
+  reporterName:"",
+  reporterPhone:"",
+};
+
+// ── DOM ───────────────────────────────────────────────────────────────────
+const messagesEl = document.getElementById("messages");
+const chipsEl    = document.getElementById("chips");
+const inputEl    = document.getElementById("userInput");
+
+function scrollBottom() { setTimeout(()=> messagesEl.scrollTop = messagesEl.scrollHeight, 80); }
+
+function addMsg(who, html) {
+  const w = document.createElement("div");
+  w.className = `msg ${who}`;
+  w.innerHTML = who==="bot"
+    ? `<div class="bot-icon">💳</div><div class="bubble">${html}</div>`
+    : `<div class="bubble">${html}</div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+
+function showTyping() {
+  const w = document.createElement("div");
+  w.className="msg bot"; w.id="typing";
+  w.innerHTML=`<div class="bot-icon">💳</div><div class="bubble"><div class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+function removeTyping() { document.getElementById("typing")?.remove(); }
+
+function setChips(arr) {
+  chipsEl.innerHTML="";
+  arr.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="chip"; b.textContent=c;
+    b.onclick=()=>processInput(c);
+    chipsEl.appendChild(b);
+  });
+}
+
+function botReply(html, chips=[], delay=900) {
+  showTyping();
+  setTimeout(()=>{ removeTyping(); addMsg("bot",html); setChips(chips); }, delay);
+}
+
+// ── Step 1: Welcome & USSD input ──────────────────────────────────────────
+function renderUSSDBlock() {
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">💳</div>
+    <div class="bubble" style="max-width:92%">
+      <p>Please enter the merchant's <strong>SmartUSSD</strong> code to get started.</p>
+      <p style="font-size:0.78rem;color:var(--muted);margin-top:6px">Format: <code style="background:var(--panel);padding:2px 7px;border-radius:5px;color:var(--indigo);font-size:0.78rem">HP-XXXX</code> (e.g. HP-1001)</p>
+      <div class="ussd-input-block" style="margin-top:10px">
+        <div class="ussd-label">SmartUSSD Code</div>
+        <div class="ussd-row">
+          <input class="ussd-field" id="ussd_input" placeholder="HP-0000" maxlength="7" oninput="this.value=this.value.toUpperCase()"/>
+          <button class="ussd-verify-btn" onclick="verifyUSSD()">Verify →</button>
+        </div>
+        <div id="verify_status"></div>
+      </div>
+      <div style="margin-top:10px;font-size:0.73rem;color:var(--muted)">💡 Try: <strong>HP-1001</strong>, <strong>HP-2045</strong>, <strong>HP-3300</strong>, <strong>HP-4712</strong>, <strong>HP-5599</strong></div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+
+function verifyUSSD() {
+  const code = document.getElementById("ussd_input")?.value.trim().toUpperCase();
+  const statusEl = document.getElementById("verify_status");
+
+  if (!code || code.length < 4) {
+    statusEl.innerHTML = `<div class="err">⚠ Please enter a valid SmartUSSD code.</div>`; return;
+  }
+
+  // Show verifying state
+  statusEl.innerHTML = `<div class="verifying"><div class="spinner"></div> Verifying merchant — please wait…</div>`;
+
+  setTimeout(()=>{
+    const merchant = MERCHANTS[code];
+    if (merchant) {
+      statusEl.innerHTML = `<div style="color:var(--emerald);font-size:0.78rem;font-weight:600;margin-top:6px">✅ Merchant verified!</div>`;
+      state.merchant = merchant; state.ussdCode = code;
+
+      // Hide the form block
+      document.getElementById("ussd_input").disabled = true;
+      document.querySelector(".ussd-verify-btn").disabled = true;
+      document.querySelector(".ussd-verify-btn").style.opacity = "0.5";
+
+      addMsg("user", `SmartUSSD: ${code}`);
+      setTimeout(()=> showMerchantCard(), 800);
+    } else {
+      statusEl.innerHTML = `<div class="err">❌ SmartUSSD code not found. Please check and try again.</div>`;
+    }
+  }, 1600);
+}
+
+// ── Merchant verified: show card + actions ─────────────────────────────────
+function showMerchantCard() {
+  const m = state.merchant;
+  const stars = "★".repeat(Math.floor(m.rating)) + (m.rating % 1 >= 0.5 ? "½" : "");
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">💳</div>
+    <div class="bubble" style="max-width:94%">
+      <p>Merchant verified! ✅ Here's what we found:</p>
+      <div class="merchant-card">
+        <div class="mc-header">
+          <div class="mc-logo">${m.emoji}</div>
+          <div>
+            <div class="mc-name">${m.name}</div>
+            <div class="mc-code">${m.code} · ${m.category}</div>
+          </div>
+          <div class="mc-verified">✓ VERIFIED</div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-row"><span class="mc-key">Rating</span>
+            <span class="mc-val">
+              <span class="mc-rating">${[...m.rating.toString().replace('.','')].slice(0,1).map(()=>'<span class="star">★</span>').join('')}
+              <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></span>
+              ${m.rating} (${m.reviews.toLocaleString()} reviews)
+            </span>
+          </div>
+          <div class="mc-row"><span class="mc-key">Status</span><span class="mc-val green">● ${m.status} · Since ${m.since}</span></div>
+          <div class="mc-row"><span class="mc-key">Location</span><span class="mc-val">${m.address}</span></div>
+          <div class="mc-row"><span class="mc-key">Hours</span><span class="mc-val indigo">${m.hours}</span></div>
+        </div>
+      </div>
+      <p style="margin-top:10px;font-size:0.82rem">What would you like to do with <strong>${m.name}</strong>?</p>
+      <div class="action-trio" style="margin-top:8px">
+        <div class="action-card details-card" onclick="startAction('details')">
+          <span class="ac-icon">📋</span>
+          <span class="ac-label">Details</span>
+          <span class="ac-sub">Full merchant info</span>
+        </div>
+        <div class="action-card pay-card" onclick="startAction('pay')">
+          <span class="ac-icon">💸</span>
+          <span class="ac-label">Pay</span>
+          <span class="ac-sub">Send payment now</span>
+        </div>
+        <div class="action-card report-card" onclick="startAction('report')">
+          <span class="ac-icon">🚨</span>
+          <span class="ac-label">Report</span>
+          <span class="ac-sub">Flag an issue</span>
+        </div>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  state.step = "actions";
+  setChips(["📋 View Details","💸 Make Payment","🚨 Report Merchant","🔄 Change Merchant"]);
+}
+
+// ── Actions dispatcher ─────────────────────────────────────────────────────
+function startAction(action) {
+  state.action = action;
+  const labels = { details:"📋 View Details", pay:"💸 Make Payment", report:"🚨 Report Merchant" };
+  addMsg("user", labels[action]);
+  chipsEl.innerHTML="";
+
+  if (action==="details") { showTyping(); setTimeout(()=>{ removeTyping(); showFullDetails(); }, 900); }
+  if (action==="pay")     { showTyping(); setTimeout(()=>{ removeTyping(); showPaymentFlow(); }, 900); }
+  if (action==="report")  { showTyping(); setTimeout(()=>{ removeTyping(); showReportForm();  }, 900); }
+}
+
+// ── DETAILS ───────────────────────────────────────────────────────────────
+function showFullDetails() {
+  const m = state.merchant;
+  const methodPills = m.methods.map(mt=>`<span class="method-pill">${mt}</span>`).join("");
+
+  const w = document.createElement("div");
+  w.className="msg bot";
+  w.innerHTML=`
+    <div class="bot-icon">💳</div>
+    <div class="bubble" style="max-width:94%">
+      <p>📋 Full details for <strong>${m.name}</strong>:</p>
+      <div class="detail-section" style="margin-top:10px">
+        <div class="detail-section-title">Business Info</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="di-label">Owner</div><div class="di-val">${m.owner}</div></div>
+          <div class="detail-item"><div class="di-label">Category</div><div class="di-val">${m.category}</div></div>
+          <div class="detail-item"><div class="di-label">Phone</div><div class="di-val">${m.phone}</div></div>
+          <div class="detail-item"><div class="di-label">Email</div><div class="di-val" style="font-size:0.72rem">${m.email}</div></div>
+          <div class="detail-item"><div class="di-label">Website</div><div class="di-val" style="font-size:0.72rem">${m.website}</div></div>
+          <div class="detail-item"><div class="di-label">Hours</div><div class="di-val di-val green">${m.hours}</div></div>
+        </div>
+      </div>
+      <div class="detail-section" style="margin-top:8px">
+        <div class="detail-section-title">Payment Info</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="di-label">Bank</div><div class="di-val">${m.bank}</div></div>
+          <div class="detail-item"><div class="di-label">Account Name</div><div class="di-val" style="font-size:0.72rem">${m.accountName}</div></div>
+          <div class="detail-item"><div class="di-label">Min. Amount</div><div class="di-val di-val green">₦${m.minAmount.toLocaleString()}</div></div>
+          <div class="detail-item"><div class="di-label">Max Amount</div><div class="di-val">₦${m.maxAmount.toLocaleString()}</div></div>
+        </div>
+        <div style="margin-top:8px"><div class="di-label" style="margin-bottom:5px">Accepted Methods</div>
+          <div class="method-pills">${methodPills}</div>
+        </div>
+      </div>
+      <div class="detail-section" style="margin-top:8px">
+        <div class="detail-section-title">About</div>
+        <div style="font-size:0.82rem;color:var(--ink2);line-height:1.6">${m.description}</div>
+      </div>
+      <div class="bdivider"></div>
+      <div class="badge-strip">
+        <span class="badge green">✓ VERIFIED MERCHANT</span>
+        <span class="badge indigo">⭐ ${m.rating} RATED</span>
+        <span class="badge indigo">📅 SINCE ${m.since}</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips(["💸 Proceed to Pay","🚨 Report","🔄 Change Merchant"]);
+}
+
+// ── PAYMENT FLOW ──────────────────────────────────────────────────────────
+function showPaymentFlow() {
+  const m = state.merchant;
+  const methodOpts = m.methods.map(mt=>`<option value="${mt}">${mt}</option>`).join("");
+  const quickAmts = [500,1000,2500,5000,10000,20000];
+
+  const w = document.createElement("div");
+  w.className="msg bot";
+  w.innerHTML=`
+    <div class="bot-icon">💳</div>
+    <div class="bubble" style="max-width:94%">
+      <div class="pay-steps">
+        <div class="pay-step active"><span class="pay-step-num">1</span> Amount</div>
+        <div class="pay-sep"></div>
+        <div class="pay-step"><span class="pay-step-num">2</span> Details</div>
+        <div class="pay-sep"></div>
+        <div class="pay-step"><span class="pay-step-num">3</span> Confirm</div>
+      </div>
+      <p>💸 Paying <strong>${m.name}</strong> — fill in payment details:</p>
+      <div class="inline-input" style="margin-top:10px" id="payForm">
+        <div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Amount (₦${m.minAmount.toLocaleString()} – ₦${m.maxAmount.toLocaleString()})</div>
+          <div class="amount-wrap">
+            <span class="amount-currency">₦</span>
+            <input class="amount-field" id="f_amount" type="number" placeholder="0" min="${m.minAmount}" max="${m.maxAmount}"/>
+          </div>
+          <div class="quick-amounts">${quickAmts.filter(a=>a>=m.minAmount&&a<=m.maxAmount).map(a=>`<div class="qa-chip" onclick="setAmount(${a})">₦${a.toLocaleString()}</div>`).join("")}</div>
+        </div>
+        <div class="field-row">
+          <input class="inline-field" id="f_pname"  placeholder="Your full name *" type="text"/>
+          <input class="inline-field" id="f_pphone" placeholder="Phone number *" type="tel"/>
+        </div>
+        <select class="inline-field" id="f_method">
+          <option value="" disabled selected>Payment method</option>
+          ${methodOpts}
+        </select>
+        <input class="inline-field" id="f_desc" placeholder="Payment description / reference (optional)"/>
+        <button class="pay-btn" onclick="submitPayment()">💸 Proceed to Pay</button>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips([]);
+}
+
+function setAmount(val) {
+  const f = document.getElementById("f_amount");
+  if (f) f.value = val;
+}
+
+function submitPayment() {
+  const amount  = parseFloat(document.getElementById("f_amount")?.value);
+  const name    = document.getElementById("f_pname")?.value.trim();
+  const phone   = document.getElementById("f_pphone")?.value.trim();
+  const method  = document.getElementById("f_method")?.value;
+  const desc    = document.getElementById("f_desc")?.value.trim() || "";
+  const m       = state.merchant;
+
+  if (!amount || isNaN(amount)) { flashPayErr("Please enter a valid amount."); return; }
+  if (amount < m.minAmount) { flashPayErr(`Minimum amount is ₦${m.minAmount.toLocaleString()}.`); return; }
+  if (amount > m.maxAmount) { flashPayErr(`Maximum amount is ₦${m.maxAmount.toLocaleString()}.`); return; }
+  if (!name || !phone)   { flashPayErr("Please enter your name and phone number."); return; }
+  if (!method)           { flashPayErr("Please select a payment method."); return; }
+
+  state.payAmount=amount; state.payerName=name; state.payerPhone=phone; state.payMethod=method; state.payNote=desc;
+  document.getElementById("payForm").style.display="none";
+  addMsg("user",`₦${amount.toLocaleString()} via ${method}`);
+  showTyping();
+  setTimeout(()=>{ removeTyping(); showPaymentReceipt(); }, 1400);
+}
+
+function flashPayErr(msg) {
+  document.getElementById("err_pay")?.remove();
+  const el=document.createElement("div");
+  el.id="err_pay"; el.className="err"; el.textContent="⚠ "+msg;
+  document.getElementById("payForm")?.appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+function showPaymentReceipt() {
+  const m = state.merchant;
+  const ref = "HPY-" + Date.now().toString().slice(-7);
+  const now = new Date();
+  const dateStr = now.toLocaleString("en-NG",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+
+  const waText = [
+    `💳 *PAYMENT NOTIFICATION – HelpPay*`,
+    ``,
+    `🎫 *Ref: ${ref}*`,
+    `🏪 *Merchant:* ${m.name} (${m.code})`,
+    `💰 *Amount:* ₦${state.payAmount.toLocaleString()}`,
+    `💳 *Method:* ${state.payMethod}`,
+    ``,
+    `👤 *Payer:* ${state.payerName}`,
+    `📞 *Phone:* ${state.payerPhone}`,
+    state.payNote ? `📝 *Ref/Desc:* ${state.payNote}` : null,
+    ``,
+    `🏦 *Pay To:* ${m.accountName}`,
+    `   ${m.bank}`,
+    ``,
+    `📅 *Time:* ${dateStr}`,
+    ``,
+    `Processed via HelpPay · Please await confirmation from merchant.`
+  ].filter(Boolean).join("\n");
+
+  const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waText)}`;
+
+  const w = document.createElement("div");
+  w.className="msg bot";
+  w.innerHTML=`
+    <div class="bot-icon">💳</div>
+    <div class="bubble" style="max-width:94%">
+      <p>Payment details confirmed! ✅ Use the button below to complete your payment and notify the merchant via WhatsApp.</p>
+      <div class="receipt">
+        <div class="receipt-header">
+          <div class="receipt-check">✅</div>
+          <div class="receipt-title">Payment Summary</div>
+          <div class="receipt-amount">₦${parseFloat(state.payAmount).toLocaleString()}</div>
+          <div class="receipt-ref">REF: ${ref}</div>
+        </div>
+        <div class="receipt-body">
+          <div class="receipt-row"><span class="rk">Merchant</span><span class="rv">${m.name}</span></div>
+          <div class="receipt-row"><span class="rk">SmartUSSD</span><span class="rv indigo">${m.code}</span></div>
+          <div class="receipt-row"><span class="rk">Account Name</span><span class="rv">${m.accountName}</span></div>
+          <div class="receipt-row"><span class="rk">Bank</span><span class="rv">${m.bank}</span></div>
+          <div class="receipt-row"><span class="rk">Method</span><span class="rv">${state.payMethod}</span></div>
+          <div class="receipt-row"><span class="rk">Payer</span><span class="rv">${state.payerName}</span></div>
+          <div class="receipt-row"><span class="rk">Phone</span><span class="rv">${state.payerPhone}</span></div>
+          ${state.payNote?`<div class="receipt-row"><span class="rk">Description</span><span class="rv">${state.payNote}</span></div>`:""}
+          <div class="receipt-row"><span class="rk">Date & Time</span><span class="rv green">${dateStr}</span></div>
+        </div>
+      </div>
+      <a class="wa-btn" href="${waUrl}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Complete Payment via WhatsApp
+      </a>
+      <div class="badge-strip">
+        <span class="badge green">🔒 ENCRYPTED</span>
+        <span class="badge green">✓ ₦${parseFloat(state.payAmount).toLocaleString()}</span>
+        <span class="badge indigo">${state.payMethod}</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips(["🔄 Pay Again","📋 View Details","🔄 Change Merchant"]);
+}
+
+// ── REPORT FORM ───────────────────────────────────────────────────────────
+const REPORT_TYPES = [
+  { icon:"💸", label:"Wrong Charge", id:"wrong_charge" },
+  { icon:"📦", label:"Item Not Delivered", id:"not_delivered" },
+  { icon:"⚠️", label:"Scam / Fraud", id:"fraud" },
+  { icon:"🙅", label:"Poor Service", id:"poor_service" },
+  { icon:"❌", label:"Refused Refund", id:"no_refund" },
+  { icon:"🔒", label:"Data Privacy", id:"privacy" },
+];
+
+let selectedReportType = "";
+
+function showReportForm() {
+  const m = state.merchant;
+  const typeCells = REPORT_TYPES.map(t=>`
+    <div class="rtype-card" id="rt-${t.id}" onclick="selectReportType('${t.id}','${t.label}')">
+      <span class="rt-icon">${t.icon}</span>${t.label}
+    </div>`).join("");
+
+  const w = document.createElement("div");
+  w.className="msg bot";
+  w.innerHTML=`
+    <div class="bot-icon">💳</div>
+    <div class="bubble" style="max-width:94%">
+      <p>🚨 Reporting <strong>${m.name}</strong> — select the issue type:</p>
+      <div class="report-types" style="margin-top:10px">${typeCells}</div>
+      <div class="inline-input" style="margin-top:10px" id="reportForm">
+        <textarea class="inline-field" id="f_rdesc" rows="3" placeholder="Describe the issue in detail…" style="resize:none;line-height:1.5"></textarea>
+        <div class="field-row">
+          <input class="inline-field" id="f_rname"  placeholder="Your full name *" type="text"/>
+          <input class="inline-field" id="f_rphone" placeholder="Phone number *" type="tel"/>
+        </div>
+        <button class="submit-report" onclick="submitReport()">🚨 Submit Report</button>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips([]);
+}
+
+function selectReportType(id, label) {
+  selectedReportType = label;
+  document.querySelectorAll(".rtype-card").forEach(el=>el.classList.remove("selected"));
+  document.getElementById("rt-"+id)?.classList.add("selected");
+}
+
+function submitReport() {
+  const desc  = document.getElementById("f_rdesc")?.value.trim();
+  const name  = document.getElementById("f_rname")?.value.trim();
+  const phone = document.getElementById("f_rphone")?.value.trim();
+
+  if (!selectedReportType) { flashRepErr("Please select an issue type."); return; }
+  if (!desc)  { flashRepErr("Please describe the issue."); return; }
+  if (!name || !phone) { flashRepErr("Please enter your name and phone number."); return; }
+
+  state.reportType=selectedReportType; state.reportDesc=desc; state.reporterName=name; state.reporterPhone=phone;
+  document.getElementById("reportForm").style.display="none";
+  addMsg("user",`Report: ${selectedReportType}`);
+  showTyping();
+  setTimeout(()=>{ removeTyping(); showReportConfirmation(); }, 1200);
+}
+
+function flashRepErr(msg) {
+  document.getElementById("err_rep")?.remove();
+  const el=document.createElement("div");
+  el.id="err_rep"; el.className="err"; el.textContent="⚠ "+msg;
+  document.getElementById("reportForm")?.appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+function showReportConfirmation() {
+  const m = state.merchant;
+  const ref = "RPT-" + Date.now().toString().slice(-6);
+  const now = new Date();
+  const dateStr = now.toLocaleString("en-NG",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+
+  const waText = [
+    `🚨 *MERCHANT REPORT – HelpPay*`,
+    ``,
+    `📋 *Report Ref: ${ref}*`,
+    `🏪 *Merchant:* ${m.name} (${m.code})`,
+    `⚠️ *Issue Type:* ${state.reportType}`,
+    ``,
+    `📝 *Description:*`,
+    state.reportDesc,
+    ``,
+    `👤 *Reporter:* ${state.reporterName}`,
+    `📞 *Phone:* ${state.reporterPhone}`,
+    `📅 *Date:* ${dateStr}`,
+    ``,
+    `Submitted via HelpPay · Please investigate and respond.`
+  ].join("\n");
+
+  const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waText)}`;
+
+  const w = document.createElement("div");
+  w.className="msg bot";
+  w.innerHTML=`
+    <div class="bot-icon">💳</div>
+    <div class="bubble" style="max-width:94%">
+      <p>Report submitted! 📬 Our team will review and respond within <strong>24 hours</strong>. Forward to us on WhatsApp for faster resolution:</p>
+      <div class="detail-section" style="margin-top:10px">
+        <div class="detail-section-title">Report Summary · ${ref}</div>
+        <div style="font-size:0.8rem;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Merchant</span><strong>${m.name}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Issue</span><strong style="color:var(--rose)">${state.reportType}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Reporter</span><strong>${state.reporterName}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Filed</span><strong>${dateStr}</strong></div>
+        </div>
+      </div>
+      <a class="wa-btn" href="${waUrl}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Forward Report via WhatsApp
+      </a>
+      <div class="badge-strip">
+        <span class="badge rose">🚨 ${state.reportType}</span>
+        <span class="badge indigo">REF: ${ref}</span>
+        <span class="badge green">📬 Under Review</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips(["💸 Make Payment","📋 View Details","🔄 Change Merchant"]);
+}
+
+// ── Core processor ─────────────────────────────────────────────────────────
+function processInput(raw) {
+  if (!raw.trim()) return;
+  const v = raw.toLowerCase().trim();
+  chipsEl.innerHTML="";
+
+  if (v.includes("change merchant") || v.includes("start over") || v.includes("new merchant")) { resetChat(); return; }
+  if (v.includes("help")) {
+    addMsg("user",raw); botReply(`Need assistance? 💳<br><br>📞 <strong>+234 815 750 5037</strong><br>💬 WhatsApp support available<br><br>Enter a <strong>SmartUSSD</strong> code (e.g. <code>HP-1001</code>) to look up a merchant.<br><br>Type <em>Start Over</em> to reset.`,["🔄 Start Over"]);
+    return;
+  }
+  if (v.includes("view details") || v.includes("details")) {
+    if (state.merchant) { addMsg("user",raw); showTyping(); setTimeout(()=>{ removeTyping(); showFullDetails(); },900); return; }
+  }
+  if (v.includes("make payment") || v.includes("pay again") || v.includes("pay")) {
+    if (state.merchant) { addMsg("user",raw); startAction("pay"); return; }
+  }
+  if (v.includes("report merchant") || v.includes("report")) {
+    if (state.merchant) { addMsg("user",raw); startAction("report"); return; }
+  }
+
+  // If on welcome step, try to auto-verify typed USSD
+  if (state.step === "welcome" && raw.toUpperCase().startsWith("HP-")) {
+    addMsg("user", raw);
+    const merchant = MERCHANTS[raw.toUpperCase()];
+    if (merchant) {
+      state.merchant = merchant; state.ussdCode = raw.toUpperCase();
+      showTyping(); setTimeout(()=>{ removeTyping(); showMerchantCard(); }, 1000);
+    } else {
+      botReply(`❌ SmartUSSD code <strong>${raw.toUpperCase()}</strong> not found. Please check and try again.`,[]);
+    }
+    return;
+  }
+
+  addMsg("user",raw);
+  if (!state.merchant) {
+    botReply("Please enter a merchant's <strong>SmartUSSD</strong> code to get started (e.g. <code>HP-1001</code>).",[]);
+  } else {
+    botReply("Choose an action below, or type <em>Change Merchant</em> to look up a new one. 💳",
+      ["📋 View Details","💸 Make Payment","🚨 Report Merchant","🔄 Change Merchant"]);
+  }
+}
+
+function handleSend() {
+  const val = inputEl.value.trim();
+  if (!val) return;
+  inputEl.value="";
+  processInput(val);
+}
+inputEl.addEventListener("keydown",e=>{ if(e.key==="Enter") handleSend(); });
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function resetChat() {
+  Object.assign(state,{step:"welcome",ussdCode:"",merchant:null,action:"",payAmount:"",payMethod:"",payerName:"",payerPhone:"",payNote:"",reportType:"",reportDesc:"",reporterName:"",reporterPhone:""});
+  selectedReportType="";
+  messagesEl.innerHTML=""; chipsEl.innerHTML="";
+  initChat();
+}
+
+function initChat() {
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    addMsg("bot",
+      `👋 Welcome to <strong>HelpPay</strong> — your secure customer payment assistant!<br><br>` +
+      `I help you pay any registered merchant, view their details, or report payment issues — all in one place. 🔒<br><br>` +
+      `To get started, enter your merchant's <strong>SmartUSSD code</strong> below.`
+    );
+    state.step = "welcome";
+    renderUSSDBlock();
+    setChips(["❓ Help"]);
+  }, 900);
+}
+
+initChat();
+</script>
+</body>
+</html>
