@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopBot — Your Smart Shopping Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:#00C9A7; --teal-deep:#00A086; --teal-glow:rgba(0,201,167,0.18);
+  --coral:#FF6B6B; --amber:#FFB347; --indigo:#6C63FF;
+  --bg:#F0F4F8; --surface:#FFFFFF; --surface2:#F7FAFB; --surface3:#EEF3F7;
+  --border:#E2EAF0; --border2:#D0DCE8;
+  --text:#1A2332; --text-muted:#6B7A8F; --text-dim:#A0AEBF;
+  --shadow:0 2px 16px rgba(26,35,50,0.08);
+  --shadow-lg:0 8px 40px rgba(26,35,50,0.14);
+  --radius:16px; --radius-sm:10px;
+  --wa:#25D366; --wa-deep:#128C7E;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;
+  background:linear-gradient(135deg,#E8F4F2 0%,#F0F4F8 40%,#EEF0FB 100%);}
+
+body::before{content:'';position:fixed;top:-120px;right:-80px;width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,201,167,0.12),transparent 70%);pointer-events:none;}
+body::after{content:'';position:fixed;bottom:-100px;left:-60px;width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(108,99,255,0.1),transparent 70%);pointer-events:none;}
+
+/* CHAT WINDOW */
+.chat-window{width:100%;max-width:480px;height:92vh;max-height:820px;background:var(--surface);
+  border-radius:24px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;
+  position:relative;animation:rise .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes rise{from{opacity:0;transform:translateY(30px) scale(.97);}to{opacity:1;transform:none;}}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--teal-deep),var(--teal));padding:16px 18px 14px;
+  display:flex;align-items:center;gap:12px;flex-shrink:0;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.08);}
+.bot-avatar{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,0.22);
+  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+.header-info{flex:1;}
+.header-name{font-size:16px;font-weight:800;color:#fff;line-height:1;}
+.header-status{font-size:11.5px;color:rgba(255,255,255,0.8);margin-top:3px;display:flex;align-items:center;gap:5px;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#A8F0DB;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.header-actions{display:flex;gap:7px;}
+.hbtn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.18);border:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;transition:.18s;}
+.hbtn:hover{background:rgba(255,255,255,0.3);}
+
+/* MALL BANNER */
+.mall-banner{background:linear-gradient(90deg,var(--teal-glow),transparent);border-bottom:1px solid var(--border);
+  padding:8px 16px;font-size:12px;color:var(--teal-deep);font-weight:600;display:none;align-items:center;gap:6px;}
+.mall-banner.show{display:flex;}
+
+/* MESSAGES */
+.messages{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:10px;}
+
+/* BUBBLES */
+.msg{display:flex;gap:8px;animation:fadeUp .25s ease;max-width:100%;}
+.msg.user{flex-direction:row-reverse;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.msg-av{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex-shrink:0;margin-top:2px;}
+.msg.bot .msg-av{background:linear-gradient(135deg,var(--teal-deep),var(--teal));box-shadow:0 2px 8px var(--teal-glow);}
+.msg.user .msg-av{background:var(--surface3);border:1px solid var(--border);}
+.msg-col{display:flex;flex-direction:column;max-width:82%;}
+.msg.user .msg-col{align-items:flex-end;}
+.bubble{padding:10px 14px;border-radius:18px;font-size:13.5px;line-height:1.6;}
+.msg.bot .bubble{background:var(--surface2);border:1px solid var(--border);border-top-left-radius:5px;color:var(--text);}
+.msg.user .bubble{background:linear-gradient(135deg,var(--teal-deep),var(--teal));color:#fff;border-top-right-radius:5px;box-shadow:0 3px 12px var(--teal-glow);}
+.bubble b,.bubble strong{color:var(--teal-deep);}
+.msg.user .bubble b,.msg.user .bubble strong{color:#fff;}
+.msg-time{font-size:10px;color:var(--text-dim);margin-top:4px;font-family:'JetBrains Mono',monospace;}
+
+/* TYPING */
+.typing-bubble{background:var(--surface2);border:1px solid var(--border);border-radius:18px;border-top-left-radius:5px;padding:12px 16px;display:flex;gap:5px;align-items:center;}
+.td{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:tdB 1.1s infinite;}
+.td:nth-child(2){animation-delay:.18s;}.td:nth-child(3){animation-delay:.36s;}
+@keyframes tdB{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-6px);opacity:1;}}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
+.chip{background:var(--surface);border:1.5px solid var(--border);color:var(--teal-deep);
+  padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+.chip:hover{background:var(--teal);border-color:var(--teal);color:#fff;transform:translateY(-1px);}
+
+/* MALL GRID */
+.mall-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;width:100%;}
+.mall-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;cursor:pointer;transition:.2s;text-align:center;}
+.mall-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 4px 16px var(--teal-glow);}
+.mall-card.selected{border-color:var(--teal);background:rgba(0,201,167,0.07);}
+.mc-emoji{font-size:26px;margin-bottom:4px;}
+.mc-name{font-size:12px;font-weight:700;color:var(--text);}
+.mc-loc{font-size:10.5px;color:var(--text-muted);margin-top:2px;}
+.mc-tag{font-size:9.5px;padding:2px 7px;border-radius:8px;background:rgba(0,201,167,0.1);color:var(--teal-deep);border:1px solid rgba(0,201,167,0.2);margin-top:4px;display:inline-block;}
+
+/* PRODUCT CARDS */
+.product-list{display:flex;flex-direction:column;gap:7px;margin-top:8px;width:100%;}
+.product-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 12px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:10px;}
+.product-card:hover{border-color:var(--teal);box-shadow:0 3px 12px var(--teal-glow);}
+.product-card.in-cart{border-color:var(--teal);background:rgba(0,201,167,0.04);}
+.pc-emoji{font-size:26px;width:44px;height:44px;background:var(--surface2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pc-info{flex:1;}
+.pc-name{font-size:13px;font-weight:700;}
+.pc-store{font-size:11px;color:var(--text-muted);}
+.pc-price{font-size:14px;font-weight:800;color:var(--teal-deep);}
+.pc-add{width:30px;height:30px;border-radius:8px;background:var(--teal);border:none;cursor:pointer;
+  color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.18s;flex-shrink:0;}
+.pc-add:hover{background:var(--teal-deep);transform:scale(1.1);}
+.pc-badge{font-size:9px;padding:2px 6px;border-radius:6px;font-weight:700;}
+.badge-hot{background:rgba(255,107,107,0.15);color:var(--coral);}
+.badge-sale{background:rgba(255,179,71,0.15);color:var(--amber);}
+.badge-new{background:rgba(0,201,167,0.12);color:var(--teal-deep);}
+.stars{color:#FFB347;font-size:11px;}
+
+/* CART CARD */
+.cart-card{background:linear-gradient(135deg,rgba(0,201,167,0.06),rgba(0,160,134,0.03));border:1.5px solid rgba(0,201,167,0.25);border-radius:var(--radius-sm);padding:12px;margin-top:8px;width:100%;}
+.cart-item-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(0,201,167,0.15);}
+.cart-item-row:last-of-type{border-bottom:none;}
+.cir-emoji{font-size:18px;}
+.cir-name{font-size:12px;flex:1;font-weight:500;}
+.cir-price{font-size:12.5px;font-weight:700;color:var(--teal-deep);}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1.5px solid rgba(0,201,167,0.25);}
+
+/* INFO CARD */
+.info-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-top:8px;width:100%;}
+.ic-row{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border);}
+.ic-row:last-child{border-bottom:none;}
+.ic-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.ic-text{font-size:12.5px;line-height:1.55;flex:1;}
+.ic-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600;}
+
+/* PROMO */
+.promo-card{background:linear-gradient(135deg,#FFB347,#FF6B6B);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:8px;width:100%;}
+.promo-text{font-size:12.5px;font-weight:700;color:#fff;flex:1;}
+.promo-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(255,255,255,0.3);padding:3px 8px;border-radius:6px;color:#fff;cursor:pointer;}
+
+/* WA BUTTON */
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 20px;
+  background:linear-gradient(135deg,var(--wa-deep),var(--wa));color:#fff;border:none;
+  border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:10px;
+  font-family:'Plus Jakarta Sans',sans-serif;transition:.2s;box-shadow:0 4px 16px rgba(37,211,102,0.28);}
+.wa-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(37,211,102,0.45);}
+.wa-btn-ghost{background:transparent;border:1.5px solid var(--wa);color:var(--wa-deep);box-shadow:none;}
+.wa-btn-ghost:hover{background:rgba(37,211,102,0.08);}
+
+/* INPUT */
+.input-area{border-top:1px solid var(--border);padding:12px 14px;background:var(--surface);display:flex;gap:9px;align-items:flex-end;flex-shrink:0;}
+.input-box{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;display:flex;align-items:flex-end;gap:7px;padding:9px 13px;transition:.2s;}
+.input-box:focus-within{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-glow);}
+.chat-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13.5px;font-family:'Plus Jakarta Sans',sans-serif;resize:none;max-height:80px;line-height:1.5;}
+.chat-input::placeholder{color:var(--text-dim);}
+.send-btn{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--teal-deep),var(--teal));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;box-shadow:0 3px 10px var(--teal-glow);transition:.18s;flex-shrink:0;}
+.send-btn:hover{transform:scale(1.07);}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:rgba(26,35,50,0.5);backdrop-filter:blur(3px);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;animation:slideUp .28s cubic-bezier(.34,1.2,.64,1);}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:none;}}
+.sheet-handle{width:40px;height:4px;border-radius:4px;background:var(--border2);margin:12px auto 0;}
+.sheet-header{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sheet-title{font-size:15px;font-weight:800;}
+.sheet-close{width:28px;height:28px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);}
+.sheet-body{flex:1;overflow-y:auto;padding:16px 18px;}
+.sheet-footer{padding:14px 18px;border-top:1px solid var(--border);}
+.form-group{margin-bottom:13px;}
+.form-label{font-size:11.5px;font-weight:700;color:var(--text-muted);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.4px;}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;color:var(--text);font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:.2s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-glow);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.divider{height:1px;background:var(--border);margin:8px 0;}
+</style>
+</head>
+<body>
+
+<div class="chat-window">
+  <div class="header">
+    <div class="bot-avatar">🛍️</div>
+    <div class="header-info">
+      <div class="header-name">ShopBot Assistant</div>
+      <div class="header-status"><div class="status-dot"></div>Online · Ready to help you shop</div>
+    </div>
+    <div class="header-actions">
+      <button class="hbtn" onclick="openCart()" title="Cart">🛒</button>
+      <button class="hbtn" onclick="openSearch()" title="Search">🔍</button>
+    </div>
+  </div>
+  <div class="mall-banner" id="mallBanner">
+    🏬 <span id="mallBannerText"></span>
+    <span style="margin-left:auto;font-size:11px;cursor:pointer;text-decoration:underline;" onclick="changeMall()">Change</span>
+  </div>
+  <div class="messages" id="messages"></div>
+  <div class="input-area">
+    <div class="input-box">
+      <textarea class="chat-input" id="chatInput" rows="1" placeholder="Type a message or choose an option above..."></textarea>
+    </div>
+    <button class="send-btn" onclick="sendUserMsg()">➤</button>
+  </div>
+</div>
+
+<!-- CART SHEET -->
+<div class="overlay" id="overlayCart">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🛒 My Cart</div><div class="sheet-close" onclick="closeOverlay('overlayCart')">✕</div></div>
+    <div class="sheet-body" id="cartBody"></div>
+    <div class="sheet-footer" id="cartFooter"></div>
+  </div>
+</div>
+
+<!-- SEARCH SHEET -->
+<div class="overlay" id="overlaySearch">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🔍 Search Products</div><div class="sheet-close" onclick="closeOverlay('overlaySearch')">✕</div></div>
+    <div class="sheet-body">
+      <input class="form-input" id="searchInput" placeholder="Search products, brands, categories..." oninput="liveSearch(this.value)" style="margin-bottom:12px;" autofocus>
+      <div id="searchResults"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER SHEET -->
+<div class="overlay" id="overlayOrder">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">📦 Place Your Order</div><div class="sheet-close" onclick="closeOverlay('overlayOrder')">✕</div></div>
+    <div class="sheet-body">
+      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="oName" placeholder="Your full name"></div>
+      <div class="form-group"><label class="form-label">Phone / WhatsApp</label><input class="form-input" id="oPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="form-group"><label class="form-label">Delivery Address</label><textarea class="form-textarea" id="oAddress" placeholder="Street, area, landmark..."></textarea></div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">City</label><input class="form-input" id="oCity" placeholder="Abuja"></div>
+        <div class="form-group"><label class="form-label">State</label>
+          <select class="form-select" id="oState">
+            <option>Abuja (FCT)</option><option>Lagos</option><option>Rivers</option><option>Kano</option><option>Ogun</option><option>Delta</option><option>Enugu</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Payment Method</label>
+        <select class="form-select" id="oPayment">
+          <option>Bank Transfer</option><option>Pay on Delivery</option><option>USSD</option><option>Card Payment</option><option>Crypto (USDT)</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Special Instructions</label><textarea class="form-textarea" id="oNotes" placeholder="Gift wrap, colour preference, size..."></textarea></div>
+    </div>
+    <div class="sheet-footer"><button class="wa-btn" onclick="submitOrder()">📲 Confirm Order via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- TRACK SHEET -->
+<div class="overlay" id="overlayTrack">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🚚 Track My Order</div><div class="sheet-close" onclick="closeOverlay('overlayTrack')">✕</div></div>
+    <div class="sheet-body">
+      <div class="form-group"><label class="form-label">Order ID or Phone Number</label><input class="form-input" id="trackId" placeholder="e.g. SB-20240318 or +234..."></div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.6;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px;">
+        📍 You'll be redirected to WhatsApp where our team will give you a real-time status update on your order.
+      </div>
+    </div>
+    <div class="sheet-footer"><button class="wa-btn" onclick="submitTrack()">📲 Track via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- SUPPORT SHEET -->
+<div class="overlay" id="overlaySupport">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🎧 Customer Support</div><div class="sheet-close" onclick="closeOverlay('overlaySupport')">✕</div></div>
+    <div class="sheet-body">
+      <div class="form-group"><label class="form-label">Your Name</label><input class="form-input" id="sName" placeholder="Full name"></div>
+      <div class="form-group"><label class="form-label">Issue Type</label>
+        <select class="form-select" id="sType">
+          <option>Order not received</option><option>Wrong item delivered</option><option>Damaged product</option>
+          <option>Refund request</option><option>Payment issue</option><option>General inquiry</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Order ID (if applicable)</label><input class="form-input" id="sOrder" placeholder="SB-20240318"></div>
+      <div class="form-group"><label class="form-label">Describe Your Issue</label><textarea class="form-textarea" id="sDesc" placeholder="Tell us what happened..."></textarea></div>
+    </div>
+    <div class="sheet-footer"><button class="wa-btn" onclick="submitSupport()">📲 Contact Support via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- RETURN SHEET -->
+<div class="overlay" id="overlayReturn">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">↩️ Return & Refund</div><div class="sheet-close" onclick="closeOverlay('overlayReturn')">✕</div></div>
+    <div class="sheet-body">
+      <div class="form-group"><label class="form-label">Order ID</label><input class="form-input" id="rOrder" placeholder="SB-20240318"></div>
+      <div class="form-group"><label class="form-label">Item to Return</label><input class="form-input" id="rItem" placeholder="Product name"></div>
+      <div class="form-group"><label class="form-label">Reason for Return</label>
+        <select class="form-select" id="rReason">
+          <option>Wrong size/colour</option><option>Defective product</option><option>Not as described</option>
+          <option>Changed my mind</option><option>Received wrong item</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Preferred Resolution</label>
+        <select class="form-select" id="rResolution"><option>Full Refund</option><option>Exchange/Replacement</option><option>Store Credit</option></select>
+      </div>
+    </div>
+    <div class="sheet-footer"><button class="wa-btn" onclick="submitReturn()">📲 Submit Return via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- BULK / RFQ SHEET -->
+<div class="overlay" id="overlayRFQ">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">📋 Bulk / Wholesale Request</div><div class="sheet-close" onclick="closeOverlay('overlayRFQ')">✕</div></div>
+    <div class="sheet-body">
+      <div class="form-group"><label class="form-label">Name / Company</label><input class="form-input" id="bName" placeholder="Full name or company"></div>
+      <div class="form-group"><label class="form-label">Product(s) Needed</label><textarea class="form-textarea" id="bProduct" placeholder="Describe products and specifications..."></textarea></div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Quantity</label><input class="form-input" id="bQty" type="number" placeholder="500 units"></div>
+        <div class="form-group"><label class="form-label">Budget</label><input class="form-input" id="bBudget" placeholder="₦200,000"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Delivery Location</label><input class="form-input" id="bLocation" placeholder="City, State"></div>
+    </div>
+    <div class="sheet-footer"><button class="wa-btn" onclick="submitBulk()">📲 Send Bulk Request via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- PRICE ALERT SHEET -->
+<div class="overlay" id="overlayAlert">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🔔 Set Price Alert</div><div class="sheet-close" onclick="closeOverlay('overlayAlert')">✕</div></div>
+    <div class="sheet-body">
+      <div class="form-group"><label class="form-label">Product Name</label><input class="form-input" id="alProduct" placeholder="e.g. iPhone 15 Pro Max"></div>
+      <div class="form-group"><label class="form-label">Your Target Price (₦)</label><input class="form-input" id="alPrice" type="number" placeholder="750000"></div>
+      <div class="form-group"><label class="form-label">Your WhatsApp Number</label><input class="form-input" id="alPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="form-group"><label class="form-label">Alert Condition</label>
+        <select class="form-select" id="alWhen">
+          <option>Price drops to my target</option><option>Price drops by 10%+</option>
+          <option>Any price drop</option><option>Item back in stock</option>
+        </select>
+      </div>
+    </div>
+    <div class="sheet-footer"><button class="wa-btn" onclick="submitAlert()">📲 Set Alert via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- REVIEW SHEET -->
+<div class="overlay" id="overlayReview">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">⭐ Leave a Review</div><div class="sheet-close" onclick="closeOverlay('overlayReview')">✕</div></div>
+    <div class="sheet-body">
+      <div class="form-group"><label class="form-label">Your Name</label><input class="form-input" id="rvName" placeholder="Full name"></div>
+      <div class="form-group"><label class="form-label">Product / Store</label><input class="form-input" id="rvProduct" placeholder="What are you reviewing?"></div>
+      <div class="form-group"><label class="form-label">Rating</label>
+        <div style="display:flex;gap:10px;margin-top:6px;">
+          <span class="star-btn" style="font-size:28px;cursor:pointer;" data-n="1" onclick="setStar(1)">⭐</span>
+          <span class="star-btn" style="font-size:28px;cursor:pointer;" data-n="2" onclick="setStar(2)">⭐</span>
+          <span class="star-btn" style="font-size:28px;cursor:pointer;" data-n="3" onclick="setStar(3)">⭐</span>
+          <span class="star-btn" style="font-size:28px;cursor:pointer;" data-n="4" onclick="setStar(4)">⭐</span>
+          <span class="star-btn" style="font-size:28px;cursor:pointer;" data-n="5" onclick="setStar(5)">⭐</span>
+        </div>
+        <input type="hidden" id="rvStars" value="5">
+      </div>
+      <div class="form-group"><label class="form-label">Your Review</label><textarea class="form-textarea" id="rvText" placeholder="Share your experience..."></textarea></div>
+    </div>
+    <div class="sheet-footer"><button class="wa-btn" onclick="submitReview()">📲 Submit Review via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- COMPARE SHEET -->
+<div class="overlay" id="overlayCompare">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">⚖️ Compare Products</div><div class="sheet-close" onclick="closeOverlay('overlayCompare')">✕</div></div>
+    <div class="sheet-body" id="compareBody"></div>
+    <div class="sheet-footer"><button class="wa-btn" onclick="submitCompare()">📲 Ask on WhatsApp for Recommendation</button></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════
+// CONFIG — update WhatsApp number
+// ════════════════════════════════
+const WA = '2348000000000'; // e.g. 2348012345678
+
+// ════════════════════════════════
+// DATA
+// ════════════════════════════════
+const malls = [
+  {id:'CM',emoji:'🏬',name:'Central Mall',loc:'Central Area, Abuja',tag:'40+ Stores',stores:42},
+  {id:'WM',emoji:'🛍️',name:'Wuse Market',loc:'Wuse, Abuja',tag:'Electronics Hub',stores:200},
+  {id:'JB',emoji:'🏪',name:'Jabi Lake Mall',loc:'Jabi, Abuja',tag:'Premium Brands',stores:65},
+  {id:'AZ',emoji:'🏘️',name:'Area 1 Shopping',loc:'Area 1, Abuja',tag:'Local Brands',stores:30},
+  {id:'GW',emoji:'📦',name:'Gwagwalada Mall',loc:'Gwagwalada, FCT',tag:'Wholesale Hub',stores:55},
+  {id:'MM',emoji:'🌟',name:'Maitama Centre',loc:'Maitama, Abuja',tag:'Luxury Brands',stores:25},
+];
+
+const products = [
+  {id:'E1',emoji:'📱',name:'Samsung Galaxy A55',store:'TechZone',price:'₦289,000',num:289000,cat:'Electronics',mall:'WM',badge:'hot',rating:4.7},
+  {id:'E2',emoji:'💻',name:'HP Laptop 15" i5',store:'CompuWorld',price:'₦520,000',num:520000,cat:'Electronics',mall:'WM',badge:'',rating:4.5},
+  {id:'E3',emoji:'🎧',name:'JBL Wireless Earbuds',store:'SoundHouse',price:'₦45,000',num:45000,cat:'Electronics',mall:'CM',badge:'sale',rating:4.8},
+  {id:'E4',emoji:'📺',name:'LG 43" Smart TV',store:'HomeAppliances',price:'₦380,000',num:380000,cat:'Electronics',mall:'JB',badge:'new',rating:4.6},
+  {id:'E5',emoji:'⌚',name:'Smart Watch Pro',store:'TechZone',price:'₦68,000',num:68000,cat:'Electronics',mall:'WM',badge:'hot',rating:4.4},
+  {id:'E6',emoji:'📸',name:'Canon DSLR Camera',store:'PhotoWorld',price:'₦420,000',num:420000,cat:'Electronics',mall:'JB',badge:'',rating:4.7},
+  {id:'F1',emoji:'👗',name:'Designer Ankara Dress',store:'AfriqueStyle',price:'₦18,500',num:18500,cat:'Fashion',mall:'CM',badge:'new',rating:4.9},
+  {id:'F2',emoji:'👟',name:'Nike Air Force 1',store:'SneakerHub',price:'₦95,000',num:95000,cat:'Fashion',mall:'JB',badge:'hot',rating:4.8},
+  {id:'F3',emoji:'👜',name:'Leather Handbag Set',store:'LuxeAccess.',price:'₦42,000',num:42000,cat:'Fashion',mall:'MM',badge:'',rating:4.6},
+  {id:'F4',emoji:'🧥',name:'Men\'s 3-Piece Suit',store:'DapperMan',price:'₦85,000',num:85000,cat:'Fashion',mall:'JB',badge:'sale',rating:4.7},
+  {id:'F5',emoji:'👒',name:'Handwoven Adire Set',store:'AfriqueStyle',price:'₦22,000',num:22000,cat:'Fashion',mall:'CM',badge:'new',rating:4.9},
+  {id:'G1',emoji:'🛒',name:'Premium Grocery Bundle',store:'FreshMart',price:'₦25,000',num:25000,cat:'Groceries',mall:'CM',badge:'',rating:4.5},
+  {id:'G2',emoji:'🥩',name:'Frozen Assorted Meats 5kg',store:'ColdChain',price:'₦18,000',num:18000,cat:'Groceries',mall:'AZ',badge:'new',rating:4.3},
+  {id:'G3',emoji:'🍎',name:'Fresh Organic Fruits Basket',store:'FreshFarm',price:'₦12,000',num:12000,cat:'Groceries',mall:'CM',badge:'',rating:4.7},
+  {id:'H1',emoji:'🛋️',name:'L-Shaped Sofa Set',store:'HomePlus',price:'₦450,000',num:450000,cat:'Home & Decor',mall:'MM',badge:'',rating:4.7},
+  {id:'H2',emoji:'🪴',name:'Indoor Plant Bundle (5)',store:'GreenNest',price:'₦15,000',num:15000,cat:'Home & Decor',mall:'CM',badge:'new',rating:4.9},
+  {id:'H3',emoji:'💡',name:'LED Chandelier Set',store:'LightWorld',price:'₦75,000',num:75000,cat:'Home & Decor',mall:'JB',badge:'sale',rating:4.5},
+  {id:'B1',emoji:'💄',name:'MAC Cosmetics Bundle',store:'BeautyHub',price:'₦55,000',num:55000,cat:'Beauty',mall:'JB',badge:'hot',rating:4.8},
+  {id:'B2',emoji:'🧴',name:'Skincare Routine Set',store:'GlowUp',price:'₦32,000',num:32000,cat:'Beauty',mall:'CM',badge:'new',rating:4.7},
+  {id:'B3',emoji:'💅',name:'Nail Art Kit Pro',store:'GlowUp',price:'₦14,000',num:14000,cat:'Beauty',mall:'CM',badge:'sale',rating:4.5},
+  {id:'W1',emoji:'📦',name:'Rice 50kg x10 Bags',store:'WholesaleKing',price:'₦185,000',num:185000,cat:'Wholesale',mall:'GW',badge:'hot',rating:4.6},
+  {id:'W2',emoji:'🧴',name:'Hair Products Carton (24)',store:'BeautyDistrib',price:'₦96,000',num:96000,cat:'Wholesale',mall:'GW',badge:'sale',rating:4.4},
+];
+
+const faqs = {
+  delivery:{q:'🚚 Delivery',a:'Delivery times:<br>• <strong>Within Abuja:</strong> 1–2 business days<br>• <strong>Other states:</strong> 2–5 business days<br>• <strong>Express:</strong> Same day (+₦3,500)<br><br>Free delivery on orders above <strong>₦50,000</strong>! 🎉'},
+  payment:{q:'💳 Payment',a:'We accept:<br>• 🏦 Bank Transfer<br>• 📱 Pay on Delivery<br>• 📞 USSD Payment<br>• 💳 Debit/Credit Card<br>• 🪙 Crypto (USDT)<br><br>All payments are secured and confirmed before dispatch.'},
+  return:{q:'↩️ Returns',a:'You can return items within <strong>7 days</strong> of delivery.<br><br>• Item must be unused in original packaging<br>• Receipt / Order ID required<br>• Refunds in <strong>3–5 business days</strong>'},
+  warranty:{q:'🛡️ Warranty',a:'• Electronics: <strong>6–12 months</strong><br>• Fashion: <strong>14-day exchange</strong><br>• Home items: <strong>30-day quality guarantee</strong><br><br>Warranty claims are handled directly by our team on WhatsApp.'},
+  bulk:{q:'📦 Bulk Pricing',a:'Volume discounts:<br>• 10–49 units → <strong>5% off</strong><br>• 50–99 units → <strong>10% off</strong><br>• 100+ units → <strong>Custom pricing</strong><br><br>Request a formal quote below.'},
+};
+
+// ════════════════════════════════
+// STATE
+// ════════════════════════════════
+let mall = null;
+let cart = [];
+let compareList = [];
+
+// ════════════════════════════════
+// WHATSAPP
+// ════════════════════════════════
+function wa(msg){ window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`,'_blank'); }
+
+// ════════════════════════════════
+// TIME
+// ════════════════════════════════
+function ts(){ return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}); }
+
+// ════════════════════════════════
+// CHAT
+// ════════════════════════════════
+function botMsg(html, extra=''){
+  const a=document.getElementById('messages');
+  const d=document.createElement('div'); d.className='msg bot';
+  d.innerHTML=`<div class="msg-av">🛍️</div><div class="msg-col"><div class="bubble">${html}</div>${extra}<div class="msg-time">${ts()}</div></div>`;
+  a.appendChild(d); a.scrollTop=a.scrollHeight;
+}
+function userMsg(t){
+  const a=document.getElementById('messages');
+  const d=document.createElement('div'); d.className='msg user';
+  d.innerHTML=`<div class="msg-av">👤</div><div class="msg-col"><div class="bubble">${t}</div><div class="msg-time">${ts()}</div></div>`;
+  a.appendChild(d); a.scrollTop=a.scrollHeight;
+}
+function typing(cb, delay=700+Math.random()*300){
+  const a=document.getElementById('messages');
+  const d=document.createElement('div'); d.className='msg bot'; d.id='typ';
+  d.innerHTML=`<div class="msg-av">🛍️</div><div class="msg-col"><div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
+  a.appendChild(d); a.scrollTop=a.scrollHeight;
+  setTimeout(()=>{ document.getElementById('typ')?.remove(); cb(); }, delay);
+}
+
+// ════════════════════════════════
+// MALL SELECTION
+// ════════════════════════════════
+function mallGrid(){
+  return `<div class="mall-grid">${malls.map(m=>`
+    <div class="mall-card" onclick="pickMall('${m.id}',this)">
+      <div class="mc-emoji">${m.emoji}</div>
+      <div class="mc-name">${m.name}</div>
+      <div class="mc-loc">📍 ${m.loc}</div>
+      <div class="mc-tag">${m.tag}</div>
+    </div>`).join('')}</div>`;
+}
+
+function pickMall(id, el){
+  mall = malls.find(m=>m.id===id);
+  document.querySelectorAll('.mall-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  userMsg(`${mall.emoji} ${mall.name}`);
+  document.getElementById('mallBannerText').textContent=`${mall.emoji} ${mall.name} — ${mall.loc}`;
+  document.getElementById('mallBanner').classList.add('show');
+  typing(()=>{
+    botMsg(`Welcome to <strong>${mall.name}</strong>! 🎉<br>📍 ${mall.loc} · <strong>${mall.stores}+ stores</strong><br><br>What would you like to do today?`, mainMenu());
+  }, 900);
+}
+
+function changeMall(){
+  mall=null; document.getElementById('mallBanner').classList.remove('show');
+  typing(()=>{ botMsg('No problem! Choose a mall to shop from:', mallGrid()); });
+}
+
+// ════════════════════════════════
+// MAIN MENU
+// ════════════════════════════════
+function mainMenu(){
+  return `<div class="chips">
+    <div class="chip" onclick="go('browse')">🛍️ Browse Products</div>
+    <div class="chip" onclick="go('search')">🔍 Search</div>
+    <div class="chip" onclick="go('deals')">🔥 Hot Deals</div>
+    <div class="chip" onclick="go('categories')">📂 Categories</div>
+    <div class="chip" onclick="go('compare')">⚖️ Compare Items</div>
+    <div class="chip" onclick="go('track')">🚚 Track Order</div>
+    <div class="chip" onclick="go('bulk')">📦 Bulk Order</div>
+    <div class="chip" onclick="go('return')">↩️ Return & Refund</div>
+    <div class="chip" onclick="go('support')">🎧 Support</div>
+    <div class="chip" onclick="go('alert')">🔔 Price Alert</div>
+    <div class="chip" onclick="go('promo')">🎁 Promo Codes</div>
+    <div class="chip" onclick="go('review')">⭐ Leave Review</div>
+    <div class="chip" onclick="openCart()">🛒 My Cart (${cart.length})</div>
+    <div class="chip" onclick="changeMall()">🏬 Change Mall</div>
+  </div>`;
+}
+
+function go(action){
+  const labels={browse:'🛍️ Browse Products',search:'🔍 Search',deals:'🔥 Hot Deals',categories:'📂 Categories',compare:'⚖️ Compare Items',track:'🚚 Track Order',bulk:'📦 Bulk Order',return:'↩️ Return & Refund',support:'🎧 Support',alert:'🔔 Price Alert',promo:'🎁 Promo Codes',review:'⭐ Leave Review'};
+  if(labels[action]) userMsg(labels[action]);
+  switch(action){
+    case 'browse': doBrowse(); break;
+    case 'search': openSearch(); break;
+    case 'deals': doDeals(); break;
+    case 'categories': doCategories(); break;
+    case 'compare': doCompare(); break;
+    case 'track': doTrack(); break;
+    case 'bulk': doBulk(); break;
+    case 'return': doReturn(); break;
+    case 'support': doSupport(); break;
+    case 'alert': doAlert(); break;
+    case 'promo': doPromo(); break;
+    case 'review': doReview(); break;
+  }
+}
+
+// ════════════════════════════════
+// PRODUCT CARD HTML
+// ════════════════════════════════
+function pcard(p){
+  const inC=cart.some(c=>c.id===p.id);
+  return `<div class="product-card ${inC?'in-cart':''}" id="pc-${p.id}">
+    <div class="pc-emoji">${p.emoji}</div>
+    <div class="pc-info">
+      <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+        <span class="pc-name">${p.name}</span>
+        ${p.badge?`<span class="pc-badge badge-${p.badge}">${p.badge.toUpperCase()}</span>`:''}
+      </div>
+      <div class="pc-store">${p.store}${mall?'':' · '+malls.find(m=>m.id===p.mall)?.name}</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="pc-price">${p.price}</span>
+        <span class="stars">${'★'.repeat(Math.floor(p.rating))}<span style="font-size:10px;color:var(--text-dim);"> (${p.rating})</span></span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px;align-items:center;">
+      <button class="pc-add" onclick="addCart('${p.id}')" title="${inC?'In cart':'Add'}">${inC?'✓':'+'}</button>
+      <span style="font-size:9px;color:var(--text-dim);cursor:pointer;" onclick="addCompare('${p.id}')">Compare</span>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════
+// BROWSE
+// ════════════════════════════════
+function doBrowse(){
+  const list = mall ? products.filter(p=>p.mall===mall.id).slice(0,7) : products.slice(0,7);
+  typing(()=>{
+    botMsg(`Here are popular products at <strong>${mall?mall.name:'all malls'}</strong>:`,
+      `<div class="product-list">${list.map(pcard).join('')}</div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="go('categories')">📂 By Category</div>
+        <div class="chip" onclick="go('deals')">🔥 Deals Only</div>
+        <div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div>
+      </div>`);
+  });
+}
+
+// ════════════════════════════════
+// CATEGORIES
+// ════════════════════════════════
+function doCategories(){
+  const cats=[...new Set(products.map(p=>p.cat))];
+  const emap={Electronics:'📱',Fashion:'👗',Groceries:'🛒','Home & Decor':'🛋️',Beauty:'💄',Wholesale:'📦'};
+  typing(()=>{
+    botMsg('Choose a category:',
+      `<div class="chips">${cats.map(c=>`<div class="chip" onclick="doCat('${c}')">${emap[c]||'🏷️'} ${c}</div>`).join('')}</div>`);
+  });
+}
+
+function doCat(cat){
+  userMsg(cat);
+  let list=products.filter(p=>p.cat===cat);
+  if(mall) list=list.filter(p=>p.mall===mall.id);
+  typing(()=>{
+    if(!list.length){
+      botMsg(`No <strong>${cat}</strong> products at ${mall?.name||'this mall'} right now.`,
+        `<div class="chips"><div class="chip" onclick="changeMall()">🏬 Try Another Mall</div><div class="chip" onclick="doCategories()">📂 Other Categories</div></div>`);
+    } else {
+      botMsg(`<strong>${cat}</strong> — ${list.length} items:`,
+        `<div class="product-list">${list.map(pcard).join('')}</div>
+        <div class="chips" style="margin-top:8px;"><div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div><div class="chip" onclick="doCategories()">← Back</div></div>`);
+    }
+  });
+}
+
+// ════════════════════════════════
+// HOT DEALS
+// ════════════════════════════════
+function doDeals(){
+  const list=products.filter(p=>p.badge==='hot'||p.badge==='sale');
+  typing(()=>{
+    botMsg('🔥 <strong>Today\'s Hot Deals</strong>',
+      `<div class="product-list">${list.slice(0,6).map(pcard).join('')}</div>
+      <div class="promo-card"><div>🎁</div><div class="promo-text">Use code for extra 5% off!</div><div class="promo-code" onclick="copyCode(this,'SHOP5')">SHOP5</div></div>
+      <div class="chips" style="margin-top:8px;"><div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div></div>`);
+  });
+}
+
+function copyCode(el,code){ navigator.clipboard?.writeText(code).catch(()=>{}); el.textContent='Copied! ✓'; setTimeout(()=>el.textContent=code,1600); }
+
+// ════════════════════════════════
+// PROMO
+// ════════════════════════════════
+function doPromo(){
+  typing(()=>{
+    botMsg('🎁 <strong>Active Promo Codes</strong>',
+      `<div class="info-card">
+        <div class="ic-row"><div class="ic-icon">🎁</div><div class="ic-text"><div class="ic-label">Code</div><b>SHOP5</b> — 5% off any order <span class="promo-code" style="font-size:10px;" onclick="copyCode(this,'SHOP5')">COPY</span></div></div>
+        <div class="ic-row"><div class="ic-icon">🆕</div><div class="ic-text"><div class="ic-label">Code</div><b>NEWBUYER10</b> — 10% off first order <span class="promo-code" style="font-size:10px;" onclick="copyCode(this,'NEWBUYER10')">COPY</span></div></div>
+        <div class="ic-row"><div class="ic-icon">🚚</div><div class="ic-text"><div class="ic-label">Code</div><b>FREESHIP</b> — Free delivery (₦50k+ orders) <span class="promo-code" style="font-size:10px;" onclick="copyCode(this,'FREESHIP')">COPY</span></div></div>
+        <div class="ic-row"><div class="ic-icon">📦</div><div class="ic-text"><div class="ic-label">Code</div><b>BULK20</b> — 20% off bulk (100+ units) <span class="promo-code" style="font-size:10px;" onclick="copyCode(this,'BULK20')">COPY</span></div></div>
+      </div>
+      <div class="chips"><div class="chip" onclick="go('browse')">🛍️ Shop Now</div></div>`);
+  });
+}
+
+// ════════════════════════════════
+// COMPARE
+// ════════════════════════════════
+function doCompare(){
+  const list=mall?products.filter(p=>p.mall===mall.id).slice(0,8):products.slice(0,8);
+  typing(()=>{
+    botMsg('⚖️ Tap <strong>Compare</strong> on any two products to see them side by side:',
+      `<div class="product-list">${list.map(pcard).join('')}</div>
+      <div class="chips" style="margin-top:8px;"><div class="chip" onclick="showCompare()">⚖️ View Comparison (${compareList.length})</div></div>`);
+  });
+}
+
+function addCompare(pid){
+  if(compareList.length>=2){ compareList=[]; }
+  if(!compareList.includes(pid)) compareList.push(pid);
+  if(compareList.length===2) showCompare();
+}
+
+function showCompare(){
+  if(compareList.length<2){ botMsg('Please select at least 2 products to compare. Tap <em>Compare</em> under any product.'); return; }
+  const [a,b]=compareList.map(id=>products.find(p=>p.id===id));
+  const rows=[['Price',a.price,b.price],['Store',a.store,b.store],['Category',a.cat,b.cat],['Rating',`${'★'.repeat(Math.floor(a.rating))} ${a.rating}`,`${'★'.repeat(Math.floor(b.rating))} ${b.rating}`]];
+  document.getElementById('compareBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="text-align:center;padding:14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;">
+        <div style="font-size:36px;">${a.emoji}</div><div style="font-weight:800;font-size:13px;margin-top:6px;">${a.name}</div>
+        <div style="font-size:16px;font-weight:800;color:var(--teal-deep);margin-top:4px;">${a.price}</div>
+        <button class="wa-btn" style="margin-top:8px;padding:8px;" onclick="addCart('${a.id}');closeOverlay('overlayCompare')">Add to Cart</button>
+      </div>
+      <div style="text-align:center;padding:14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;">
+        <div style="font-size:36px;">${b.emoji}</div><div style="font-weight:800;font-size:13px;margin-top:6px;">${b.name}</div>
+        <div style="font-size:16px;font-weight:800;color:var(--teal-deep);margin-top:4px;">${b.price}</div>
+        <button class="wa-btn" style="margin-top:8px;padding:8px;" onclick="addCart('${b.id}');closeOverlay('overlayCompare')">Add to Cart</button>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Comparison</div>
+    ${rows.map(r=>`<div style="display:flex;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="flex:1;font-size:12px;color:var(--text-muted);font-weight:600;">${r[0]}</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:${r[0]==='Price'?'var(--teal-deep)':'var(--text)'};">${r[1]}</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:${r[0]==='Price'?'var(--teal-deep)':'var(--text)'};">${r[2]}</span>
+    </div>`).join('')}`;
+  openOverlay('overlayCompare');
+}
+
+function submitCompare(){
+  const [a,b]=compareList.map(id=>products.find(p=>p.id===id));
+  wa(`⚖️ *PRODUCT COMPARISON REQUEST — ShopBot*\n\n🏬 Mall: ${mall?.name||'N/A'}\n\nProduct A: ${a?.name} (${a?.price})\nProduct B: ${b?.name} (${b?.price})\n\nPlease help me decide which one to buy! 😊`);
+  closeOverlay('overlayCompare');
+}
+
+// ════════════════════════════════
+// CART
+// ════════════════════════════════
+function addCart(pid){
+  const p=products.find(x=>x.id===pid);
+  if(!p) return;
+  if(cart.some(c=>c.id===pid)){ botMsg(`Already in cart! <div class="chips"><div class="chip" onclick="openCart()">🛒 View Cart</div></div>`); return; }
+  cart.push(p);
+  const btn=document.querySelector(`#pc-${pid} .pc-add`);
+  if(btn){ btn.textContent='✓'; btn.style.background='var(--teal-deep)'; }
+  document.querySelector(`#pc-${pid}`)?.classList.add('in-cart');
+  typing(()=>{
+    botMsg(`✅ <strong>${p.name}</strong> added to cart!`,
+      `<div class="chips"><div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div><div class="chip" onclick="openOverlay('overlayOrder')">⚡ Order Now</div><div class="chip" onclick="go('browse')">➕ Add More</div></div>`);
+  }, 400);
+}
+
+function openCart(){
+  if(!cart.length){
+    document.getElementById('cartBody').innerHTML=`<div style="text-align:center;padding:40px 20px;"><div style="font-size:48px;">🛒</div><p style="margin-top:12px;color:var(--text-muted);">Your cart is empty</p></div>`;
+    document.getElementById('cartFooter').innerHTML=`<button class="wa-btn wa-btn-ghost" onclick="closeOverlay('overlayCart');go('browse')">🛍️ Start Shopping</button>`;
+  } else {
+    const total=cart.reduce((a,b)=>a+b.num,0);
+    document.getElementById('cartBody').innerHTML=`
+      <div class="cart-card">
+        ${cart.map(i=>`<div class="cart-item-row">
+          <div class="cir-emoji">${i.emoji}</div>
+          <div class="cir-name">${i.name}<br><span style="font-size:10px;color:var(--text-dim);">${i.store}</span></div>
+          <div><div class="cir-price">${i.price}</div><div style="font-size:10px;color:var(--coral);cursor:pointer;text-align:right;margin-top:3px;" onclick="rmCart('${i.id}')">Remove</div></div>
+        </div>`).join('')}
+        <div class="cart-total-row"><span style="font-size:13px;font-weight:700;">Total</span><span style="font-size:17px;font-weight:800;color:var(--teal-deep);">₦${total.toLocaleString()}</span></div>
+      </div>`;
+    document.getElementById('cartFooter').innerHTML=`
+      <button class="wa-btn" onclick="closeOverlay('overlayCart');openOverlay('overlayOrder')">📦 Place Order</button>
+      <button class="wa-btn wa-btn-ghost" style="margin-top:8px;" onclick="cart=[];openCart()">🗑️ Clear Cart</button>`;
+  }
+  openOverlay('overlayCart');
+}
+
+function rmCart(pid){ cart=cart.filter(c=>c.id!==pid); openCart(); }
+
+// ════════════════════════════════
+// SUBMIT HANDLERS → WhatsApp
+// ════════════════════════════════
+function submitOrder(){
+  const name=document.getElementById('oName').value.trim();
+  const phone=document.getElementById('oPhone').value.trim();
+  const addr=document.getElementById('oAddress').value.trim();
+  const city=document.getElementById('oCity').value.trim();
+  const state=document.getElementById('oState').value;
+  const payment=document.getElementById('oPayment').value;
+  const notes=document.getElementById('oNotes').value.trim();
+  if(!name||!phone||!addr){ alert('Please fill in name, phone and delivery address.'); return; }
+  const items=cart.length?cart.map(p=>`• ${p.name} — ${p.price}`).join('\n'):'(Inquiry — no items in cart)';
+  const total=cart.reduce((a,b)=>a+b.num,0);
+  const msg=`🛍️ *NEW ORDER — ShopBot*\n\n🏬 *Mall:* ${mall?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${addr}, ${city}, ${state}\n💳 *Payment:* ${payment}\n\n🛒 *Items:*\n${items}\n\n💰 *Total:* ₦${total.toLocaleString()}\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()} via ShopBot`;
+  closeOverlay('overlayOrder'); wa(msg); cart=[];
+  typing(()=>{ botMsg('🎉 <strong>Order sent!</strong> You\'ve been redirected to WhatsApp to confirm with our team. Your order ID will be shared there.',`<div class="chips"><div class="chip" onclick="go('track')">🚚 Track Later</div><div class="chip" onclick="go('browse')">🛍️ Shop More</div></div>`); }, 600);
+}
+
+function submitTrack(){
+  const id=document.getElementById('trackId').value.trim();
+  if(!id){ alert('Please enter your order ID or phone number.'); return; }
+  wa(`🚚 *ORDER TRACKING — ShopBot*\n\n📦 *Order ID/Phone:* ${id}\n🏬 *Mall:* ${mall?.name||'N/A'}\n⏰ ${ts()}`);
+  closeOverlay('overlayTrack');
+  typing(()=>{ botMsg('🚚 Redirected to WhatsApp! Our team will reply with your live order status right away.'); });
+}
+
+function submitSupport(){
+  const name=document.getElementById('sName').value.trim();
+  const type=document.getElementById('sType').value;
+  const order=document.getElementById('sOrder').value.trim();
+  const desc=document.getElementById('sDesc').value.trim();
+  if(!name||!desc){ alert('Please fill in your name and describe the issue.'); return; }
+  wa(`🎧 *SUPPORT TICKET — ShopBot*\n\n👤 *Name:* ${name}\n🏬 *Mall:* ${mall?.name||'N/A'}\n❓ *Issue:* ${type}\n📦 *Order ID:* ${order||'N/A'}\n📝 *Details:*\n${desc}\n\n⏰ ${ts()}`);
+  closeOverlay('overlaySupport');
+  typing(()=>{ botMsg('🎧 <strong>Ticket submitted!</strong> You\'ve been connected to our support team on WhatsApp. Expected response: under 30 minutes.'); });
+}
+
+function submitReturn(){
+  const order=document.getElementById('rOrder').value.trim();
+  const item=document.getElementById('rItem').value.trim();
+  const reason=document.getElementById('rReason').value;
+  const res=document.getElementById('rResolution').value;
+  if(!order||!item){ alert('Please enter your order ID and item name.'); return; }
+  wa(`↩️ *RETURN REQUEST — ShopBot*\n\n📦 *Order ID:* ${order}\n🏷️ *Item:* ${item}\n🏬 *Mall:* ${mall?.name||'N/A'}\n❓ *Reason:* ${reason}\n✅ *Resolution:* ${res}\n\n⏰ ${ts()}`);
+  closeOverlay('overlayReturn');
+  typing(()=>{ botMsg('↩️ <strong>Return request submitted!</strong> Our returns team will arrange collection and process your refund/exchange within 3–5 business days.'); });
+}
+
+function submitBulk(){
+  const name=document.getElementById('bName').value.trim();
+  const prod=document.getElementById('bProduct').value.trim();
+  const qty=document.getElementById('bQty').value.trim();
+  const budget=document.getElementById('bBudget').value.trim();
+  const loc=document.getElementById('bLocation').value.trim();
+  if(!name||!prod||!qty){ alert('Please fill in name, product and quantity.'); return; }
+  wa(`📋 *BULK/WHOLESALE REQUEST — ShopBot*\n\n👤 *Name:* ${name}\n🏬 *Mall:* ${mall?.name||'Any'}\n📦 *Products:*\n${prod}\n🔢 *Quantity:* ${qty} units\n💰 *Budget:* ${budget||'Open'}\n📍 *Delivery:* ${loc||'TBD'}\n\n⏰ ${ts()}`);
+  closeOverlay('overlayRFQ');
+  typing(()=>{ botMsg('📋 <strong>Bulk request sent!</strong> Our wholesale team will respond with a custom quote within 2 hours. 🤝'); });
+}
+
+function submitAlert(){
+  const prod=document.getElementById('alProduct').value.trim();
+  const price=document.getElementById('alPrice').value.trim();
+  const phone=document.getElementById('alPhone').value.trim();
+  const when=document.getElementById('alWhen').value;
+  if(!prod||!phone){ alert('Please enter the product name and your WhatsApp number.'); return; }
+  wa(`🔔 *PRICE ALERT — ShopBot*\n\n📦 *Product:* ${prod}\n🏬 *Mall:* ${mall?.name||'Any'}\n💰 *Target Price:* ${price?'₦'+Number(price).toLocaleString():'Any drop'}\n📱 *Alert Number:* ${phone}\n🔔 *Alert When:* ${when}\n\n⏰ ${ts()}`);
+  closeOverlay('overlayAlert');
+  typing(()=>{ botMsg('🔔 <strong>Price alert set!</strong> We\'ll notify you on WhatsApp the moment the price drops. 📲'); });
+}
+
+function submitReview(){
+  const name=document.getElementById('rvName').value.trim();
+  const prod=document.getElementById('rvProduct').value.trim();
+  const stars=document.getElementById('rvStars').value;
+  const text=document.getElementById('rvText').value.trim();
+  if(!name||!prod||!text){ alert('Please fill in all review fields.'); return; }
+  wa(`⭐ *REVIEW — ShopBot*\n\n👤 *Reviewer:* ${name}\n🏬 *Mall:* ${mall?.name||'N/A'}\n📦 *Product/Store:* ${prod}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n📝 *Review:*\n${text}\n\n⏰ ${ts()}`);
+  closeOverlay('overlayReview');
+  typing(()=>{ botMsg('⭐ <strong>Thank you for your review!</strong> It helps other shoppers and makes our platform better. 💚'); });
+}
+
+// ════════════════════════════════
+// TRACK / BULK / etc (open sheets)
+// ════════════════════════════════
+function doTrack(){ typing(()=>{ botMsg('Please enter your order details to get a live status update:',`<div class="chips"><div class="chip" onclick="openOverlay('overlayTrack')">🔍 Enter Order ID</div></div>`); }); }
+function doBulk(){ typing(()=>{ botMsg('📦 <strong>Bulk & Wholesale Orders</strong><br><br>Special pricing for large volumes:<br>• 10–49 units → <strong>5% off</strong><br>• 50–99 units → <strong>10% off</strong><br>• 100+ units → <strong>Custom quote</strong>',`<div class="chips"><div class="chip" onclick="openOverlay('overlayRFQ')">📋 Request Quote</div></div>`); }); }
+function doReturn(){ typing(()=>{ botMsg('↩️ <strong>Return Policy</strong><br><br>• Returns within <strong>7 days</strong> of delivery<br>• Unused, original packaging required<br>• Refunds in <strong>3–5 business days</strong>',`<div class="chips"><div class="chip" onclick="openOverlay('overlayReturn')">↩️ Start Return</div><div class="chip" onclick="go('support')">🎧 Contact Support</div></div>`); }); }
+function doAlert(){ typing(()=>{ botMsg('🔔 <strong>Price Alerts</strong><br><br>Set a target price and I\'ll notify you on WhatsApp when it drops!',`<div class="chips"><div class="chip" onclick="openOverlay('overlayAlert')">🔔 Set Alert</div></div>`); }); }
+function doReview(){ typing(()=>{ botMsg('⭐ Your feedback matters! Share your experience with other shoppers:',`<div class="chips"><div class="chip" onclick="openOverlay('overlayReview')">✍️ Write Review</div></div>`); }); }
+
+// ════════════════════════════════
+// SUPPORT (FAQs + ticket)
+// ════════════════════════════════
+function doSupport(){
+  typing(()=>{
+    botMsg('🎧 <strong>Customer Support</strong><br>What can I help you with?',
+      `<div class="chips">
+        <div class="chip" onclick="showFaq('delivery')">🚚 Delivery Info</div>
+        <div class="chip" onclick="showFaq('payment')">💳 Payment Help</div>
+        <div class="chip" onclick="showFaq('return')">↩️ Return Policy</div>
+        <div class="chip" onclick="showFaq('warranty')">🛡️ Warranty</div>
+        <div class="chip" onclick="showFaq('bulk')">📦 Bulk Pricing</div>
+        <div class="chip" onclick="openOverlay('overlaySupport')">📝 Submit Ticket</div>
+      </div>`);
+  });
+}
+
+function showFaq(key){
+  const f=faqs[key]; if(!f) return;
+  userMsg(f.q);
+  typing(()=>{
+    botMsg(f.a,`<div class="chips"><div class="chip" onclick="openOverlay('overlaySupport')">📝 Still need help?</div><div class="chip" onclick="doSupport()">← Back</div></div>`);
+  });
+}
+
+// ════════════════════════════════
+// SEARCH
+// ════════════════════════════════
+function openSearch(){ openOverlay('overlaySearch'); setTimeout(()=>document.getElementById('searchInput').focus(),300); }
+
+function liveSearch(q){
+  const el=document.getElementById('searchResults');
+  if(!q.trim()){ el.innerHTML=''; return; }
+  const res=products.filter(p=>
+    p.name.toLowerCase().includes(q.toLowerCase())||
+    p.cat.toLowerCase().includes(q.toLowerCase())||
+    p.store.toLowerCase().includes(q.toLowerCase())
+  );
+  el.innerHTML=res.length
+    ? `<div class="product-list">${res.slice(0,8).map(pcard).join('')}</div>`
+    : `<div style="text-align:center;padding:24px;color:var(--text-muted);">No results for "${q}"<br><br><button class="wa-btn" style="width:auto;padding:10px 18px;" onclick="searchOnWA('${q}')">📲 Ask on WhatsApp</button></div>`;
+}
+
+function searchOnWA(q){ wa(`🔍 *PRODUCT SEARCH — ShopBot*\n\nI'm looking for: *${q}*\n🏬 Mall: ${mall?.name||'Any'}\n\nDo you have this available?`); }
+
+// ════════════════════════════════
+// STAR RATING
+// ════════════════════════════════
+function setStar(n){
+  document.getElementById('rvStars').value=n;
+  document.querySelectorAll('.star-btn').forEach((s,i)=>{
+    s.style.filter=i<n?'none':'grayscale(1) opacity(.35)';
+  });
+}
+
+// ════════════════════════════════
+// FREE TEXT CHAT
+// ════════════════════════════════
+function sendUserMsg(){
+  const inp=document.getElementById('chatInput');
+  const t=inp.value.trim(); if(!t) return;
+  inp.value=''; inp.style.height='auto';
+  userMsg(t);
+  const l=t.toLowerCase();
+  if(!mall){ typing(()=>{ botMsg('Please pick a mall first! 🏬', mallGrid()); }); return; }
+  // Routing
+  if(/^(hi|hello|hey|good|morning|afternoon|evening)/i.test(l)){ typing(()=>{ botMsg(`Hey there! 😊 How can I help you shop at <strong>${mall.name}</strong> today?`, mainMenu()); }); }
+  else if(/return|refund|exchange/i.test(l)){ doReturn(); }
+  else if(/track|where.*order|status/i.test(l)){ doTrack(); }
+  else if(/deal|sale|offer|discount|promo/i.test(l)){ doDeals(); }
+  else if(/bulk|wholesale|quantity|large order/i.test(l)){ doBulk(); }
+  else if(/support|help|problem|issue|complaint/i.test(l)){ doSupport(); }
+  else if(/pay|transfer|bank|ussd/i.test(l)){ showFaq('payment'); }
+  else if(/deliver|ship|how long/i.test(l)){ showFaq('delivery'); }
+  else if(/warranty|guarantee/i.test(l)){ showFaq('warranty'); }
+  else if(/promo|coupon|code/i.test(l)){ doPromo(); }
+  else if(/cart|basket/i.test(l)){ openCart(); }
+  else if(/compare/i.test(l)){ doCompare(); }
+  else if(/review|feedback/i.test(l)){ doReview(); }
+  else if(/alert|notify|price drop/i.test(l)){ doAlert(); }
+  else if(/phone|laptop|tablet|tv|tech|electr/i.test(l)){ doCat('Electronics'); }
+  else if(/cloth|fashion|dress|shoe|wear|style/i.test(l)){ doCat('Fashion'); }
+  else if(/food|grocery|fruit|meat|fresh/i.test(l)){ doCat('Groceries'); }
+  else if(/home|furniture|sofa|decor|plant|light/i.test(l)){ doCat('Home & Decor'); }
+  else if(/beauty|cosmetic|skin|makeup|nails/i.test(l)){ doCat('Beauty'); }
+  else if(/mall|change mall/i.test(l)){ changeMall(); }
+  else {
+    // product search
+    const res=products.filter(p=>p.name.toLowerCase().includes(l)||p.cat.toLowerCase().includes(l));
+    if(res.length){
+      typing(()=>{ botMsg(`Found <strong>${res.length} result(s)</strong> for "<strong>${t}</strong>":`,`<div class="product-list">${res.slice(0,5).map(pcard).join('')}</div>`); });
+    } else {
+      typing(()=>{
+        botMsg(`I couldn't find "<strong>${t}</strong>" — but I can ask our team directly!`,
+          `<div class="chips"><div class="chip" onclick="searchOnWA('${t}')">📲 Ask on WhatsApp</div><div class="chip" onclick="go('browse')">🛍️ Browse All</div></div>${mainMenu()}`);
+      });
+    }
+  }
+}
+
+// ════════════════════════════════
+// OVERLAY
+// ════════════════════════════════
+function openOverlay(id){ document.getElementById(id).classList.add('open'); }
+function closeOverlay(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(el=>{ el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }); });
+
+// ════════════════════════════════
+// INPUT
+// ════════════════════════════════
+document.getElementById('chatInput').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendUserMsg(); } });
+document.getElementById('chatInput').addEventListener('input',function(){ this.style.height='auto'; this.style.height=this.scrollHeight+'px'; });
+
+// ════════════════════════════════
+// INIT — GREETING
+// ════════════════════════════════
+window.onload=()=>{
+  const h=new Date().getHours();
+  const g=h<12?'Good morning':'Good afternoon 🌤️';
+  setTimeout(()=>{
+    botMsg(`${g}! 👋 I'm <strong>ShopBot</strong> — your smart personal shopping assistant.<br><br>
+I can help you <strong>find products, compare prices, place orders, track deliveries</strong> and much more. All powered by WhatsApp for instant support. 💚`);
+  }, 500);
+  setTimeout(()=>{
+    typing(()=>{
+      botMsg('To get started, please <strong>select a mall</strong> you\'d like to shop from today 🏬', mallGrid());
+    }, 1400);
+  }, 1400);
+};
+</script>
+</body>
+</html>

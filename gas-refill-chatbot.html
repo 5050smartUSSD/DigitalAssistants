@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GasPro – Cooking Gas Refill & Delivery</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --flame-orange: #FF5C1A;
+    --flame-yellow: #FFB800;
+    --deep-night: #0D0F14;
+    --card-bg: #161A22;
+    --surface: #1E232E;
+    --border: rgba(255,255,255,0.08);
+    --text: #F0F2F7;
+    --muted: #7A8299;
+    --bot-bubble: #1E232E;
+    --user-bubble: linear-gradient(135deg, #FF5C1A, #FFB800);
+    --green: #25D366;
+    --radius: 18px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--deep-night);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Ambient background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(255,92,26,0.15) 0%, transparent 70%);
+    pointer-events: none;
+    animation: pulse 4s ease-in-out infinite alternate;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -150px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,184,0,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    animation: pulse 5s ease-in-out 1s infinite alternate;
+  }
+
+  @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
+
+  /* Header */
+  .header {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+  .logo {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #FF5C1A, #FFB800);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 20px rgba(255,92,26,0.4);
+  }
+  .header-text h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, #FF5C1A, #FFB800);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header-text p {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    background: #4ADE80;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Chat window */
+  .chat-window {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card-bg);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 72vh;
+    max-height: 620px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Messages area */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scroll-behavior: smooth;
+  }
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* Bubbles */
+  .msg { display: flex; align-items: flex-end; gap: 8px; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  .msg.bot { justify-content: flex-start; }
+  .msg.user { justify-content: flex-end; }
+
+  .bot-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #FF5C1A, #FFB800);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .bubble {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+  .msg.bot .bubble {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 6px;
+    color: var(--text);
+  }
+  .msg.user .bubble {
+    background: var(--user-bubble);
+    border-bottom-right-radius: 6px;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* Quick reply chips */
+  .chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 0 16px 12px;
+  }
+  .chip {
+    background: var(--surface);
+    border: 1px solid rgba(255,92,26,0.4);
+    color: var(--flame-orange);
+    border-radius: 100px;
+    padding: 7px 14px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .chip:hover { background: rgba(255,92,26,0.12); transform: translateY(-1px); }
+
+  /* Input area */
+  .input-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--card-bg);
+  }
+  #userInput {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 11px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #userInput:focus { border-color: rgba(255,92,26,0.5); }
+  #userInput::placeholder { color: var(--muted); }
+
+  .send-btn {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #FF5C1A, #FFB800);
+    border: none;
+    border-radius: 13px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(255,92,26,0.35);
+  }
+  .send-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255,92,26,0.5); }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+
+  /* Typing indicator */
+  .typing { display: flex; align-items: center; gap: 5px; padding: 10px 14px; }
+  .dot { width: 7px; height: 7px; background: var(--muted); border-radius: 50%; animation: bounce 1.2s infinite; }
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+
+  /* Order summary card */
+  .order-card {
+    background: var(--surface);
+    border: 1px solid rgba(255,92,26,0.3);
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 6px;
+    font-size: 0.82rem;
+  }
+  .order-card .oc-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    color: var(--flame-orange);
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+  }
+  .order-card .oc-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .order-card .oc-row:last-child { border: none; }
+  .order-card .oc-row span:last-child { color: var(--text); font-weight: 500; }
+
+  /* WhatsApp button */
+  .wa-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+    justify-content: center;
+    transition: all 0.2s;
+    text-decoration: none;
+    box-shadow: 0 4px 18px rgba(37,211,102,0.3);
+  }
+  .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,211,102,0.45); }
+  .wa-btn svg { width: 20px; height: 20px; fill: white; }
+
+  /* Inline input inside chat */
+  .inline-input {
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+    margin-top: 8px;
+  }
+  .inline-field {
+    background: var(--deep-night);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  .inline-field:focus { border-color: rgba(255,92,26,0.5); }
+  .inline-field::placeholder { color: var(--muted); }
+  select.inline-field { cursor: pointer; }
+  select.inline-field option { background: var(--card-bg); }
+
+  .submit-inline {
+    background: linear-gradient(135deg, #FF5C1A, #FFB800);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .submit-inline:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,92,26,0.4); }
+
+  /* Footer */
+  .footer {
+    margin-top: 10px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-align: center;
+  }
+  .footer span { color: var(--flame-orange); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🔥</div>
+  <div class="header-text">
+    <h1>GasPro</h1>
+    <p><span class="status-dot"></span>AI Agent · Pickup & Delivery</p>
+  </div>
+</div>
+
+<div class="chat-window">
+  <div class="messages" id="messages"></div>
+  <div class="chips" id="chips"></div>
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Type your message…" autocomplete="off" />
+    <button class="send-btn" onclick="handleSend()" title="Send">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="footer">Powered by <span>GasPro AI</span> · Orders via WhatsApp</div>
+
+<script>
+const WHATSAPP_NUMBER = "2348157505037";
+
+// ─── State ─────────────────────────────────────────────────────────────────
+const state = {
+  step: "welcome",
+  serviceType: "",       // pickup | delivery
+  cylinderSize: "",      // 3kg | 5kg | 10kg | 12.5kg
+  cylinderCount: 1,
+  cylinderBrand: "",
+  customerName: "",
+  phone: "",
+  address: "",
+  deliveryTime: "",      // now | schedule
+  scheduledTime: "",
+};
+
+// ─── Conversation flow ──────────────────────────────────────────────────────
+const flow = {
+  welcome: {
+    bot: ["Hi there! 👋 Welcome to <strong>GasPro</strong> – your trusted cooking gas refill service.\n\nI can help you with a quick <strong>pickup</strong> or <strong>home delivery</strong> of your gas cylinder. 🔥\n\nWhat would you like to do today?"],
+    chips: ["🏪 Pickup from store", "🚚 Home Delivery"],
+    handler(input) {
+      const v = input.toLowerCase();
+      if (v.includes("pickup") || v.includes("store")) {
+        state.serviceType = "Pickup";
+        return "cylinder_size";
+      }
+      if (v.includes("delivery") || v.includes("home")) {
+        state.serviceType = "Home Delivery";
+        return "cylinder_size";
+      }
+      return null;
+    }
+  },
+  cylinder_size: {
+    bot: ["Great choice! 🙌 Now tell me — what size is your gas cylinder?"],
+    chips: ["3 kg", "5 kg", "10 kg", "12.5 kg"],
+    handler(input) {
+      const sizes = { "3": "3 kg", "5": "5 kg", "10": "10 kg", "12.5": "12.5 kg", "12": "12.5 kg" };
+      const clean = input.toLowerCase().replace(/kg/g,"").trim();
+      const match = sizes[clean] || Object.values(sizes).find(s => input.includes(s.replace(" ","")));
+      if (match) { state.cylinderSize = match; return "cylinder_count"; }
+      return null;
+    }
+  },
+  cylinder_count: {
+    bot: ["How many cylinders do you need refilled?"],
+    chips: ["1", "2", "3", "4+"],
+    handler(input) {
+      const n = parseInt(input);
+      if (!isNaN(n) && n > 0) { state.cylinderCount = n; return "cylinder_brand"; }
+      if (input.includes("4+") || input.includes("4 ")) { state.cylinderCount = "4+"; return "cylinder_brand"; }
+      return null;
+    }
+  },
+  cylinder_brand: {
+    bot: ["What brand is your cylinder? (e.g. Abuja Gas, Total, Lekki Gas, or any local brand)"],
+    chips: ["Abuja Gas", "Total Gas", "Lekki Gas", "Other"],
+    handler(input) {
+      state.cylinderBrand = input.trim();
+      return "customer_info";
+    }
+  },
+  customer_info: {
+    bot: ["Almost there! Please fill in your contact details below 📋"],
+    renderForm: true,
+    chips: [],
+    handler() { return null; }
+  }
+};
+
+// ─── DOM helpers ────────────────────────────────────────────────────────────
+const messagesEl = document.getElementById("messages");
+const chipsEl    = document.getElementById("chips");
+const inputEl    = document.getElementById("userInput");
+
+function scrollBottom() {
+  setTimeout(() => messagesEl.scrollTop = messagesEl.scrollHeight, 80);
+}
+
+function addMessage(who, html) {
+  const wrap = document.createElement("div");
+  wrap.className = `msg ${who}`;
+  if (who === "bot") {
+    wrap.innerHTML = `<div class="bot-icon">🔥</div><div class="bubble">${html}</div>`;
+  } else {
+    wrap.innerHTML = `<div class="bubble">${html}</div>`;
+  }
+  messagesEl.appendChild(wrap);
+  scrollBottom();
+  return wrap;
+}
+
+function showTyping() {
+  const wrap = document.createElement("div");
+  wrap.className = "msg bot";
+  wrap.id = "typing";
+  wrap.innerHTML = `<div class="bot-icon">🔥</div><div class="bubble"><div class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;
+  messagesEl.appendChild(wrap);
+  scrollBottom();
+}
+
+function removeTyping() {
+  const t = document.getElementById("typing");
+  if (t) t.remove();
+}
+
+function setChips(chips) {
+  chipsEl.innerHTML = "";
+  chips.forEach(c => {
+    const btn = document.createElement("button");
+    btn.className = "chip";
+    btn.textContent = c;
+    btn.onclick = () => processInput(c);
+    chipsEl.appendChild(btn);
+  });
+}
+
+// ─── Contact form (rendered inside chat bubble) ─────────────────────────────
+function renderContactForm() {
+  const serviceType = state.serviceType;
+  const formId = "contactForm";
+
+  const wrap = document.createElement("div");
+  wrap.className = "msg bot";
+
+  const formHtml = `
+    <div class="bubble" style="max-width:90%">
+      <div>Almost there! Fill in your details 📋</div>
+      <div class="inline-input" id="${formId}">
+        <input class="inline-field" id="f_name" placeholder="Your full name" type="text"/>
+        <input class="inline-field" id="f_phone" placeholder="Phone number (e.g. 08012345678)" type="tel"/>
+        ${serviceType === "Home Delivery" ? `<input class="inline-field" id="f_address" placeholder="Delivery address (street, area, city)" type="text"/>` : ``}
+        <select class="inline-field" id="f_time">
+          <option value="" disabled selected>When do you need it?</option>
+          <option value="ASAP (Within 1–2 hrs)">🔥 ASAP (Within 1–2 hrs)</option>
+          <option value="Today – Morning (8am–12pm)">🌅 Today – Morning (8am–12pm)</option>
+          <option value="Today – Afternoon (12pm–4pm)">☀️ Today – Afternoon (12pm–4pm)</option>
+          <option value="Today – Evening (4pm–7pm)">🌆 Today – Evening (4pm–7pm)</option>
+          <option value="Tomorrow – Morning">📅 Tomorrow – Morning</option>
+          <option value="Tomorrow – Afternoon">📅 Tomorrow – Afternoon</option>
+        </select>
+        <button class="submit-inline" onclick="submitOrder()">✅ Confirm & Send Order</button>
+      </div>
+    </div>`;
+
+  wrap.innerHTML = `<div class="bot-icon">🔥</div>${formHtml}`;
+  messagesEl.appendChild(wrap);
+  scrollBottom();
+}
+
+// ─── Order summary + WhatsApp redirect ──────────────────────────────────────
+function submitOrder() {
+  const name    = document.getElementById("f_name")?.value.trim();
+  const phone   = document.getElementById("f_phone")?.value.trim();
+  const address = document.getElementById("f_address")?.value.trim() || "N/A (Pickup)";
+  const time    = document.getElementById("f_time")?.value;
+
+  if (!name || !phone || !time) {
+    flashError("Please fill in all fields before confirming."); return;
+  }
+  if (phone.length < 7) {
+    flashError("Please enter a valid phone number."); return;
+  }
+
+  state.customerName  = name;
+  state.phone         = phone;
+  state.address       = address;
+  state.deliveryTime  = time;
+
+  // Hide form fields
+  const form = document.getElementById("contactForm");
+  if (form) form.style.display = "none";
+
+  // User confirmation bubble
+  addMessage("user", `📋 ${name} · ${phone}`);
+
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    showOrderSummary();
+  }, 1200);
+}
+
+function flashError(msg) {
+  const existing = document.getElementById("err_flash");
+  if (existing) existing.remove();
+  const el = document.createElement("div");
+  el.id = "err_flash";
+  el.style.cssText = "color:#FF5C1A;font-size:0.78rem;margin-top:6px;padding:0 4px;";
+  el.textContent = "⚠️ " + msg;
+  document.getElementById("contactForm")?.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function showOrderSummary() {
+  const { serviceType, cylinderSize, cylinderCount, cylinderBrand, customerName, phone, address, deliveryTime } = state;
+
+  const orderText = [
+    `📦 *NEW GAS REFILL ORDER – GasPro*`,
+    ``,
+    `*Service:* ${serviceType}`,
+    `*Cylinder Size:* ${cylinderSize}`,
+    `*Quantity:* ${cylinderCount}`,
+    `*Brand:* ${cylinderBrand}`,
+    `*Customer:* ${customerName}`,
+    `*Phone:* ${phone}`,
+    serviceType === "Home Delivery" ? `*Address:* ${address}` : `*Mode:* Customer will pickup from store`,
+    `*Preferred Time:* ${deliveryTime}`,
+    ``,
+    `Sent via GasPro AI Chatbot 🔥`
+  ].filter(Boolean).join("\n");
+
+  const encodedMsg = encodeURIComponent(orderText);
+  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMsg}`;
+
+  const wrap = document.createElement("div");
+  wrap.className = "msg bot";
+
+  const summaryRows = [
+    ["Service", serviceType],
+    ["Cylinder", `${cylinderCount} × ${cylinderSize} (${cylinderBrand})`],
+    ["Customer", customerName],
+    ["Phone", phone],
+    ["Address", address],
+    ["Time", deliveryTime],
+  ];
+
+  const rowsHtml = summaryRows.map(([k,v]) =>
+    `<div class="oc-row"><span>${k}</span><span>${v}</span></div>`
+  ).join("");
+
+  wrap.innerHTML = `
+    <div class="bot-icon">🔥</div>
+    <div class="bubble" style="max-width:90%">
+      <p>Here's your order summary! 🎉 Tap the button below to send it to our agent on WhatsApp and we'll confirm your refill immediately.</p>
+      <div class="order-card">
+        <div class="oc-title">📋 Order Details</div>
+        ${rowsHtml}
+      </div>
+      <a class="wa-btn" href="${waUrl}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Send Order via WhatsApp
+      </a>
+    </div>`;
+
+  messagesEl.appendChild(wrap);
+  scrollBottom();
+  setChips(["🔄 New Order", "❓ Help"]);
+}
+
+// ─── Core input processor ───────────────────────────────────────────────────
+function processInput(input) {
+  if (!input.trim()) return;
+  chipsEl.innerHTML = "";
+
+  // new order or help resets
+  if (input.toLowerCase().includes("new order")) { resetChat(); return; }
+  if (input.toLowerCase().includes("help")) {
+    addMessage("user", input);
+    showTyping();
+    setTimeout(() => {
+      removeTyping();
+      addMessage("bot", "We're here to help! 😊<br><br>📞 Call us: <strong>+234 815 750 5037</strong><br>💬 WhatsApp: <strong>+234 815 750 5037</strong><br><br>Type <strong>New Order</strong> to place a new gas refill order.");
+      setChips(["🔄 New Order"]);
+    }, 900);
+    return;
+  }
+
+  addMessage("user", input);
+  const currentStep = flow[state.step];
+  if (!currentStep) return;
+
+  const next = currentStep.handler(input);
+  if (!next) {
+    showTyping();
+    setTimeout(() => {
+      removeTyping();
+      addMessage("bot", "I didn't quite get that. Please choose one of the options below or type your response 😊");
+      setChips(currentStep.chips || []);
+    }, 700);
+    return;
+  }
+
+  state.step = next;
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    const nextStep = flow[next];
+    if (nextStep) {
+      nextStep.bot.forEach(msg => addMessage("bot", msg.replace(/\n/g,"<br>")));
+      if (nextStep.renderForm) {
+        renderContactForm();
+      } else {
+        setChips(nextStep.chips || []);
+      }
+    }
+  }, 900);
+}
+
+// ─── Send button / Enter key ────────────────────────────────────────────────
+function handleSend() {
+  const val = inputEl.value.trim();
+  if (!val) return;
+  inputEl.value = "";
+  processInput(val);
+}
+
+inputEl.addEventListener("keydown", e => {
+  if (e.key === "Enter") handleSend();
+});
+
+// ─── Init ───────────────────────────────────────────────────────────────────
+function resetChat() {
+  state.step = "welcome";
+  state.serviceType = state.cylinderSize = state.cylinderBrand = state.customerName = state.phone = state.address = state.deliveryTime = "";
+  state.cylinderCount = 1;
+  messagesEl.innerHTML = "";
+  chipsEl.innerHTML = "";
+  initChat();
+}
+
+function initChat() {
+  const welcome = flow["welcome"];
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    welcome.bot.forEach(msg => addMessage("bot", msg.replace(/\n/g,"<br>")));
+    setChips(welcome.chips);
+  }, 800);
+}
+
+initChat();
+</script>
+</body>
+</html>
