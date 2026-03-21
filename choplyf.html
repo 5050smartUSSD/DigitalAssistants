@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodBot — Order Delicious Food</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:#E8472A; --red-deep:#C73415; --red-glow:rgba(232,71,42,0.18);
+  --orange:#FF8C42; --yellow:#FFD166; --green:#06D6A0; --cream:#FFF8F0;
+  --bg:#1A0A00; --surface:#2A1500; --surface2:#331A00; --surface3:#3D2000;
+  --surface4:#4A2800; --border:rgba(255,140,66,0.15); --border2:rgba(255,140,66,0.08);
+  --text:#FFF0E0; --text-muted:#C4956A; --text-dim:#7A5535;
+  --shadow:0 4px 24px rgba(0,0,0,0.5); --shadow-lg:0 12px 48px rgba(0,0,0,0.7);
+  --wa:#25D366; --wa-deep:#128C7E;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
+::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+/* ── PAGE ── */
+body{display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 20% 20%, rgba(232,71,42,0.12) 0%, transparent 60%),
+             radial-gradient(ellipse at 80% 80%, rgba(255,140,66,0.08) 0%, transparent 60%),
+             var(--bg);}
+
+/* ── WINDOW ── */
+.window{width:100%;max-width:430px;height:98vh;max-height:860px;
+  background:var(--surface);border-radius:28px;display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:var(--shadow-lg),0 0 0 1px rgba(255,140,66,0.12);
+  animation:appear .5s cubic-bezier(.34,1.4,.64,1);}
+@keyframes appear{from{opacity:0;transform:translateY(24px) scale(.96);}to{opacity:1;transform:none;}}
+
+/* ── HEADER ── */
+.hdr{padding:14px 16px 12px;background:linear-gradient(135deg,var(--red-deep),var(--red),var(--orange));
+  flex-shrink:0;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;
+  border-radius:50%;background:rgba(255,255,255,0.07);}
+.hdr::after{content:'';position:absolute;bottom:-20px;left:20px;width:80px;height:80px;
+  border-radius:50%;background:rgba(255,255,255,0.05);}
+.hdr-inner{display:flex;align-items:center;gap:11px;position:relative;z-index:1;}
+.hdr-av{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);}
+.hdr-name{font-family:'Fraunces',serif;font-size:17px;font-weight:900;color:#fff;line-height:1;}
+.hdr-sub{font-size:11px;color:rgba(255,255,255,0.78);margin-top:3px;display:flex;align-items:center;gap:5px;}
+.online-dot{width:6px;height:6px;border-radius:50%;background:#A8F0DB;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.hdr-right{margin-left:auto;display:flex;gap:7px;align-items:center;}
+.hbtn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.18);border:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;transition:.18s;}
+.hbtn:hover{background:rgba(255,255,255,0.3);}
+.cart-badge{position:relative;}
+.cb-dot{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--yellow);
+  color:var(--bg);font-size:9px;font-weight:800;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+
+/* ── RESTAURANT STRIP ── */
+.rest-strip{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 14px;
+  display:none;align-items:center;gap:8px;flex-shrink:0;}
+.rest-strip.show{display:flex;}
+.rs-emoji{font-size:18px;}
+.rs-name{font-size:12px;font-weight:700;color:var(--orange);}
+.rs-loc{font-size:10.5px;color:var(--text-muted);}
+.rs-change{margin-left:auto;font-size:10.5px;color:var(--red);cursor:pointer;text-decoration:underline;font-weight:600;}
+
+/* ── MESSAGES ── */
+.msgs{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px;}
+
+/* ── BUBBLES ── */
+.msg{display:flex;gap:8px;animation:popIn .22s ease;max-width:100%;}
+.msg.user{flex-direction:row-reverse;}
+@keyframes popIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.av{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;margin-top:2px;}
+.msg.bot .av{background:linear-gradient(135deg,var(--red-deep),var(--orange));box-shadow:0 2px 8px rgba(232,71,42,0.3);}
+.msg.user .av{background:var(--surface3);border:1px solid var(--border);}
+.mcol{display:flex;flex-direction:column;max-width:86%;}
+.msg.user .mcol{align-items:flex-end;}
+.bbl{padding:10px 13px;border-radius:17px;font-size:13.5px;line-height:1.6;}
+.msg.bot .bbl{background:var(--surface2);border:1px solid var(--border);border-top-left-radius:5px;}
+.msg.user .bbl{background:linear-gradient(135deg,var(--red-deep),var(--red));color:#fff;border-top-right-radius:5px;box-shadow:0 3px 12px rgba(232,71,42,0.3);}
+.bbl b,.bbl strong{color:var(--orange);}
+.msg.user .bbl b,.msg.user .bbl strong{color:var(--yellow);}
+.mtime{font-size:10px;color:var(--text-dim);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+
+/* ── TYPING ── */
+.tbbl{background:var(--surface2);border:1px solid var(--border);border-radius:17px;border-top-left-radius:5px;
+  padding:11px 15px;display:flex;gap:5px;align-items:center;}
+.td{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:bounce 1.1s infinite;}
+.td:nth-child(2){animation-delay:.18s;}.td:nth-child(3){animation-delay:.36s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.35;}30%{transform:translateY(-6px);opacity:1;}}
+
+/* ── QUICK CHIPS ── */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.chip{background:var(--surface3);border:1.5px solid var(--border);color:var(--orange);
+  padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.18s;}
+.chip:hover{background:var(--red);border-color:var(--red);color:#fff;transform:translateY(-1px);}
+
+/* ── RESTAURANT GRID ── */
+.rest-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;width:100%;}
+.rc{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:12px;
+  cursor:pointer;transition:.22s;text-align:center;position:relative;overflow:hidden;}
+.rc::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,71,42,0),rgba(255,140,66,0));transition:.22s;}
+.rc:hover{border-color:var(--orange);transform:translateY(-2px);box-shadow:0 6px 20px rgba(232,71,42,0.2);}
+.rc:hover::before{background:linear-gradient(135deg,rgba(232,71,42,0.08),rgba(255,140,66,0.05));}
+.rc.sel{border-color:var(--red);background:rgba(232,71,42,0.1);}
+.rc-emoji{font-size:30px;margin-bottom:6px;display:block;}
+.rc-name{font-family:'Fraunces',serif;font-size:13px;font-weight:700;color:var(--text);}
+.rc-cuisine{font-size:10.5px;color:var(--text-muted);margin-top:2px;}
+.rc-rating{font-size:10px;color:var(--yellow);margin-top:4px;}
+.rc-eta{font-size:10px;color:var(--text-dim);margin-top:1px;}
+.rc-tag{position:absolute;top:7px;right:7px;font-size:8.5px;padding:2px 6px;border-radius:6px;font-weight:700;}
+.tag-open{background:rgba(6,214,160,0.2);color:var(--green);border:1px solid rgba(6,214,160,0.3);}
+.tag-hot{background:rgba(232,71,42,0.2);color:var(--red);border:1px solid rgba(232,71,42,0.3);}
+
+/* ── SLIDING GALLERY ── */
+.gallery-wrap{width:100%;margin-top:10px;position:relative;}
+.gallery-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.gallery-count{font-family:'JetBrains Mono',monospace;color:var(--text-dim);font-size:10px;}
+.gallery-track-outer{overflow:hidden;border-radius:14px;position:relative;}
+.gallery-track{display:flex;transition:transform .42s cubic-bezier(.4,0,.2,1);will-change:transform;}
+.gallery-slide{min-width:100%;position:relative;}
+.food-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;position:relative;}
+.fc-img{height:150px;display:flex;align-items:center;justify-content:center;font-size:70px;
+  background:linear-gradient(135deg,var(--surface3),var(--surface4));position:relative;overflow:hidden;}
+.fc-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,0.4));}
+.fc-badge{position:absolute;top:10px;left:10px;font-size:9px;font-weight:800;padding:3px 8px;
+  border-radius:8px;z-index:2;text-transform:uppercase;letter-spacing:.5px;}
+.fc-badge.spicy{background:rgba(232,71,42,0.9);color:#fff;}
+.fc-badge.popular{background:rgba(255,209,102,0.9);color:var(--bg);}
+.fc-badge.new{background:rgba(6,214,160,0.9);color:var(--bg);}
+.fc-badge.veg{background:rgba(6,214,160,0.8);color:var(--bg);}
+.fc-time-badge{position:absolute;bottom:8px;right:10px;font-size:9px;color:rgba(255,255,255,0.85);
+  z-index:2;font-family:'JetBrains Mono',monospace;}
+.fc-body{padding:12px;}
+.fc-name{font-family:'Fraunces',serif;font-size:15px;font-weight:700;margin-bottom:3px;}
+.fc-desc{font-size:11.5px;color:var(--text-muted);line-height:1.45;margin-bottom:8px;}
+.fc-bottom{display:flex;align-items:center;justify-content:space-between;}
+.fc-price{font-size:17px;font-weight:800;color:var(--orange);font-family:'Fraunces',serif;}
+.fc-rating{font-size:11px;color:var(--yellow);}
+.fc-add-row{display:flex;gap:7px;margin-top:9px;}
+.fc-btn{flex:1;padding:9px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:700;
+  font-family:'DM Sans',sans-serif;transition:.18s;}
+.fc-btn-primary{background:linear-gradient(135deg,var(--red-deep),var(--red));color:#fff;box-shadow:0 3px 10px rgba(232,71,42,0.3);}
+.fc-btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(232,71,42,0.45);}
+.fc-btn-ghost{background:var(--surface3);border:1.5px solid var(--border);color:var(--orange);}
+.fc-btn-ghost:hover{border-color:var(--orange);}
+.gal-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;}
+.gal-arrow{width:32px;height:32px;border-radius:50%;background:var(--surface3);border:1.5px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--orange);transition:.18s;}
+.gal-arrow:hover{background:var(--red);border-color:var(--red);color:#fff;}
+.gal-dots{display:flex;gap:5px;align-items:center;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--surface4);transition:.25s;cursor:pointer;}
+.dot.active{width:18px;border-radius:4px;background:var(--red);}
+
+/* ── MINI MENU LIST (category) ── */
+.menu-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;width:100%;}
+.menu-item{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;
+  padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.18s;}
+.menu-item:hover{border-color:var(--orange);background:rgba(255,140,66,0.06);}
+.mi-emoji{font-size:24px;width:42px;height:42px;background:var(--surface3);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mi-info{flex:1;}
+.mi-name{font-size:13px;font-weight:700;font-family:'Fraunces',serif;}
+.mi-desc{font-size:11px;color:var(--text-muted);}
+.mi-price{font-size:14px;font-weight:800;color:var(--orange);flex-shrink:0;}
+.mi-add{width:28px;height:28px;border-radius:8px;background:var(--red);border:none;cursor:pointer;
+  color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.18s;flex-shrink:0;}
+.mi-add:hover{background:var(--red-deep);transform:scale(1.1);}
+.mi-badge{font-size:8.5px;padding:2px 6px;border-radius:5px;font-weight:700;}
+.mb-spicy{background:rgba(232,71,42,0.2);color:var(--red);}
+.mb-pop{background:rgba(255,209,102,0.2);color:var(--yellow);}
+.mb-veg{background:rgba(6,214,160,0.18);color:var(--green);}
+
+/* ── CART CARD ── */
+.cart-sum{background:linear-gradient(135deg,rgba(232,71,42,0.1),rgba(255,140,66,0.06));
+  border:1.5px solid rgba(255,140,66,0.25);border-radius:12px;padding:12px;margin-top:8px;width:100%;}
+.ci-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,140,66,0.12);}
+.ci-row:last-of-type{border-bottom:none;}
+.ci-em{font-size:18px;flex-shrink:0;}
+.ci-nm{font-size:12px;font-weight:600;flex:1;font-family:'Fraunces',serif;}
+.ci-qty{font-size:11px;color:var(--text-muted);}
+.ci-pr{font-size:12.5px;font-weight:700;color:var(--orange);}
+.ct-row{display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;border-top:1.5px solid rgba(255,140,66,0.2);}
+
+/* ── INFO CARD ── */
+.info-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:8px;width:100%;}
+.ir{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border2);}
+.ir:last-child{border-bottom:none;}
+.ir-icon{font-size:14px;flex-shrink:0;}
+.ir-text{font-size:12.5px;line-height:1.55;flex:1;color:var(--text-muted);}
+.ir-text b{color:var(--text);}
+
+/* ── WA BUTTON ── */
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:9px;padding:13px 18px;
+  background:linear-gradient(135deg,var(--wa-deep),var(--wa));color:#fff;border:none;
+  border-radius:13px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:10px;
+  font-family:'DM Sans',sans-serif;transition:.2s;box-shadow:0 4px 16px rgba(37,211,102,0.28);}
+.wa-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(37,211,102,0.45);}
+.wa-ghost{background:transparent;border:1.5px solid var(--wa);color:var(--wa);box-shadow:none;}
+.wa-ghost:hover{background:rgba(37,211,102,0.1);}
+
+/* ── INPUT ── */
+.inp-area{border-top:1px solid var(--border);padding:11px 12px;background:var(--surface2);
+  display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.inp-box{flex:1;background:var(--surface3);border:1.5px solid var(--border);border-radius:13px;
+  display:flex;align-items:flex-end;gap:7px;padding:9px 12px;transition:.2s;}
+.inp-box:focus-within{border-color:rgba(232,71,42,0.5);box-shadow:0 0 0 3px rgba(232,71,42,0.1);}
+.txt-inp{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13.5px;
+  font-family:'DM Sans',sans-serif;resize:none;max-height:80px;line-height:1.5;}
+.txt-inp::placeholder{color:var(--text-dim);}
+.snd{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--red-deep),var(--red));
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;
+  color:#fff;box-shadow:0 3px 10px rgba(232,71,42,0.35);transition:.18s;flex-shrink:0;}
+.snd:hover{transform:scale(1.07);}
+
+/* ── OVERLAY / SHEETS ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(4px);
+  z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:430px;
+  max-height:90vh;display:flex;flex-direction:column;overflow:hidden;
+  animation:sUp .3s cubic-bezier(.34,1.15,.64,1);}
+@keyframes sUp{from{transform:translateY(100%);}to{transform:none;}}
+.shdl{width:38px;height:4px;border-radius:4px;background:var(--surface4);margin:12px auto 0;}
+.sh-hdr{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sh-title{font-family:'Fraunces',serif;font-size:16px;font-weight:800;}
+.sh-close{width:28px;height:28px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);
+  cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);}
+.sh-body{flex:1;overflow-y:auto;padding:16px 18px;}
+.sh-footer{padding:14px 18px;border-top:1px solid var(--border);}
+
+/* ── FORM ── */
+.fg{margin-bottom:13px;}
+.fl{font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:5px;display:block;
+  text-transform:uppercase;letter-spacing:.5px;}
+.fi,.fs,.fta{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;
+  padding:10px 13px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:.2s;}
+.fi:focus,.fs:focus,.fta:focus{border-color:rgba(232,71,42,0.5);box-shadow:0 0 0 3px rgba(232,71,42,0.1);}
+.fta{resize:vertical;min-height:76px;}
+.fs option{background:var(--surface);}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.qty-ctrl{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.qbtn{width:32px;height:32px;border-radius:8px;background:var(--surface3);border:1.5px solid var(--border);
+  cursor:pointer;color:var(--orange);font-size:18px;display:flex;align-items:center;justify-content:center;transition:.18s;}
+.qbtn:hover{background:var(--red);border-color:var(--red);color:#fff;}
+.qval{font-size:16px;font-weight:800;min-width:28px;text-align:center;font-family:'Fraunces',serif;}
+
+/* ── PROMO BANNER ── */
+.promo-bar{background:linear-gradient(135deg,var(--red-deep),var(--orange));border-radius:12px;
+  padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:8px;width:100%;}
+.pb-text{font-size:12.5px;font-weight:700;color:#fff;flex:1;}
+.pb-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,255,255,0.25);
+  padding:3px 8px;border-radius:6px;color:#fff;cursor:pointer;white-space:nowrap;}
+
+/* ── SPECIAL ITEMS ── */
+.special-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;width:100%;}
+.special-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;
+  padding:12px;text-align:center;cursor:pointer;transition:.2s;}
+.special-card:hover{border-color:var(--orange);transform:translateY(-2px);box-shadow:0 6px 18px rgba(232,71,42,0.15);}
+.sc-em{font-size:32px;margin-bottom:5px;display:block;}
+.sc-nm{font-family:'Fraunces',serif;font-size:12.5px;font-weight:700;}
+.sc-pr{font-size:13px;font-weight:800;color:var(--orange);margin-top:3px;}
+
+/* ── TRACKING STEPS ── */
+.track-steps{display:flex;margin:10px 0;gap:0;}
+.tstep{flex:1;text-align:center;position:relative;}
+.tstep::after{content:'';position:absolute;top:11px;left:50%;width:100%;height:2px;background:var(--surface4);z-index:0;}
+.tstep:last-child::after{display:none;}
+.tsdot{width:22px;height:22px;border-radius:50%;border:2px solid var(--surface4);background:var(--surface2);
+  margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:10px;position:relative;z-index:1;}
+.tsdot.done{background:var(--green);border-color:var(--green);color:var(--bg);}
+.tsdot.active{background:var(--orange);border-color:var(--orange);color:var(--bg);box-shadow:0 0 10px rgba(255,140,66,0.5);}
+.tstep.done::after{background:var(--green);}
+.tslbl{font-size:9px;color:var(--text-dim);}
+
+/* ── DIVIDER ── */
+.div{height:1px;background:var(--border2);margin:8px 0;}
+.badge-strip{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
+.bstr{font-size:9.5px;padding:2px 7px;border-radius:6px;background:var(--surface3);border:1px solid var(--border);color:var(--text-muted);}
+.bstr.hot{background:rgba(232,71,42,0.15);color:var(--red);border-color:rgba(232,71,42,0.25);}
+.bstr.fast{background:rgba(6,214,160,0.12);color:var(--green);border-color:rgba(6,214,160,0.2);}
+</style>
+</head>
+<body>
+
+<div class="window">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-inner">
+      <div class="hdr-av">🍽️</div>
+      <div>
+        <div class="hdr-name">FoodBot</div>
+        <div class="hdr-sub"><div class="online-dot"></div>Order food · Fast delivery</div>
+      </div>
+      <div class="hdr-right">
+        <div class="hbtn cart-badge" onclick="openCart()" title="Cart">
+          🛒<span class="cb-dot" id="cartBadge">0</span>
+        </div>
+        <div class="hbtn" onclick="openSearch()" title="Search">🔍</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESTAURANT STRIP -->
+  <div class="rest-strip" id="restStrip">
+    <span class="rs-emoji" id="rsEmoji"></span>
+    <div><div class="rs-name" id="rsName"></div><div class="rs-loc" id="rsLoc"></div></div>
+    <span class="rs-change" onclick="changeRest()">Change</span>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="msgs" id="msgs"></div>
+
+  <!-- INPUT -->
+  <div class="inp-area">
+    <div class="inp-box">
+      <textarea class="txt-inp" id="inp" rows="1" placeholder="Type a message or choose an option..."></textarea>
+    </div>
+    <button class="snd" onclick="send()">➤</button>
+  </div>
+</div>
+
+<!-- ══ CART SHEET ══ -->
+<div class="overlay" id="ovCart">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🛒 Your Order</div><div class="sh-close" onclick="closeOv('ovCart')">✕</div></div>
+    <div class="sh-body" id="cartBody"></div>
+    <div class="sh-footer" id="cartFoot"></div>
+  </div>
+</div>
+
+<!-- ══ ORDER SHEET ══ -->
+<div class="overlay" id="ovOrder">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">📦 Delivery Details</div><div class="sh-close" onclick="closeOv('ovOrder')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Full Name</label><input class="fi" id="oName" placeholder="Your full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="oPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Delivery Address</label><textarea class="fta" id="oAddr" placeholder="Street address, area, landmark..."></textarea></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">City</label><input class="fi" id="oCity" placeholder="Lagos"></div>
+        <div class="fg"><label class="fl">Area</label><input class="fi" id="oArea" placeholder="Lekki Phase 1"></div>
+      </div>
+      <div class="fg"><label class="fl">Delivery Time</label>
+        <select class="fs" id="oTime">
+          <option>ASAP (30–45 min)</option><option>In 1 hour</option>
+          <option>Today evening</option><option>Schedule for tomorrow</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Payment Method</label>
+        <select class="fs" id="oPay">
+          <option>Pay on Delivery (Cash)</option><option>Bank Transfer</option>
+          <option>Card Payment</option><option>POS on Delivery</option><option>Crypto (USDT)</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Special Instructions</label>
+        <textarea class="fta" id="oNotes" placeholder="No onions, extra sauce, ring doorbell..."></textarea>
+      </div>
+    </div>
+    <div class="sh-footer"><button class="wa-btn" onclick="submitOrder()">📲 Place Order via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ TRACK SHEET ══ -->
+<div class="overlay" id="ovTrack">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🚴 Track My Order</div><div class="sh-close" onclick="closeOv('ovTrack')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Order ID or Phone Number</label><input class="fi" id="trkId" placeholder="FB-20240318 or +234..."></div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.6;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px;">
+        🚴 You'll be redirected to WhatsApp where our rider will give you a real-time location update.
+      </div>
+    </div>
+    <div class="sh-footer"><button class="wa-btn" onclick="submitTrack()">📲 Track via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ SUPPORT SHEET ══ -->
+<div class="overlay" id="ovSupport">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🎧 Customer Support</div><div class="sh-close" onclick="closeOv('ovSupport')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="sName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Issue Type</label>
+        <select class="fs" id="sType">
+          <option>Order not arrived</option><option>Wrong item received</option>
+          <option>Cold / poor quality food</option><option>Missing items</option>
+          <option>Refund request</option><option>Payment issue</option><option>General inquiry</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Order ID (if applicable)</label><input class="fi" id="sOrder" placeholder="FB-20240318"></div>
+      <div class="fg"><label class="fl">Describe Your Issue</label><textarea class="fta" id="sDesc" placeholder="Tell us what happened..."></textarea></div>
+    </div>
+    <div class="sh-footer"><button class="wa-btn" onclick="submitSupport()">📲 Contact Support via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ REFUND SHEET ══ -->
+<div class="overlay" id="ovRefund">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">💸 Refund Request</div><div class="sh-close" onclick="closeOv('ovRefund')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Order ID</label><input class="fi" id="rfId" placeholder="FB-20240318"></div>
+      <div class="fg"><label class="fl">Item(s) to Refund</label><input class="fi" id="rfItem" placeholder="e.g. Jollof Rice, Chicken Wrap"></div>
+      <div class="fg"><label class="fl">Reason</label>
+        <select class="fs" id="rfReason">
+          <option>Food not delivered</option><option>Wrong order received</option>
+          <option>Food was cold/inedible</option><option>Quality issue</option>
+          <option>Cancelled order</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Preferred Resolution</label>
+        <select class="fs" id="rfRes"><option>Full Refund</option><option>Re-delivery</option><option>Store Credit</option></select>
+      </div>
+    </div>
+    <div class="sh-footer"><button class="wa-btn" onclick="submitRefund()">📲 Submit Refund via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ REVIEW SHEET ══ -->
+<div class="overlay" id="ovReview">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">⭐ Rate Your Meal</div><div class="sh-close" onclick="closeOv('ovReview')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="rvName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Restaurant & Meal</label><input class="fi" id="rvMeal" placeholder="e.g. Mama's Kitchen — Jollof Rice"></div>
+      <div class="fg"><label class="fl">Food Rating</label>
+        <div style="display:flex;gap:10px;margin-top:6px;" id="starRow">
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(1)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(2)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(3)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(4)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(5)">⭐</span>
+        </div>
+        <input type="hidden" id="rvStars" value="5">
+      </div>
+      <div class="fg"><label class="fl">Your Review</label><textarea class="fta" id="rvText" placeholder="How was your meal? Was the delivery fast?..."></textarea></div>
+    </div>
+    <div class="sh-footer"><button class="wa-btn" onclick="submitReview()">📲 Submit Review via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ RESERVATION SHEET ══ -->
+<div class="overlay" id="ovReserve">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🪑 Table Reservation</div><div class="sh-close" onclick="closeOv('ovReserve')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Full Name</label><input class="fi" id="resName" placeholder="Your full name"></div>
+      <div class="fg"><label class="fl">Phone Number</label><input class="fi" id="resPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Date</label><input class="fi" id="resDate" type="date"></div>
+        <div class="fg"><label class="fl">Time</label><input class="fi" id="resTime" type="time" value="19:00"></div>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Guests</label>
+          <select class="fs" id="resGuests"><option>1</option><option>2</option><option selected>4</option><option>6</option><option>8</option><option>10+</option></select>
+        </div>
+        <div class="fg"><label class="fl">Occasion</label>
+          <select class="fs" id="resOcc"><option>Regular Dining</option><option>Birthday</option><option>Anniversary</option><option>Business Lunch</option><option>Date Night</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Special Requests</label><textarea class="fta" id="resNotes" placeholder="Cake, decorations, dietary needs..."></textarea></div>
+    </div>
+    <div class="sh-footer"><button class="wa-btn" onclick="submitReservation()">📲 Reserve via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ SEARCH SHEET ══ -->
+<div class="overlay" id="ovSearch">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🔍 Search Menu</div><div class="sh-close" onclick="closeOv('ovSearch')">✕</div></div>
+    <div class="sh-body">
+      <input class="fi" id="srchInp" placeholder="Search food, cuisine, restaurant..." oninput="liveSearch(this.value)" style="margin-bottom:12px;">
+      <div id="srchResults"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOD DETAIL SHEET ══ -->
+<div class="overlay" id="ovDetail">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title" id="detTitle">Food Details</div><div class="sh-close" onclick="closeOv('ovDetail')">✕</div></div>
+    <div class="sh-body" id="detBody"></div>
+    <div class="sh-footer" id="detFoot"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+// CONFIG — Change to your WhatsApp number
+// ════════════════════════════════════
+const WA = '2348000000000'; // e.g. 2348012345678
+
+// ════════════════════════════════════
+// DATA
+// ════════════════════════════════════
+const restaurants = [
+  {id:'MK',emoji:'🍲',name:"Mama's Kitchen",loc:'Lekki, Lagos',cuisine:'Nigerian · Swallow',rating:'4.9 ★★★★★',eta:'25–35 min',tag:'hot',open:true},
+  {id:'SP',emoji:'🍕',name:'Slice Palace',loc:'Victoria Island, Lagos',cuisine:'Pizza · Italian',rating:'4.7 ★★★★☆',eta:'30–45 min',tag:'',open:true},
+  {id:'GR',emoji:'🥗',name:'The Green Bowl',loc:'Ikoyi, Lagos',cuisine:'Healthy · Salads',rating:'4.8 ★★★★★',eta:'20–30 min',tag:'',open:true},
+  {id:'SG',emoji:'🍜',name:'Spice Garden',loc:'Surulere, Lagos',cuisine:'Asian Fusion',rating:'4.6 ★★★★☆',eta:'35–50 min',tag:'hot',open:true},
+  {id:'BB',emoji:'🍔',name:'Buns & Bites',loc:'Ikeja, Lagos',cuisine:'Burgers · Fast Food',rating:'4.5 ★★★★☆',eta:'20–30 min',tag:'',open:true},
+  {id:'OC',emoji:'🦞',name:'Ocean Grill',loc:'Eko Atlantic, Lagos',cuisine:'Seafood · Grills',rating:'4.9 ★★★★★',eta:'40–55 min',tag:'',open:true},
+];
+
+const menuItems = [
+  // Mama's Kitchen
+  {id:'m1',rest:'MK',emoji:'🍚',name:'Jollof Rice + Chicken',desc:'Smoky party jollof with grilled chicken thigh & coleslaw',price:'₦3,500',num:3500,badge:'popular',cat:'Rice',rating:'4.9',time:'20 min'},
+  {id:'m2',rest:'MK',emoji:'🍲',name:'Egusi Soup + Pounded Yam',desc:'Rich egusi with assorted meat, served with pounded yam',price:'₦4,200',num:4200,badge:'spicy',cat:'Swallow',rating:'4.8',time:'25 min'},
+  {id:'m3',rest:'MK',emoji:'🍗',name:'Pepper Soup (Goat)',desc:'Hot & spicy goat meat pepper soup with yam',price:'₦3,800',num:3800,badge:'spicy',cat:'Soup',rating:'4.9',time:'20 min'},
+  {id:'m4',rest:'MK',emoji:'🌽',name:'Moi Moi Special',desc:'Steamed bean pudding with boiled eggs & fish',price:'₦1,500',num:1500,badge:'veg',cat:'Sides',rating:'4.7',time:'15 min'},
+  {id:'m5',rest:'MK',emoji:'🥘',name:'Ofe Onugbu + Fufu',desc:'Bitter leaf soup with oxtail, crayfish & fufu',price:'₦4,500',num:4500,badge:'',cat:'Swallow',rating:'4.8',time:'25 min'},
+  {id:'m6',rest:'MK',emoji:'🐟',name:'Catfish Pepper Soup',desc:'Fresh catfish in spiced broth with scent leaves',price:'₦4,000',num:4000,badge:'spicy',cat:'Soup',rating:'4.9',time:'20 min'},
+  // Slice Palace
+  {id:'p1',rest:'SP',emoji:'🍕',name:'Suya Chicken Pizza',desc:'Spiced suya chicken, caramelised onions, scotch bonnet',price:'₦5,800',num:5800,badge:'popular',cat:'Pizza',rating:'4.8',time:'30 min'},
+  {id:'p2',rest:'SP',emoji:'🍕',name:'BBQ Beef Pizza',desc:'Slow-cooked beef, smoky BBQ sauce, jalapeños',price:'₦5,500',num:5500,badge:'',cat:'Pizza',rating:'4.7',time:'30 min'},
+  {id:'p3',rest:'SP',emoji:'🍕',name:'Margherita Classic',desc:'San Marzano tomato, fresh mozzarella, basil',price:'₦4,200',num:4200,badge:'veg',cat:'Pizza',rating:'4.6',time:'25 min'},
+  {id:'p4',rest:'SP',emoji:'🍝',name:'Creamy Pasta Carbonara',desc:'Spaghetti, pancetta, eggs, pecorino, black pepper',price:'₦4,500',num:4500,badge:'',cat:'Pasta',rating:'4.7',time:'20 min'},
+  // Green Bowl
+  {id:'g1',rest:'GR',emoji:'🥗',name:'Grilled Chicken Caesar',desc:'Romaine, grilled chicken, house croutons, parmesan',price:'₦3,800',num:3800,badge:'popular',cat:'Salad',rating:'4.8',time:'15 min'},
+  {id:'g2',rest:'GR',emoji:'🥙',name:'Avocado Protein Bowl',desc:'Quinoa, avocado, grilled salmon, edamame, tahini',price:'₦5,200',num:5200,badge:'new',cat:'Bowls',rating:'4.9',time:'20 min'},
+  {id:'g3',rest:'GR',emoji:'🥤',name:'Green Detox Smoothie',desc:'Spinach, cucumber, ginger, lemon, green apple',price:'₦2,000',num:2000,badge:'veg',cat:'Drinks',rating:'4.7',time:'5 min'},
+  // Spice Garden
+  {id:'s1',rest:'SG',emoji:'🍜',name:'Thai Green Curry',desc:'Coconut milk, kaffir lime, lemongrass, jasmine rice',price:'₦4,800',num:4800,badge:'spicy',cat:'Curry',rating:'4.8',time:'25 min'},
+  {id:'s2',rest:'SG',emoji:'🥡',name:'Beef Fried Rice',desc:'Wok-fried rice, tender beef, vegetables, soy glaze',price:'₦3,500',num:3500,badge:'popular',cat:'Rice',rating:'4.7',time:'20 min'},
+  {id:'s3',rest:'SG',emoji:'🍱',name:'Sushi Platter (12 pcs)',desc:'California rolls, salmon nigiri, tuna rolls',price:'₦7,500',num:7500,badge:'new',cat:'Sushi',rating:'4.9',time:'30 min'},
+  // Buns & Bites
+  {id:'b1',rest:'BB',emoji:'🍔',name:'Smashed Double Burger',desc:'Double smash patty, American cheese, pickles, special sauce',price:'₦4,500',num:4500,badge:'popular',cat:'Burgers',rating:'4.8',time:'15 min'},
+  {id:'b2',rest:'BB',emoji:'🌮',name:'Chicken Wrap',desc:'Grilled chicken, lettuce, tomato, garlic aioli in tortilla',price:'₦3,200',num:3200,badge:'',cat:'Wraps',rating:'4.6',time:'10 min'},
+  {id:'b3',rest:'BB',emoji:'🍟',name:'Loaded Fries',desc:'Crispy fries, cheese sauce, jalapeños, bacon bits',price:'₦2,500',num:2500,badge:'',cat:'Sides',rating:'4.7',time:'12 min'},
+  {id:'b4',rest:'BB',emoji:'🥤',name:'Milkshake (Strawberry)',desc:'Thick creamy strawberry milkshake with whipped cream',price:'₦2,000',num:2000,badge:'',cat:'Drinks',rating:'4.8',time:'8 min'},
+  // Ocean Grill
+  {id:'o1',rest:'OC',emoji:'🦞',name:'Grilled Lobster',desc:'Half lobster, garlic butter, lemon, herb rice',price:'₦18,000',num:18000,badge:'popular',cat:'Seafood',rating:'5.0',time:'40 min'},
+  {id:'o2',rest:'OC',emoji:'🍤',name:'Prawns in Scotch Sauce',desc:'Jumbo prawns, spiced tomato scotch sauce, plantain',price:'₦8,500',num:8500,badge:'spicy',cat:'Seafood',rating:'4.9',time:'30 min'},
+  {id:'o3',rest:'OC',emoji:'🐠',name:'Pepper Grilled Tilapia',desc:'Whole tilapia, suya spice crust, chips & dip',price:'₦6,500',num:6500,badge:'',cat:'Seafood',rating:'4.8',time:'35 min'},
+];
+
+const specials = [
+  {id:'sp1',emoji:'🎉',name:'Weekend Bundle',desc:'Jollof + Chicken + Drink',price:'₦5,000',num:5000,rest:'MK'},
+  {id:'sp2',emoji:'🍕',name:'Pizza + Pasta Deal',desc:'Any pizza + pasta combo',price:'₦8,500',num:8500,rest:'SP'},
+  {id:'sp3',emoji:'🥗',name:'Healthy Lunch Box',desc:'Salad + Bowl + Smoothie',price:'₦7,200',num:7200,rest:'GR'},
+  {id:'sp4',emoji:'🍔',name:'Burger Meal Deal',desc:'Burger + Fries + Shake',price:'₦8,000',num:8000,rest:'BB'},
+];
+
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+let rest = null, cart = [], galIdx = 0, galItems = [], starVal = 5;
+const WA_NUM = WA;
+
+// ════════════════════════════════════
+// WHATSAPP
+// ════════════════════════════════════
+function toWA(msg){ window.open(`https://wa.me/${WA_NUM}?text=${encodeURIComponent(msg)}`,'_blank'); }
+
+// ════════════════════════════════════
+// TIME
+// ════════════════════════════════════
+function ts(){ return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}); }
+
+// ════════════════════════════════════
+// CHAT FUNCTIONS
+// ════════════════════════════════════
+function botMsg(html, extra=''){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div'); d.className='msg bot';
+  d.innerHTML=`<div class="av">🍽️</div><div class="mcol"><div class="bbl">${html}</div>${extra}<div class="mtime">${ts()}</div></div>`;
+  a.appendChild(d); a.scrollTop=a.scrollHeight;
+}
+function userMsg(t){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div'); d.className='msg user';
+  d.innerHTML=`<div class="av">👤</div><div class="mcol"><div class="bbl">${t}</div><div class="mtime">${ts()}</div></div>`;
+  a.appendChild(d); a.scrollTop=a.scrollHeight;
+}
+function typing(cb, ms=700){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div'); d.className='msg bot'; d.id='typ';
+  d.innerHTML=`<div class="av">🍽️</div><div class="mcol"><div class="tbbl"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
+  a.appendChild(d); a.scrollTop=a.scrollHeight;
+  setTimeout(()=>{ document.getElementById('typ')?.remove(); cb(); }, ms+Math.random()*250);
+}
+
+// ════════════════════════════════════
+// RESTAURANT GRID
+// ════════════════════════════════════
+function restGrid(){
+  return `<div class="rest-grid">${restaurants.map(r=>`
+    <div class="rc" onclick="pickRest('${r.id}',this)">
+      <span class="rc-tag ${r.tag==='hot'?'tag-hot':'tag-open'}">${r.tag==='hot'?'🔥 Popular':'✅ Open'}</span>
+      <span class="rc-emoji">${r.emoji}</span>
+      <div class="rc-name">${r.name}</div>
+      <div class="rc-cuisine">${r.cuisine}</div>
+      <div class="rc-rating">${r.rating}</div>
+      <div class="rc-eta">🕐 ${r.eta}</div>
+    </div>`).join('')}</div>`;
+}
+
+function pickRest(id, el){
+  rest = restaurants.find(r=>r.id===id);
+  document.querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  userMsg(`${rest.emoji} ${rest.name}`);
+  // update strip
+  document.getElementById('rsEmoji').textContent=rest.emoji;
+  document.getElementById('rsName').textContent=rest.name;
+  document.getElementById('rsLoc').textContent='📍 '+rest.loc+' · '+rest.eta;
+  document.getElementById('restStrip').classList.add('show');
+  typing(()=>{
+    botMsg(`Welcome to <strong>${rest.name}</strong>! 🎉<br>${rest.cuisine} · ${rest.rating} · 🕐 ${rest.eta}<br><br>What would you like today?`, mainMenu());
+  }, 900);
+}
+
+function changeRest(){
+  rest=null; document.getElementById('restStrip').classList.remove('show');
+  typing(()=>{ botMsg('Sure! Pick a restaurant:',restGrid()); });
+}
+
+// ════════════════════════════════════
+// MAIN MENU
+// ════════════════════════════════════
+function mainMenu(){
+  return `<div class="chips">
+    <div class="chip" onclick="go('menu')">🍽️ View Menu</div>
+    <div class="chip" onclick="go('gallery')">🖼️ Food Gallery</div>
+    <div class="chip" onclick="go('specials')">🎉 Today's Specials</div>
+    <div class="chip" onclick="go('popular')">🔥 Most Popular</div>
+    <div class="chip" onclick="go('categories')">📂 By Category</div>
+    <div class="chip" onclick="openCart()">🛒 My Cart (${cart.length})</div>
+    <div class="chip" onclick="go('track')">🚴 Track Order</div>
+    <div class="chip" onclick="go('reserve')">🪑 Reserve Table</div>
+    <div class="chip" onclick="go('support')">🎧 Support</div>
+    <div class="chip" onclick="go('refund')">💸 Refund</div>
+    <div class="chip" onclick="go('review')">⭐ Rate Meal</div>
+    <div class="chip" onclick="go('promo')">🎁 Promo Codes</div>
+    <div class="chip" onclick="go('info')">ℹ️ Restaurant Info</div>
+    <div class="chip" onclick="changeRest()">🔄 Change Restaurant</div>
+  </div>`;
+}
+
+function go(a){
+  const labels={menu:'🍽️ View Menu',gallery:'🖼️ Food Gallery',specials:'🎉 Today\'s Specials',popular:'🔥 Most Popular',categories:'📂 Browse Categories',track:'🚴 Track Order',reserve:'🪑 Reserve Table',support:'🎧 Support',refund:'💸 Refund',review:'⭐ Rate Meal',promo:'🎁 Promo Codes',info:'ℹ️ Restaurant Info'};
+  if(labels[a]) userMsg(labels[a]);
+  switch(a){
+    case 'menu': doMenu(); break;
+    case 'gallery': doGallery(); break;
+    case 'specials': doSpecials(); break;
+    case 'popular': doPopular(); break;
+    case 'categories': doCategories(); break;
+    case 'track': doTrack(); break;
+    case 'reserve': openOv('ovReserve'); break;
+    case 'support': doSupport(); break;
+    case 'refund': openOv('ovRefund'); break;
+    case 'review': openOv('ovReview'); break;
+    case 'promo': doPromo(); break;
+    case 'info': doInfo(); break;
+  }
+}
+
+// ════════════════════════════════════
+// SLIDING GALLERY
+// ════════════════════════════════════
+function buildGallery(items, title='Menu Gallery'){
+  if(!items.length) return '<p style="color:var(--text-muted);font-size:13px;">No items found.</p>';
+  galItems = items; galIdx = 0;
+  const slides = items.map((item,i)=>`
+    <div class="gallery-slide">
+      <div class="food-card">
+        <div class="fc-img" style="cursor:pointer;" onclick="openDetail('${item.id}')">
+          <span style="font-size:80px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4));">${item.emoji}</span>
+          ${item.badge?`<span class="fc-badge ${item.badge}">${item.badge}</span>`:''}
+          <span class="fc-time-badge">⏱ ${item.time}</span>
+        </div>
+        <div class="fc-body">
+          <div class="fc-name">${item.name}</div>
+          <div class="fc-desc">${item.desc}</div>
+          <div class="fc-bottom">
+            <div><div class="fc-price">${item.price}</div><div class="fc-rating">★ ${item.rating}</div></div>
+          </div>
+          <div class="fc-add-row">
+            <button class="fc-btn fc-btn-ghost" onclick="openDetail('${item.id}')">👁 Details</button>
+            <button class="fc-btn fc-btn-primary" onclick="addToCart('${item.id}')">🛒 Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  const dots = items.map((_,i)=>`<div class="dot ${i===0?'active':''}" onclick="goSlide(${i})" id="dot-${i}"></div>`).join('');
+
+  return `<div class="gallery-wrap">
+    <div class="gallery-label">
+      <span>${title} — ${items.length} items</span>
+      <span class="gallery-count" id="galCount">1 / ${items.length}</span>
+    </div>
+    <div class="gallery-track-outer" id="galOuter">
+      <div class="gallery-track" id="galTrack">${slides}</div>
+    </div>
+    <div class="gal-nav">
+      <div class="gal-arrow" onclick="shiftGal(-1)">◀</div>
+      <div class="gal-dots" id="galDots">${dots}</div>
+      <div class="gal-arrow" onclick="shiftGal(1)">▶</div>
+    </div>
+  </div>`;
+}
+
+function shiftGal(dir){
+  if(!galItems.length) return;
+  galIdx=(galIdx+dir+galItems.length)%galItems.length;
+  updateGal();
+}
+function goSlide(i){ galIdx=i; updateGal(); }
+function updateGal(){
+  const tr=document.getElementById('galTrack');
+  const cnt=document.getElementById('galCount');
+  if(tr) tr.style.transform=`translateX(-${galIdx*100}%)`;
+  if(cnt) cnt.textContent=`${galIdx+1} / ${galItems.length}`;
+  document.querySelectorAll('.dot').forEach((d,i)=>{ d.classList.toggle('active',i===galIdx); });
+}
+
+// Touch/swipe support
+let tStart=0;
+document.addEventListener('touchstart',e=>{ const el=e.target.closest('#galOuter'); if(el) tStart=e.touches[0].clientX; });
+document.addEventListener('touchend',e=>{
+  const el=e.target.closest('#galOuter');
+  if(el && tStart){ const dx=e.changedTouches[0].clientX-tStart; if(Math.abs(dx)>40) shiftGal(dx<0?1:-1); tStart=0; }
+});
+
+// ════════════════════════════════════
+// MENU ACTIONS
+// ════════════════════════════════════
+function doMenu(){
+  const items = rest ? menuItems.filter(i=>i.rest===rest.id) : menuItems;
+  typing(()=>{
+    botMsg(`Here is the full menu for <strong>${rest?rest.name:'all restaurants'}</strong>:`,
+      buildGallery(items,'Full Menu')+
+      `<div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="go('categories')">📂 By Category</div>
+        <div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div>
+      </div>`);
+  });
+}
+
+function doGallery(){
+  const items = rest ? menuItems.filter(i=>i.rest===rest.id) : menuItems;
+  typing(()=>{
+    botMsg(`Swipe to explore our food gallery 👉`,
+      buildGallery(items,'📸 Food Gallery')+
+      `<div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="go('popular')">🔥 Popular</div>
+        <div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div>
+      </div>`);
+  });
+}
+
+function doPopular(){
+  const items = menuItems.filter(i=>i.badge==='popular'&&(rest?i.rest===rest.id:true));
+  typing(()=>{
+    botMsg('🔥 <strong>Most Popular Dishes</strong> — Customer favourites!',
+      buildGallery(items,'🔥 Popular')+
+      promoBar());
+  });
+}
+
+function doCategories(){
+  const items = rest ? menuItems.filter(i=>i.rest===rest.id) : menuItems;
+  const cats=[...new Set(items.map(i=>i.cat))];
+  const emap={Rice:'🍚',Swallow:'🍲',Soup:'🍜',Sides:'🍡',Pizza:'🍕',Pasta:'🍝',Salad:'🥗',Bowls:'🥙',Drinks:'🥤',Curry:'🍛',Sushi:'🍱',Burgers:'🍔',Wraps:'🌮',Seafood:'🦞'};
+  typing(()=>{
+    botMsg('Choose a category:',
+      `<div class="chips">${cats.map(c=>`<div class="chip" onclick="doCategory('${c}')">${emap[c]||'🍴'} ${c}</div>`).join('')}</div>`);
+  });
+}
+
+function doCategory(cat){
+  userMsg(cat);
+  let items=menuItems.filter(i=>i.cat===cat&&(rest?i.rest===rest.id:true));
+  typing(()=>{
+    if(!items.length){
+      botMsg(`No <strong>${cat}</strong> items at ${rest?.name||'this restaurant'} right now.`,
+        `<div class="chips"><div class="chip" onclick="go('categories')">← Back</div></div>`);
+    } else {
+      botMsg(`<strong>${cat}</strong> — ${items.length} item(s):`,
+        buildGallery(items,cat)+
+        `<div class="chips" style="margin-top:8px;"><div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div><div class="chip" onclick="go('categories')">← Back</div></div>`);
+    }
+  });
+}
+
+function doSpecials(){
+  const items = rest
+    ? specials.filter(s=>s.rest===rest.id)
+    : specials;
+  typing(()=>{
+    botMsg('🎉 <strong>Today\'s Special Deals</strong> — Limited time!',
+      `<div class="special-grid">${(items.length?items:specials).map(s=>`
+        <div class="special-card" onclick="addSpecial('${s.id}')">
+          <span class="sc-em">${s.emoji}</span>
+          <div class="sc-nm">${s.name}</div>
+          <div style="font-size:10.5px;color:var(--text-muted);margin-top:2px;">${s.desc}</div>
+          <div class="sc-pr">${s.price}</div>
+          <div style="font-size:11px;color:var(--green);margin-top:4px;">+ Add to Cart</div>
+        </div>`).join('')}</div>`+
+      promoBar()+
+      `<div class="chips" style="margin-top:8px;"><div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div></div>`);
+  });
+}
+
+function promoBar(){
+  return `<div class="promo-bar"><div>🎁</div><div class="pb-text">Use code for 10% off!</div><div class="pb-code" onclick="copyCode(this,'FOOD10')">FOOD10</div></div>`;
+}
+
+function copyCode(el,c){ navigator.clipboard?.writeText(c).catch(()=>{}); el.textContent='Copied! ✓'; setTimeout(()=>el.textContent=c,1600); }
+
+// ════════════════════════════════════
+// FOOD DETAIL SHEET
+// ════════════════════════════════════
+function openDetail(id){
+  const item=menuItems.find(i=>i.id===id)||specials.find(i=>i.id===id);
+  if(!item) return;
+  document.getElementById('detTitle').textContent=item.emoji+' '+item.name;
+  document.getElementById('detBody').innerHTML=`
+    <div style="text-align:center;padding:20px;background:var(--surface2);border-radius:12px;margin-bottom:14px;">
+      <div style="font-size:80px;margin-bottom:8px;">${item.emoji}</div>
+      ${item.badge?`<span class="fc-badge ${item.badge}" style="position:static;display:inline-block;">${item.badge}</span>`:''}
+    </div>
+    <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:800;margin-bottom:6px;">${item.name}</div>
+    <div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:12px;">${item.desc}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+      <span class="bstr">⏱ ${item.time||'N/A'}</span>
+      <span class="bstr">★ ${item.rating||'4.7'}</span>
+      ${item.badge?`<span class="bstr hot">${item.badge}</span>`:''}
+      <span class="bstr fast">Fast Delivery</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:900;color:var(--orange);">${item.price}</div>
+      <div class="qty-ctrl">
+        <button class="qbtn" onclick="changeQty(-1)">−</button>
+        <span class="qval" id="qtyVal">1</span>
+        <button class="qbtn" onclick="changeQty(1)">+</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.6;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;">
+      🧂 <b>Allergens:</b> May contain dairy, gluten, nuts.<br>
+      🌶️ <b>Spice level:</b> ${item.badge==='spicy'?'🌶🌶🌶 Hot':'🌶 Mild'}<br>
+      📦 <b>Packaging:</b> Eco-friendly containers
+    </div>`;
+  document.getElementById('detFoot').innerHTML=`
+    <button class="wa-btn" onclick="addToCartFromDetail('${item.id}')">🛒 Add to Cart</button>
+    <button class="wa-btn wa-ghost" style="margin-top:8px;" onclick="quickOrderItem('${item.id}')">⚡ Quick Order via WhatsApp</button>`;
+  openOv('ovDetail');
+}
+
+let qtyVal=1;
+function changeQty(d){ qtyVal=Math.max(1,qtyVal+d); document.getElementById('qtyVal').textContent=qtyVal; }
+function addToCartFromDetail(id){ addToCart(id,qtyVal); qtyVal=1; closeOv('ovDetail'); }
+function quickOrderItem(id){
+  const item=menuItems.find(i=>i.id===id)||specials.find(i=>i.id===id);
+  closeOv('ovDetail');
+  toWA(`⚡ *QUICK ORDER — FoodBot*\n\n🍽️ *Restaurant:* ${rest?.name||'N/A'}\n🍴 *Item:* ${item?.name} x${qtyVal}\n💰 *Price:* ${item?.price}\n\n📲 Please send my delivery address.`);
+}
+
+// ════════════════════════════════════
+// CART
+// ════════════════════════════════════
+function addToCart(id, qty=1){
+  const item=menuItems.find(i=>i.id===id)||specials.find(i=>i.id===id);
+  if(!item) return;
+  const ex=cart.find(c=>c.id===id);
+  if(ex){ ex.qty+=qty; } else { cart.push({...item,qty}); }
+  updateCartBadge();
+  typing(()=>{
+    botMsg(`✅ <strong>${item.name}</strong> added! (×${qty})`,
+      `<div class="chips"><div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div><div class="chip" onclick="openOv('ovOrder')">⚡ Order Now</div><div class="chip" onclick="go('menu')">➕ More</div></div>`);
+  }, 350);
+}
+
+function addSpecial(id){
+  const s=specials.find(x=>x.id===id);
+  if(!s) return;
+  cart.push({...s,qty:1});
+  updateCartBadge();
+  typing(()=>{ botMsg(`🎉 <strong>${s.name}</strong> added!`,`<div class="chips"><div class="chip" onclick="openCart()">🛒 Cart (${cart.length})</div></div>`); },350);
+}
+
+function updateCartBadge(){
+  const total=cart.reduce((a,b)=>a+b.qty,0);
+  document.getElementById('cartBadge').textContent=total;
+}
+
+function openCart(){
+  if(!cart.length){
+    document.getElementById('cartBody').innerHTML=`<div style="text-align:center;padding:40px 16px;"><div style="font-size:52px;margin-bottom:12px;">🛒</div><div style="color:var(--text-muted);font-size:14px;">Your cart is empty<br><br>Browse the menu to add something delicious!</div></div>`;
+    document.getElementById('cartFoot').innerHTML=`<button class="wa-btn wa-ghost" onclick="closeOv('ovCart');go('menu')">🍽️ Browse Menu</button>`;
+  } else {
+    const total=cart.reduce((a,b)=>a+b.num*b.qty,0);
+    document.getElementById('cartBody').innerHTML=`
+      <div class="cart-sum">
+        ${cart.map(i=>`<div class="ci-row">
+          <span class="ci-em">${i.emoji}</span>
+          <div style="flex:1;"><div class="ci-nm">${i.name}</div><div class="ci-qty">×${i.qty}</div></div>
+          <div><div class="ci-pr">₦${(i.num*i.qty).toLocaleString()}</div>
+          <div style="font-size:10px;color:var(--red);cursor:pointer;text-align:right;margin-top:2px;" onclick="rmCart('${i.id}')">Remove</div></div>
+        </div>`).join('')}
+        <div class="ct-row">
+          <span style="font-size:14px;font-weight:700;">Total</span>
+          <span style="font-size:19px;font-weight:900;color:var(--orange);font-family:'Fraunces',serif;">₦${total.toLocaleString()}</span>
+        </div>
+      </div>
+      <div class="info-card" style="margin-top:10px;">
+        <div class="ir"><div class="ir-icon">🚴</div><div class="ir-text">Delivery fee: <b>₦500–₦1,000</b> depending on location</div></div>
+        <div class="ir"><div class="ir-icon">🕐</div><div class="ir-text">Estimated time: <b>${rest?.eta||'30–45 min'}</b></div></div>
+        <div class="ir"><div class="ir-icon">💳</div><div class="ir-text">Payment on delivery or bank transfer accepted</div></div>
+      </div>`;
+    document.getElementById('cartFoot').innerHTML=`
+      <button class="wa-btn" onclick="closeOv('ovCart');openOv('ovOrder')">📦 Place Order</button>
+      <button class="wa-btn wa-ghost" style="margin-top:8px;" onclick="cart=[];updateCartBadge();openCart()">🗑️ Clear Cart</button>`;
+  }
+  openOv('ovCart');
+}
+
+function rmCart(id){ cart=cart.filter(c=>c.id!==id); updateCartBadge(); openCart(); }
+
+// ════════════════════════════════════
+// SUBMIT HANDLERS → WhatsApp
+// ════════════════════════════════════
+function submitOrder(){
+  const name=document.getElementById('oName').value.trim();
+  const phone=document.getElementById('oPhone').value.trim();
+  const addr=document.getElementById('oAddr').value.trim();
+  const city=document.getElementById('oCity').value.trim();
+  const area=document.getElementById('oArea').value.trim();
+  const time=document.getElementById('oTime').value;
+  const pay=document.getElementById('oPay').value;
+  const notes=document.getElementById('oNotes').value.trim();
+  if(!name||!phone||!addr){ alert('Please fill in name, phone and delivery address.'); return; }
+  const items=cart.length?cart.map(i=>`• ${i.emoji} ${i.name} ×${i.qty} — ₦${(i.num*i.qty).toLocaleString()}`).join('\n'):'(Inquiry)';
+  const total=cart.reduce((a,b)=>a+b.num*b.qty,0);
+  const msg=`🍽️ *NEW FOOD ORDER — FoodBot*\n\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${addr}${area?', '+area:''}, ${city}\n🕐 *Delivery:* ${time}\n💳 *Payment:* ${pay}\n\n🛒 *Order:*\n${items}\n\n💰 *Total:* ₦${total.toLocaleString()} + delivery\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()} via FoodBot`;
+  closeOv('ovOrder'); toWA(msg); cart=[]; updateCartBadge();
+  typing(()=>{ botMsg('🎉 <strong>Order sent!</strong> You\'ve been redirected to WhatsApp to confirm with our team. Your rider will be assigned shortly! 🚴',`<div class="chips"><div class="chip" onclick="go('track')">🚴 Track Order</div><div class="chip" onclick="go('menu')">🍽️ Order More</div></div>`); },600);
+}
+
+function submitTrack(){
+  const id=document.getElementById('trkId').value.trim();
+  if(!id){ alert('Please enter your order ID or phone number.'); return; }
+  toWA(`🚴 *ORDER TRACKING — FoodBot*\n\n📦 *Order ID/Phone:* ${id}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n⏰ ${ts()}`);
+  closeOv('ovTrack');
+  typing(()=>{ botMsg('🚴 Redirected to WhatsApp! Our rider will send you their live location now. 📍'); });
+}
+
+function submitSupport(){
+  const name=document.getElementById('sName').value.trim();
+  const type=document.getElementById('sType').value;
+  const order=document.getElementById('sOrder').value.trim();
+  const desc=document.getElementById('sDesc').value.trim();
+  if(!name||!desc){ alert('Please fill in your name and describe the issue.'); return; }
+  toWA(`🎧 *SUPPORT TICKET — FoodBot*\n\n👤 *Name:* ${name}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n❓ *Issue:* ${type}\n📦 *Order ID:* ${order||'N/A'}\n📝 *Details:*\n${desc}\n\n⏰ ${ts()}`);
+  closeOv('ovSupport');
+  typing(()=>{ botMsg('🎧 <strong>Ticket sent!</strong> Our support team will reply via WhatsApp within 15 minutes.'); });
+}
+
+function submitRefund(){
+  const id=document.getElementById('rfId').value.trim();
+  const item=document.getElementById('rfItem').value.trim();
+  const reason=document.getElementById('rfReason').value;
+  const res=document.getElementById('rfRes').value;
+  if(!id||!item){ alert('Please enter order ID and item name.'); return; }
+  toWA(`💸 *REFUND REQUEST — FoodBot*\n\n📦 *Order ID:* ${id}\n🍴 *Item:* ${item}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n❓ *Reason:* ${reason}\n✅ *Resolution:* ${res}\n\n⏰ ${ts()}`);
+  closeOv('ovRefund');
+  typing(()=>{ botMsg('💸 <strong>Refund request submitted!</strong> Our team will process it within 24–48 hours and contact you on WhatsApp.'); });
+}
+
+function submitReview(){
+  const name=document.getElementById('rvName').value.trim();
+  const meal=document.getElementById('rvMeal').value.trim();
+  const stars=document.getElementById('rvStars').value;
+  const text=document.getElementById('rvText').value.trim();
+  if(!name||!meal||!text){ alert('Please complete all review fields.'); return; }
+  toWA(`⭐ *MEAL REVIEW — FoodBot*\n\n👤 *Name:* ${name}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n🍴 *Meal:* ${meal}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n📝 *Review:*\n${text}\n\n⏰ ${ts()}`);
+  closeOv('ovReview');
+  typing(()=>{ botMsg('⭐ <strong>Thank you for your review!</strong> We\'ve shared it with the restaurant to keep standards high. 💚'); });
+}
+
+function submitReservation(){
+  const name=document.getElementById('resName').value.trim();
+  const phone=document.getElementById('resPhone').value.trim();
+  const date=document.getElementById('resDate').value;
+  const time=document.getElementById('resTime').value;
+  const guests=document.getElementById('resGuests').value;
+  const occ=document.getElementById('resOcc').value;
+  const notes=document.getElementById('resNotes').value.trim();
+  if(!name||!phone||!date){ alert('Please fill in name, phone and date.'); return; }
+  toWA(`🪑 *TABLE RESERVATION — FoodBot*\n\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📅 *Date:* ${date} at ${time}\n👥 *Guests:* ${guests}\n🎉 *Occasion:* ${occ}\n${notes?`📝 *Requests:* ${notes}\n`:''}\n⏰ ${ts()}`);
+  closeOv('ovReserve');
+  typing(()=>{ botMsg(`🪑 <strong>Reservation request sent!</strong> ${rest?.name||'The restaurant'} will confirm your table via WhatsApp. 🎉`); });
+}
+
+// ════════════════════════════════════
+// TRACK / SUPPORT / INFO
+// ════════════════════════════════════
+function doTrack(){
+  typing(()=>{ botMsg('Enter your order details to get a live rider update:',`<div class="chips"><div class="chip" onclick="openOv('ovTrack')">🔍 Enter Order ID</div></div>`); });
+}
+
+function doSupport(){
+  typing(()=>{
+    botMsg('🎧 <strong>Customer Support</strong><br>How can I help?',
+      `<div class="chips">
+        <div class="chip" onclick="showFAQ('delivery')">🚴 Delivery Info</div>
+        <div class="chip" onclick="showFAQ('payment')">💳 Payment Help</div>
+        <div class="chip" onclick="showFAQ('allergy')">🌾 Allergies/Dietary</div>
+        <div class="chip" onclick="showFAQ('cancel')">❌ Cancel Order</div>
+        <div class="chip" onclick="openOv('ovSupport')">📝 Submit Ticket</div>
+      </div>`);
+  });
+}
+
+const faqs={
+  delivery:{a:'🚴 <strong>Delivery Info</strong><br><br>• Within Lagos: <strong>25–55 min</strong><br>• Express: <strong>20–30 min</strong> (+₦500)<br>• Free delivery on orders over <strong>₦10,000</strong>!<br>• Real-time rider tracking on WhatsApp'},
+  payment:{a:'💳 <strong>Payment Methods</strong><br><br>• 💵 Cash on Delivery<br>• 🏦 Bank Transfer<br>• 💳 Card on Delivery (POS)<br>• 🔁 Online Card Payment<br>• 🪙 Crypto (USDT)<br><br>Payment confirmed before order dispatch.'},
+  allergy:{a:'🌾 <strong>Dietary & Allergies</strong><br><br>Please mention any allergies or dietary needs (nut-free, gluten-free, vegan, halal) in the <strong>Special Instructions</strong> when placing your order. Our kitchen will be informed.'},
+  cancel:{a:'❌ <strong>Cancel Order</strong><br><br>Orders can be cancelled within <strong>5 minutes</strong> of placing. After that, the restaurant may have started preparation.<br><br>Contact us immediately via WhatsApp for urgent cancellations.'},
+};
+
+function showFAQ(k){
+  const f=faqs[k]; if(!f) return;
+  userMsg(k);
+  typing(()=>{ botMsg(f.a,`<div class="chips"><div class="chip" onclick="openOv('ovSupport')">📝 Still need help?</div></div>`); });
+}
+
+function doInfo(){
+  if(!rest){ typing(()=>{ botMsg('Please select a restaurant first!'); }); return; }
+  typing(()=>{
+    botMsg(`<strong>${rest.emoji} ${rest.name}</strong>`,
+      `<div class="info-card">
+        <div class="ir"><div class="ir-icon">📍</div><div class="ir-text"><b>Location:</b> ${rest.loc}</div></div>
+        <div class="ir"><div class="ir-icon">🍴</div><div class="ir-text"><b>Cuisine:</b> ${rest.cuisine}</div></div>
+        <div class="ir"><div class="ir-icon">★</div><div class="ir-text"><b>Rating:</b> ${rest.rating}</div></div>
+        <div class="ir"><div class="ir-icon">🕐</div><div class="ir-text"><b>Delivery Time:</b> ${rest.eta}</div></div>
+        <div class="ir"><div class="ir-icon">🕗</div><div class="ir-text"><b>Opening Hours:</b> 8:00 AM – 10:00 PM daily</div></div>
+        <div class="ir"><div class="ir-icon">📞</div><div class="ir-text"><b>Contact:</b> Via WhatsApp</div></div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="go('menu')">🍽️ View Menu</div>
+        <div class="chip" onclick="openOv('ovReserve')">🪑 Reserve Table</div>
+      </div>`);
+  });
+}
+
+function doPromo(){
+  typing(()=>{
+    botMsg('🎁 <strong>Active Promo Codes</strong>',
+      `<div class="info-card">
+        <div class="ir"><div class="ir-icon">🎁</div><div class="ir-text"><b>FOOD10</b> — 10% off any order <span class="pb-code" style="font-size:10px;" onclick="copyCode(this,'FOOD10')">COPY</span></div></div>
+        <div class="ir"><div class="ir-icon">🆕</div><div class="ir-text"><b>FIRSTBITE</b> — Free delivery on first order <span class="pb-code" style="font-size:10px;" onclick="copyCode(this,'FIRSTBITE')">COPY</span></div></div>
+        <div class="ir"><div class="ir-icon">🍕</div><div class="ir-text"><b>PIZZA15</b> — 15% off all pizza orders <span class="pb-code" style="font-size:10px;" onclick="copyCode(this,'PIZZA15')">COPY</span></div></div>
+        <div class="ir"><div class="ir-icon">🥗</div><div class="ir-text"><b>HEALTHY20</b> — 20% off Green Bowl orders <span class="pb-code" style="font-size:10px;" onclick="copyCode(this,'HEALTHY20')">COPY</span></div></div>
+      </div>
+      <div class="chips"><div class="chip" onclick="go('menu')">🍽️ Order Now</div></div>`);
+  });
+}
+
+// ════════════════════════════════════
+// SEARCH
+// ════════════════════════════════════
+function openSearch(){ openOv('ovSearch'); setTimeout(()=>document.getElementById('srchInp').focus(),300); }
+
+function liveSearch(q){
+  const el=document.getElementById('srchResults');
+  if(!q.trim()){ el.innerHTML=''; return; }
+  const res=menuItems.filter(i=>
+    i.name.toLowerCase().includes(q.toLowerCase())||
+    i.cat.toLowerCase().includes(q.toLowerCase())||
+    i.desc.toLowerCase().includes(q.toLowerCase())
+  );
+  if(!res.length){
+    el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--text-muted);">Nothing found for "${q}"<br><br>
+      <button class="wa-btn" style="width:auto;padding:10px 16px;" onclick="searchWA('${q}')">📲 Ask on WhatsApp</button></div>`;
+    return;
+  }
+  el.innerHTML=`<div class="menu-list">${res.slice(0,8).map(i=>`
+    <div class="menu-item" onclick="openDetail('${i.id}')">
+      <div class="mi-emoji">${i.emoji}</div>
+      <div class="mi-info">
+        <div class="mi-name">${i.name}</div>
+        <div class="mi-desc">${i.desc.substring(0,48)}...</div>
+        <div class="badge-strip">
+          ${i.badge?`<span class="mi-badge mb-${i.badge==='popular'?'pop':i.badge==='spicy'?'spicy':'veg'}">${i.badge}</span>`:''}
+          <span class="bstr">⏱ ${i.time}</span>
+        </div>
+      </div>
+      <div>
+        <div class="mi-price">${i.price}</div>
+        <button class="mi-add" onclick="event.stopPropagation();addToCart('${i.id}')" style="margin-top:5px;">+</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function searchWA(q){ toWA(`🔍 *MENU SEARCH — FoodBot*\n\nLooking for: *${q}*\n🏪 Restaurant: ${rest?.name||'Any'}\n\nDo you have this on the menu?`); }
+
+// ════════════════════════════════════
+// STAR RATING
+// ════════════════════════════════════
+function setStar(n){
+  starVal=n; document.getElementById('rvStars').value=n;
+  document.querySelectorAll('#ovReview .sh-body span[onclick^="setStar"]').forEach((s,i)=>{
+    s.style.filter=i<n?'none':'grayscale(1) opacity(.3)';
+  });
+}
+
+// ════════════════════════════════════
+// FREE TEXT CHAT
+// ════════════════════════════════════
+function send(){
+  const inp=document.getElementById('inp');
+  const t=inp.value.trim(); if(!t) return;
+  inp.value=''; inp.style.height='auto';
+  userMsg(t);
+  const l=t.toLowerCase();
+  if(!rest){ typing(()=>{ botMsg('Please pick a restaurant first! 🍽️',restGrid()); }); return; }
+  if(/^(hi|hello|hey|hiya|good)/i.test(l)){ typing(()=>{ botMsg(`Hey! 😊 Welcome back to <strong>${rest.name}</strong>. What are you craving today?`,mainMenu()); }); }
+  else if(/menu|food|what.*eat|show.*food/i.test(l)){ doMenu(); }
+  else if(/gallery|slide|swipe|picture/i.test(l)){ doGallery(); }
+  else if(/popular|best|top|favourite|recommend/i.test(l)){ doPopular(); }
+  else if(/special|deal|offer/i.test(l)){ doSpecials(); }
+  else if(/categor|type|kind/i.test(l)){ doCategories(); }
+  else if(/track|rider|where.*order|status/i.test(l)){ doTrack(); }
+  else if(/reserve|booking|table|book/i.test(l)){ openOv('ovReserve'); }
+  else if(/support|help|problem|issue|complaint/i.test(l)){ doSupport(); }
+  else if(/refund|money back|cancel/i.test(l)){ openOv('ovRefund'); }
+  else if(/review|rate|rating|feedback/i.test(l)){ openOv('ovReview'); }
+  else if(/promo|coupon|discount|code/i.test(l)){ doPromo(); }
+  else if(/cart|basket|order/i.test(l)){ openCart(); }
+  else if(/info|about|hour|open|address/i.test(l)){ doInfo(); }
+  else if(/delivery|time|how long|fast/i.test(l)){ showFAQ('delivery'); }
+  else if(/pay|payment|transfer|cash/i.test(l)){ showFAQ('payment'); }
+  else if(/allerg|vegan|vegetar|halal|gluten/i.test(l)){ showFAQ('allergy'); }
+  else if(/change.*rest|other.*rest|different/i.test(l)){ changeRest(); }
+  else if(/rice|jollof|pasta|pizza|burger|sushi|curry|soup|salad|seafood|fish|chicken|beef/i.test(l)){
+    const res=menuItems.filter(i=>i.name.toLowerCase().includes(l)||i.desc.toLowerCase().includes(l)||i.cat.toLowerCase().includes(l));
+    if(res.length){ typing(()=>{ botMsg(`Found <strong>${res.length}</strong> match(es) for "<strong>${t}</strong>":`,buildGallery(res,'Search Results')); }); }
+    else { typing(()=>{ botMsg(`I couldn't find "${t}" on the menu. Try browsing:`,mainMenu()); }); }
+  } else {
+    const res=menuItems.filter(i=>i.name.toLowerCase().includes(l)||i.desc.toLowerCase().includes(l));
+    if(res.length){ typing(()=>{ botMsg(`Here's what I found for "<strong>${t}</strong>":`,buildGallery(res,'Search Results')); }); }
+    else {
+      typing(()=>{ botMsg(`Not sure about that 😅 — but I can help with:`,
+        `<div class="chips"><div class="chip" onclick="searchWA('${t}')">📲 Ask on WhatsApp</div><div class="chip" onclick="go('menu')">🍽️ View Menu</div><div class="chip" onclick="go('gallery')">🖼️ Gallery</div></div>`); });
+    }
+  }
+}
+
+// ════════════════════════════════════
+// OVERLAY HELPERS
+// ════════════════════════════════════
+function openOv(id){ document.getElementById(id).classList.add('open'); }
+function closeOv(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(el=>{ el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }); });
+
+// ════════════════════════════════════
+// INPUT
+// ════════════════════════════════════
+document.getElementById('inp').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } });
+document.getElementById('inp').addEventListener('input',function(){ this.style.height='auto'; this.style.height=this.scrollHeight+'px'; });
+
+// ════════════════════════════════════
+// INIT — GREETING
+// ════════════════════════════════════
+window.onload=()=>{
+  const h=new Date().getHours();
+  const meal=h<11?'breakfast 🍳':h<15?'lunch 🍽️':h<18?'a snack 🍡':'dinner 🌙';
+  setTimeout(()=>{
+    botMsg(`Hey there! 👋 I'm <strong>FoodBot</strong>, your personal food ordering assistant.<br><br>
+I'll help you <strong>browse menus, order food, track your rider</strong>, reserve tables and much more — all via WhatsApp for instant service. 🍽️🚴`);
+  }, 400);
+  setTimeout(()=>{
+    typing(()=>{
+      botMsg(`Looks like you're ordering ${meal}. Great choice! 😋<br><br>First, please <strong>pick a restaurant</strong> near you:`, restGrid());
+    }, 1400);
+  }, 1400);
+};
+</script>
+</body>
+</html>
