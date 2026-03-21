@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WayBot — Smart Wayfinder Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#040E24; --navy2:#071833; --navy3:#0A2040; --navy4:#0D2D58;
+  --cyan:#00D4FF; --cyan-deep:#0099CC; --cyan-glow:rgba(0,212,255,0.18);
+  --electric:#00FFB3; --electric-glow:rgba(0,255,179,0.15);
+  --amber:#FFB800; --amber-glow:rgba(255,184,0,0.18);
+  --rose:#FF4D8D; --slate:#8BA8CC;
+  --border:rgba(0,212,255,0.14); --border2:rgba(0,212,255,0.07);
+  --text:#E8F4FF; --text-muted:#7BA3C8; --text-dim:#3D6080;
+  --shadow:0 4px 24px rgba(0,0,0,0.6); --shadow-lg:0 16px 56px rgba(0,0,0,0.75);
+  --wa:#25D366; --wa-deep:#128C7E;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;background:var(--navy);
+  font-family:'Nunito',sans-serif;color:var(--text);}
+::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.2);border-radius:3px;}
+
+/* ANIMATED GRID BACKGROUND */
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;animation:gridDrift 20s linear infinite;}
+@keyframes gridDrift{0%{background-position:0 0;}100%{background-position:40px 40px;}}
+body::after{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse at 25% 30%, rgba(0,212,255,0.08) 0%, transparent 55%),
+             radial-gradient(ellipse at 75% 70%, rgba(0,255,179,0.06) 0%, transparent 50%);
+  pointer-events:none;}
+
+/* SCANNING LINE */
+.scan-line{position:fixed;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--electric),transparent);
+  animation:scan 6s linear infinite;opacity:.4;z-index:1;pointer-events:none;}
+@keyframes scan{0%{top:-2px;}100%{top:100vh;}}
+
+/* WINDOW */
+.window{width:100%;max-width:440px;height:97vh;max-height:880px;
+  background:var(--navy2);border-radius:20px;
+  border:1px solid rgba(0,212,255,0.18);
+  box-shadow:var(--shadow-lg),0 0 0 1px rgba(0,212,255,0.06),inset 0 1px 0 rgba(0,212,255,0.1);
+  display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:2;
+  animation:bootUp .6s cubic-bezier(.2,.8,.4,1);}
+@keyframes bootUp{from{opacity:0;transform:scale(.94) translateY(20px);}to{opacity:1;transform:none;}}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,var(--navy4),var(--navy3));
+  border-bottom:1px solid var(--border);padding:14px 16px 12px;flex-shrink:0;
+  position:relative;overflow:hidden;}
+.hdr::before{content:'WAYFINDER SYSTEM v2.4';position:absolute;right:14px;top:6px;
+  font-family:'JetBrains Mono',monospace;font-size:7px;color:rgba(0,212,255,0.3);letter-spacing:1.5px;}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--electric),transparent);opacity:.5;}
+.hdr-inner{display:flex;align-items:center;gap:11px;}
+.hdr-av{width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,var(--cyan-deep),var(--cyan));
+  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  box-shadow:0 0 16px rgba(0,212,255,0.4),0 2px 8px rgba(0,0,0,0.3);
+  animation:pulse-av 3s ease-in-out infinite;}
+@keyframes pulse-av{0%,100%{box-shadow:0 0 16px rgba(0,212,255,0.4),0 2px 8px rgba(0,0,0,0.3);}50%{box-shadow:0 0 28px rgba(0,212,255,0.6),0 2px 8px rgba(0,0,0,0.3);}}
+.hdr-title{font-family:'Oxanium',sans-serif;font-size:17px;font-weight:800;
+  background:linear-gradient(90deg,var(--cyan),var(--electric));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.hdr-sub{font-size:11px;color:var(--text-muted);margin-top:3px;display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--electric);animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+.hdr-right{margin-left:auto;display:flex;gap:6px;}
+.hbtn{width:34px;height:34px;border-radius:9px;
+  background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;
+  color:var(--cyan);transition:.2s;position:relative;}
+.hbtn:hover{background:rgba(0,212,255,0.18);border-color:var(--cyan);box-shadow:0 0 10px var(--cyan-glow);}
+.hbtn-badge{position:absolute;top:-4px;right:-4px;width:15px;height:15px;border-radius:50%;
+  background:var(--electric);color:var(--navy);font-size:8px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;}
+
+/* LOCATION STRIP */
+.loc-strip{background:rgba(0,212,255,0.06);border-bottom:1px solid var(--border);
+  padding:7px 16px;display:none;align-items:center;gap:8px;flex-shrink:0;}
+.loc-strip.show{display:flex;}
+.ls-icon{font-size:14px;}
+.ls-name{font-family:'Oxanium',sans-serif;font-size:12px;font-weight:700;color:var(--cyan);}
+.ls-sub{font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.ls-change{margin-left:auto;font-size:10px;color:var(--amber);cursor:pointer;
+  text-decoration:underline;font-weight:700;font-family:'JetBrains Mono',monospace;}
+
+/* MESSAGES */
+.msgs{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px;}
+
+/* BUBBLES */
+.msg{display:flex;gap:8px;animation:popIn .22s ease;max-width:100%;}
+.msg.user{flex-direction:row-reverse;}
+@keyframes popIn{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:none;}}
+.av{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;margin-top:2px;}
+.msg.bot .av{background:linear-gradient(135deg,var(--cyan-deep),var(--cyan));
+  box-shadow:0 0 10px rgba(0,212,255,0.3);}
+.msg.user .av{background:var(--navy3);border:1px solid var(--border);}
+.mcol{display:flex;flex-direction:column;max-width:87%;}
+.msg.user .mcol{align-items:flex-end;}
+.bbl{padding:10px 14px;border-radius:16px;font-size:13.5px;line-height:1.62;}
+.msg.bot .bbl{background:var(--navy3);border:1px solid var(--border);
+  border-top-left-radius:4px;}
+.msg.user .bbl{background:linear-gradient(135deg,var(--cyan-deep),var(--cyan));
+  color:var(--navy);border-top-right-radius:4px;
+  box-shadow:0 3px 14px rgba(0,212,255,0.28);font-weight:600;}
+.bbl b,.bbl strong{color:var(--cyan);}
+.msg.user .bbl b,.msg.user .bbl strong{color:var(--navy);}
+.mtime{font-size:9.5px;color:var(--text-dim);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+
+/* TYPING */
+.tbbl{background:var(--navy3);border:1px solid var(--border);border-radius:16px;border-top-left-radius:4px;
+  padding:12px 15px;display:flex;gap:5px;align-items:center;}
+.td{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:tdB 1.2s infinite;}
+.td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
+@keyframes tdB{0%,60%,100%{transform:translateY(0);opacity:.3;}30%{transform:translateY(-6px);opacity:1;}}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.chip{background:rgba(0,212,255,0.07);border:1.5px solid rgba(0,212,255,0.2);
+  color:var(--cyan);padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:700;
+  cursor:pointer;transition:.18s;font-family:'Nunito',sans-serif;}
+.chip:hover{background:rgba(0,212,255,0.18);border-color:var(--cyan);
+  box-shadow:0 0 12px var(--cyan-glow);transform:translateY(-1px);}
+
+/* VENUE GRID */
+.venue-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;width:100%;}
+.vc{background:var(--navy3);border:1.5px solid var(--border);border-radius:14px;
+  padding:12px 10px;cursor:pointer;transition:.22s;text-align:center;position:relative;overflow:hidden;}
+.vc::after{content:'';position:absolute;inset:0;opacity:0;
+  background:linear-gradient(135deg,rgba(0,212,255,0.12),rgba(0,255,179,0.06));transition:.22s;}
+.vc:hover{border-color:var(--cyan);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,212,255,0.15);}
+.vc:hover::after{opacity:1;}
+.vc.sel{border-color:var(--electric);background:rgba(0,255,179,0.07);}
+.vc-icon{font-size:28px;margin-bottom:6px;display:block;}
+.vc-name{font-family:'Oxanium',sans-serif;font-size:12.5px;font-weight:700;color:var(--text);}
+.vc-type{font-size:10px;color:var(--text-muted);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.vc-floor{font-size:10px;color:var(--electric);margin-top:3px;font-weight:700;}
+.vc-tag{position:absolute;top:6px;right:6px;font-size:8px;padding:2px 6px;border-radius:5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;}
+.tag-open{background:rgba(0,255,179,0.18);color:var(--electric);border:1px solid rgba(0,255,179,0.3);}
+.tag-busy{background:rgba(255,184,0,0.15);color:var(--amber);border:1px solid rgba(255,184,0,0.25);}
+.tag-new{background:rgba(0,212,255,0.15);color:var(--cyan);border:1px solid rgba(0,212,255,0.25);}
+
+/* ── SLIDING GALLERY ── */
+.gal-wrap{width:100%;margin-top:10px;position:relative;}
+.gal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.gal-label{font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;
+  color:var(--text-muted);text-transform:uppercase;letter-spacing:1.2px;}
+.gal-count{font-family:'JetBrains Mono',monospace;color:var(--text-dim);font-size:10px;}
+.gal-outer{overflow:hidden;border-radius:14px;position:relative;}
+.gal-track{display:flex;transition:transform .4s cubic-bezier(.4,0,.2,1);will-change:transform;}
+.gal-slide{min-width:100%;}
+
+/* PLACE CARD */
+.place-card{background:var(--navy3);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;position:relative;}
+.pc-vis{height:155px;display:flex;align-items:center;justify-content:center;font-size:72px;
+  background:linear-gradient(135deg,var(--navy4),var(--navy3));
+  position:relative;overflow:hidden;cursor:pointer;}
+.pc-vis::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 50%,rgba(4,14,36,0.8));z-index:1;}
+.pc-vis-icon{position:relative;z-index:0;filter:drop-shadow(0 4px 16px rgba(0,212,255,0.35));}
+.pc-vis-floor{position:absolute;bottom:8px;left:12px;z-index:2;
+  font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;color:var(--electric);}
+.pc-vis-dir{position:absolute;bottom:8px;right:12px;z-index:2;
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.6);}
+.pc-badge{position:absolute;top:10px;left:10px;z-index:2;font-size:9px;font-weight:800;
+  padding:3px 8px;border-radius:7px;text-transform:uppercase;letter-spacing:.5px;}
+.pb-open{background:rgba(0,255,179,0.85);color:var(--navy);}
+.pb-busy{background:rgba(255,184,0,0.85);color:var(--navy);}
+.pb-new{background:rgba(0,212,255,0.85);color:var(--navy);}
+.pb-closed{background:rgba(255,77,141,0.7);color:#fff;}
+.pc-body{padding:12px 13px;}
+.pc-name{font-family:'Oxanium',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px;}
+.pc-desc{font-size:11.5px;color:var(--text-muted);line-height:1.45;margin-bottom:8px;}
+.pc-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:9px;}
+.meta-tag{font-size:9.5px;padding:2px 7px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-weight:600;}
+.mt-floor{background:rgba(0,212,255,0.1);color:var(--cyan);border:1px solid rgba(0,212,255,0.2);}
+.mt-cat{background:rgba(0,255,179,0.08);color:var(--electric);border:1px solid rgba(0,255,179,0.15);}
+.mt-time{background:rgba(255,184,0,0.1);color:var(--amber);border:1px solid rgba(255,184,0,0.2);}
+.pc-btns{display:flex;gap:7px;}
+.pc-btn{flex:1;padding:9px;border-radius:10px;border:none;cursor:pointer;font-size:12.5px;
+  font-weight:700;font-family:'Nunito',sans-serif;transition:.18s;}
+.btn-primary{background:linear-gradient(135deg,var(--cyan-deep),var(--cyan));color:var(--navy);
+  box-shadow:0 3px 12px rgba(0,212,255,0.25);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(0,212,255,0.4);}
+.btn-ghost{background:rgba(0,212,255,0.07);border:1.5px solid rgba(0,212,255,0.2);color:var(--cyan);}
+.btn-ghost:hover{border-color:var(--cyan);background:rgba(0,212,255,0.14);}
+
+/* GAL NAV */
+.gal-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:9px;}
+.garrow{width:30px;height:30px;border-radius:50%;background:rgba(0,212,255,0.08);
+  border:1.5px solid rgba(0,212,255,0.2);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:12px;color:var(--cyan);transition:.18s;}
+.garrow:hover{background:var(--cyan-deep);border-color:var(--cyan);color:var(--navy);}
+.gdots{display:flex;gap:5px;}
+.gdot{width:5px;height:5px;border-radius:50%;background:var(--navy4);transition:.25s;cursor:pointer;}
+.gdot.on{width:16px;border-radius:3px;background:var(--cyan);}
+
+/* INFO CARD */
+.info-card{background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:11px 14px;margin-top:8px;width:100%;}
+.ir{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border2);}
+.ir:last-child{border-bottom:none;}
+.ir-icon{font-size:14px;flex-shrink:0;}
+.ir-text{font-size:12.5px;line-height:1.55;flex:1;color:var(--text-muted);}
+.ir-text b{color:var(--text);}
+.ir-label{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;}
+
+/* DIRECTIONS CARD */
+.dir-card{background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:8px;width:100%;}
+.dir-step{display:flex;align-items:flex-start;gap:9px;padding:8px 0;position:relative;}
+.dir-step::after{content:'';position:absolute;left:12px;top:32px;width:1px;height:calc(100% - 16px);
+  background:linear-gradient(to bottom,var(--cyan),transparent);opacity:.3;}
+.dir-step:last-child::after{display:none;}
+.ds-num{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--cyan-deep),var(--cyan));
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
+  color:var(--navy);flex-shrink:0;font-family:'Oxanium',sans-serif;}
+.ds-text{font-size:12.5px;line-height:1.5;color:var(--text-muted);flex:1;}
+.ds-text b{color:var(--text);}
+.ds-dist{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--amber);margin-top:2px;}
+
+/* FLOOR MAP */
+.floor-map{background:var(--navy4);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:8px;width:100%;position:relative;overflow:hidden;}
+.fm-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.fm-title{font-family:'Oxanium',sans-serif;font-size:12px;font-weight:700;color:var(--cyan);}
+.fm-legend{display:flex;gap:8px;}
+.fl-item{display:flex;align-items:center;gap:4px;font-size:9.5px;color:var(--text-muted);}
+.fl-dot{width:7px;height:7px;border-radius:2px;}
+.fm-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;}
+.fm-cell{height:32px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;
+  border:1px solid rgba(0,212,255,0.08);transition:.18s;cursor:pointer;}
+.fm-cell:hover{transform:scale(1.05);}
+.cell-store{background:rgba(0,212,255,0.1);color:var(--cyan);}
+.cell-food{background:rgba(0,255,179,0.1);color:var(--electric);}
+.cell-service{background:rgba(255,184,0,0.1);color:var(--amber);}
+.cell-empty{background:rgba(255,255,255,0.02);}
+.cell-you{background:linear-gradient(135deg,var(--cyan-deep),var(--cyan));color:var(--navy);
+  box-shadow:0 0 10px var(--cyan-glow);animation:youPulse 1.5s ease-in-out infinite;font-weight:800;}
+@keyframes youPulse{0%,100%{box-shadow:0 0 10px var(--cyan-glow);}50%{box-shadow:0 0 20px var(--cyan-glow),0 0 30px rgba(0,212,255,0.1);}}
+.cell-dest{background:linear-gradient(135deg,rgba(0,255,179,0.3),rgba(0,255,179,0.2));
+  color:var(--electric);border-color:var(--electric);box-shadow:0 0 8px var(--electric-glow);}
+
+/* EVENTS CARD */
+.event-item{background:var(--navy3);border:1px solid var(--border);border-radius:11px;padding:11px 12px;margin-bottom:6px;}
+.ei-header{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.ei-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);font-weight:600;}
+.ei-title{font-family:'Oxanium',sans-serif;font-size:13px;font-weight:700;flex:1;}
+.ei-loc{font-size:11.5px;color:var(--text-muted);}
+.ei-status{font-size:9px;padding:2px 7px;border-radius:5px;font-weight:700;white-space:nowrap;}
+.es-live{background:rgba(255,77,141,0.2);color:var(--rose);border:1px solid rgba(255,77,141,0.3);}
+.es-soon{background:rgba(255,184,0,0.15);color:var(--amber);border:1px solid rgba(255,184,0,0.25);}
+.es-today{background:rgba(0,212,255,0.12);color:var(--cyan);border:1px solid rgba(0,212,255,0.2);}
+
+/* CART */
+.cart-sum{background:rgba(0,212,255,0.05);border:1.5px solid rgba(0,212,255,0.18);border-radius:12px;padding:12px;margin-top:8px;width:100%;}
+.ci-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border2);}
+.ci-row:last-of-type{border-bottom:none;}
+.ci-em{font-size:18px;}
+.ci-nm{font-size:12px;font-weight:700;flex:1;font-family:'Oxanium',sans-serif;}
+.ci-pr{font-size:12px;font-weight:700;color:var(--cyan);}
+.ct-row{display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;
+  border-top:1.5px solid rgba(0,212,255,0.15);}
+
+/* PROMO */
+.promo-bar{background:linear-gradient(135deg,var(--cyan-deep),var(--electric-glow),rgba(0,255,179,0.2));
+  border:1px solid rgba(0,255,179,0.2);border-radius:12px;padding:10px 14px;display:flex;
+  align-items:center;gap:10px;margin-top:8px;width:100%;}
+.pb-text{font-size:12.5px;font-weight:700;color:var(--text);flex:1;}
+.pb-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(0,255,179,0.15);
+  padding:3px 9px;border-radius:6px;color:var(--electric);cursor:pointer;
+  border:1px solid rgba(0,255,179,0.25);white-space:nowrap;}
+
+/* WA BUTTON */
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:9px;padding:12px 18px;
+  background:linear-gradient(135deg,var(--wa-deep),var(--wa));color:#fff;border:none;
+  border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:10px;
+  font-family:'Nunito',sans-serif;transition:.2s;box-shadow:0 4px 16px rgba(37,211,102,0.25);}
+.wa-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(37,211,102,0.4);}
+.wa-ghost{background:transparent;border:1.5px solid var(--wa);color:var(--wa);box-shadow:none;}
+.wa-ghost:hover{background:rgba(37,211,102,0.08);}
+
+/* CYAN BUTTON */
+.cy-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;
+  background:linear-gradient(135deg,var(--cyan-deep),var(--cyan));color:var(--navy);border:none;
+  border-radius:12px;font-size:13.5px;font-weight:800;cursor:pointer;width:100%;margin-top:8px;
+  font-family:'Oxanium',sans-serif;transition:.2s;box-shadow:0 4px 14px rgba(0,212,255,0.25);}
+.cy-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,212,255,0.4);}
+
+/* INPUT */
+.inp-area{border-top:1px solid var(--border);padding:11px 12px;background:var(--navy2);
+  display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.inp-box{flex:1;background:var(--navy3);border:1.5px solid var(--border);border-radius:13px;
+  display:flex;align-items:flex-end;gap:7px;padding:8px 12px;transition:.2s;}
+.inp-box:focus-within{border-color:rgba(0,212,255,0.5);box-shadow:0 0 0 3px rgba(0,212,255,0.08);}
+.txt-inp{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13.5px;
+  font-family:'Nunito',sans-serif;resize:none;max-height:80px;line-height:1.5;}
+.txt-inp::placeholder{color:var(--text-dim);}
+.snd{width:38px;height:38px;border-radius:11px;
+  background:linear-gradient(135deg,var(--cyan-deep),var(--cyan));
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--navy);box-shadow:0 3px 12px rgba(0,212,255,0.3);transition:.18s;flex-shrink:0;}
+.snd:hover{transform:scale(1.07);box-shadow:0 5px 18px rgba(0,212,255,0.45);}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(5px);
+  z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:var(--navy2);border-radius:22px 22px 0 0;width:100%;max-width:440px;
+  max-height:90vh;display:flex;flex-direction:column;overflow:hidden;
+  border:1px solid var(--border);border-bottom:none;
+  box-shadow:0 -8px 40px rgba(0,212,255,0.08);
+  animation:sUp .3s cubic-bezier(.34,1.15,.64,1);}
+@keyframes sUp{from{transform:translateY(100%);}to{transform:none;}}
+.shdl{width:36px;height:3px;border-radius:3px;background:rgba(0,212,255,0.25);margin:11px auto 0;}
+.sh-hdr{padding:14px 18px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;}
+.sh-title{font-family:'Oxanium',sans-serif;font-size:15px;font-weight:800;
+  background:linear-gradient(90deg,var(--cyan),var(--electric));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sh-close{width:27px;height:27px;border-radius:7px;background:var(--navy3);
+  border:1px solid var(--border);cursor:pointer;font-size:12px;
+  display:flex;align-items:center;justify-content:center;color:var(--text-muted);}
+.sh-body{flex:1;overflow-y:auto;padding:16px 18px;}
+.sh-foot{padding:14px 18px;border-top:1px solid var(--border);}
+
+/* FORMS */
+.fg{margin-bottom:13px;}
+.fl{font-size:10.5px;font-weight:800;color:var(--text-muted);margin-bottom:5px;display:block;
+  text-transform:uppercase;letter-spacing:.6px;font-family:'JetBrains Mono',monospace;}
+.fi,.fs,.fta{width:100%;background:var(--navy3);border:1.5px solid var(--border);
+  border-radius:10px;padding:10px 13px;color:var(--text);font-size:13px;
+  font-family:'Nunito',sans-serif;outline:none;transition:.2s;}
+.fi:focus,.fs:focus,.fta:focus{border-color:rgba(0,212,255,0.5);box-shadow:0 0 0 3px rgba(0,212,255,0.08);}
+.fta{resize:vertical;min-height:74px;}
+.fs option{background:var(--navy2);}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.qty-ctrl{display:flex;align-items:center;gap:9px;margin-top:6px;}
+.qbtn{width:30px;height:30px;border-radius:7px;background:var(--navy3);border:1.5px solid var(--border);
+  cursor:pointer;color:var(--cyan);font-size:17px;display:flex;align-items:center;justify-content:center;transition:.18s;}
+.qbtn:hover{background:var(--cyan-deep);border-color:var(--cyan);color:var(--navy);}
+.qval{font-size:16px;font-weight:800;min-width:28px;text-align:center;font-family:'Oxanium',sans-serif;color:var(--cyan);}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border2);margin:8px 0;}
+
+/* SPECIAL GRID */
+.special-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;width:100%;}
+.sc{background:var(--navy3);border:1.5px solid var(--border);border-radius:12px;padding:12px;
+  text-align:center;cursor:pointer;transition:.2s;}
+.sc:hover{border-color:var(--electric);transform:translateY(-2px);box-shadow:0 5px 16px var(--electric-glow);}
+.sc-em{font-size:28px;display:block;margin-bottom:5px;}
+.sc-nm{font-family:'Oxanium',sans-serif;font-size:12px;font-weight:700;}
+.sc-pr{font-size:12.5px;font-weight:800;color:var(--cyan);margin-top:3px;}
+</style>
+</head>
+<body>
+<div class="scan-line"></div>
+
+<div class="window">
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-inner">
+      <div class="hdr-av">🧭</div>
+      <div>
+        <div class="hdr-title">WayBot</div>
+        <div class="hdr-sub"><div class="live-dot"></div>SMART WAYFINDER · ONLINE</div>
+      </div>
+      <div class="hdr-right">
+        <div class="hbtn cart-badge" onclick="openBookings()" title="My Bookings">📋<span class="hbtn-badge" id="bkBadge">0</span></div>
+        <div class="hbtn" onclick="openSearch()" title="Search">🔍</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOCATION STRIP -->
+  <div class="loc-strip" id="locStrip">
+    <span class="ls-icon" id="lsIcon"></span>
+    <div><div class="ls-name" id="lsName"></div><div class="ls-sub" id="lsSub"></div></div>
+    <span class="ls-change" onclick="changeVenue()">[ CHANGE ]</span>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="msgs" id="msgs"></div>
+
+  <!-- INPUT -->
+  <div class="inp-area">
+    <div class="inp-box">
+      <textarea class="txt-inp" id="inp" rows="1" placeholder="Ask WayBot anything…"></textarea>
+    </div>
+    <button class="snd" onclick="send()">➤</button>
+  </div>
+</div>
+
+<!-- ══ BOOKING SHEET ══ -->
+<div class="overlay" id="ovBook">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">📋 Reserve / Book</div><div class="sh-close" onclick="closeOv('ovBook')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Full Name</label><input class="fi" id="bkName" placeholder="Your full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="bkPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">What to Book</label><input class="fi" id="bkWhat" placeholder="e.g. Meeting Room B, Cinema Seat, Car Park"></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Date</label><input class="fi" id="bkDate" type="date"></div>
+        <div class="fg"><label class="fl">Time</label><input class="fi" id="bkTime" type="time" value="10:00"></div>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Duration</label><select class="fs" id="bkDur"><option>30 min</option><option>1 hour</option><option>2 hours</option><option>Half day</option><option>Full day</option></select></div>
+        <div class="fg"><label class="fl">Guests</label><input class="fi" id="bkGuests" type="number" placeholder="2" min="1"></div>
+      </div>
+      <div class="fg"><label class="fl">Special Requirements</label><textarea class="fta" id="bkNotes" placeholder="Accessibility, AV equipment, catering..."></textarea></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitBooking()">📲 Confirm Booking via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ DIRECTIONS SHEET ══ -->
+<div class="overlay" id="ovDir">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🗺️ Get Directions</div><div class="sh-close" onclick="closeOv('ovDir')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Current Location</label>
+        <select class="fs" id="dirFrom">
+          <option>Main Entrance</option><option>Car Park A</option><option>Car Park B</option>
+          <option>Food Court</option><option>Information Desk</option><option>Elevator Block C</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Destination</label><input class="fi" id="dirTo" placeholder="e.g. Cinema Hall 3, Room 204, ATM Zone"></div>
+      <div class="fg"><label class="fl">Mobility Preference</label>
+        <select class="fs" id="dirMode">
+          <option>Walking (Standard)</option><option>Wheelchair / Accessible Route</option>
+          <option>Lift Only (No Stairs)</option><option>Fastest Route</option>
+        </select>
+      </div>
+    </div>
+    <div class="sh-foot">
+      <button class="cy-btn" onclick="showDirections()">🧭 Generate Directions</button>
+      <button class="wa-btn" style="margin-top:8px;" onclick="submitDirections()">📲 Send Directions to WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUPPORT SHEET ══ -->
+<div class="overlay" id="ovSupport">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🎧 Help & Support</div><div class="sh-close" onclick="closeOv('ovSupport')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="spName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Issue Type</label>
+        <select class="fs" id="spType">
+          <option>I'm lost / Need directions</option><option>Facility not found</option>
+          <option>Emergency / Safety</option><option>Lost & Found</option>
+          <option>Accessibility issue</option><option>Complaint</option><option>General inquiry</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Current Location (if known)</label><input class="fi" id="spLoc" placeholder="e.g. Level 2, near Starbucks"></div>
+      <div class="fg"><label class="fl">Describe Your Issue</label><textarea class="fta" id="spDesc" placeholder="Tell us more..."></textarea></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitSupport()">📲 Contact Staff via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ FEEDBACK SHEET ══ -->
+<div class="overlay" id="ovFeedback">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">⭐ Leave Feedback</div><div class="sh-close" onclick="closeOv('ovFeedback')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="fbName" placeholder="Full name (optional)"></div>
+      <div class="fg"><label class="fl">About</label><input class="fi" id="fbAbout" placeholder="e.g. Parking, Cleanliness, Food Court"></div>
+      <div class="fg"><label class="fl">Overall Rating</label>
+        <div style="display:flex;gap:10px;margin-top:6px;" id="starRow">
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(1)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(2)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(3)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(4)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;" onclick="setStar(5)">⭐</span>
+        </div>
+        <input type="hidden" id="fbStars" value="5">
+      </div>
+      <div class="fg"><label class="fl">Your Feedback</label><textarea class="fta" id="fbText" placeholder="Share your experience at this venue..."></textarea></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitFeedback()">📲 Submit Feedback via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ LOST & FOUND SHEET ══ -->
+<div class="overlay" id="ovLost">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🔍 Lost & Found</div><div class="sh-close" onclick="closeOv('ovLost')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="lfName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Phone</label><input class="fi" id="lfPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Report Type</label>
+        <select class="fs" id="lfType"><option>I lost something</option><option>I found something</option></select>
+      </div>
+      <div class="fg"><label class="fl">Item Description</label><input class="fi" id="lfItem" placeholder="e.g. Black wallet, Samsung phone, Keys"></div>
+      <div class="fg"><label class="fl">Last Known Location</label><input class="fi" id="lfLoc" placeholder="e.g. Food Court, Level 2, Car Park B"></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitLostFound()">📲 Report via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ EMERGENCY SHEET ══ -->
+<div class="overlay" id="ovEmerg">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title" style="color:var(--rose);">🚨 Emergency</div><div class="sh-close" onclick="closeOv('ovEmerg')">✕</div></div>
+    <div class="sh-body">
+      <div style="background:rgba(255,77,141,0.1);border:1px solid rgba(255,77,141,0.3);border-radius:10px;padding:12px;margin-bottom:14px;font-size:12.5px;color:var(--text-muted);line-height:1.6;">
+        🚨 <b style="color:var(--text);">If this is a life-threatening emergency, dial 112 or 199 immediately.</b><br><br>
+        For non-life-threatening incidents, our security team will be notified via WhatsApp.
+      </div>
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="emName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Emergency Type</label>
+        <select class="fs" id="emType">
+          <option>Medical emergency</option><option>Fire / Smoke</option>
+          <option>Suspicious person/package</option><option>Theft / Crime</option>
+          <option>Structural hazard</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Your Exact Location</label><input class="fi" id="emLoc" placeholder="e.g. Level 3, near escalator B"></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" style="background:linear-gradient(135deg,#c0002a,var(--rose));" onclick="submitEmergency()">🚨 Alert Security via WhatsApp NOW</button></div>
+  </div>
+</div>
+
+<!-- ══ PARKING SHEET ══ -->
+<div class="overlay" id="ovParking">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🅿️ Parking Assistance</div><div class="sh-close" onclick="closeOv('ovParking')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="pkName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Vehicle Plate Number</label><input class="fi" id="pkPlate" placeholder="e.g. ABJ-123-GH"></div>
+      <div class="fg"><label class="fl">Request Type</label>
+        <select class="fs" id="pkType">
+          <option>Find available parking</option><option>Valet parking request</option>
+          <option>Lost my vehicle</option><option>Parking ticket dispute</option><option>Breakdown assistance</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Vehicle Description</label><input class="fi" id="pkVehicle" placeholder="e.g. Red Toyota Camry 2020"></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitParking()">📲 Contact Parking Team via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ ACCESSIBILITY SHEET ══ -->
+<div class="overlay" id="ovAccess">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">♿ Accessibility Request</div><div class="sh-close" onclick="closeOv('ovAccess')">✕</div></div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Your Name</label><input class="fi" id="acName" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="acPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Assistance Needed</label>
+        <select class="fs" id="acType">
+          <option>Wheelchair assistance</option><option>Visual impairment guide</option>
+          <option>Hearing loop location</option><option>Lift access</option>
+          <option>Baby / pram facilities</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Current Location</label><input class="fi" id="acLoc" placeholder="e.g. Main Entrance, Level 1"></div>
+      <div class="fg"><label class="fl">Destination (if applicable)</label><input class="fi" id="acDest" placeholder="Where would you like to go?"></div>
+    </div>
+    <div class="sh-foot"><button class="wa-btn" onclick="submitAccessibility()">📲 Request Assistance via WhatsApp</button></div>
+  </div>
+</div>
+
+<!-- ══ SEARCH SHEET ══ -->
+<div class="overlay" id="ovSearch">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title">🔍 Search Venues</div><div class="sh-close" onclick="closeOv('ovSearch')">✕</div></div>
+    <div class="sh-body">
+      <input class="fi" id="srchInp" placeholder="Search stores, facilities, services..." oninput="liveSearch(this.value)" style="margin-bottom:12px;">
+      <div id="srchRes"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DETAIL SHEET ══ -->
+<div class="overlay" id="ovDetail">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sh-hdr"><div class="sh-title" id="dtTitle">Details</div><div class="sh-close" onclick="closeOv('ovDetail')">✕</div></div>
+    <div class="sh-body" id="dtBody"></div>
+    <div class="sh-foot" id="dtFoot"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════
+const WA = '2348000000000'; // ← Change to your number
+
+// ══════════════════════════════════════
+// DATA
+// ══════════════════════════════════════
+const venues = [
+  {id:'CM',icon:'🏢',name:'Central Mall',type:'SHOPPING COMPLEX',loc:'Wuse 2, Abuja',floors:4,tag:'busy'},
+  {id:'AP',icon:'✈️',name:'Nnamdi Azikiwe Airport',type:'INTERNATIONAL AIRPORT',loc:'Abuja, FCT',floors:3,tag:'open'},
+  {id:'HC',icon:'🏥',name:'National Hospital',type:'MEDICAL CENTRE',loc:'Central Area, Abuja',floors:6,tag:'open'},
+  {id:'UC',icon:'🎓',name:'University of Abuja',type:'CAMPUS',loc:'Gwagwalada, FCT',floors:5,tag:'new'},
+  {id:'EX',icon:'🏛️',name:'International Convention Ctr',type:'EXPO & EVENTS',loc:'CBD, Abuja',floors:3,tag:'busy'},
+  {id:'HT',icon:'🏨',name:'Transcorp Hilton',type:'LUXURY HOTEL',loc:'Maitama, Abuja',floors:12,tag:'open'},
+];
+
+const allPlaces = [
+  // Central Mall
+  {id:'p01',v:'CM',icon:'👗',name:'Zara Fashion',cat:'Retail',floor:'Level 1',zone:'Zone A',hours:'9am–9pm',status:'open',desc:'Premium fashion clothing and accessories for men, women and children.',tag:'popular'},
+  {id:'p02',v:'CM',icon:'🍔',name:'Food Court',cat:'Dining',floor:'Level 2',zone:'Zone C',hours:'9am–10pm',status:'open',desc:'12 restaurants serving local and international cuisine.',tag:'busy'},
+  {id:'p03',v:'CM',icon:'🎬',name:'Genesis Cinema',cat:'Entertainment',floor:'Level 3',zone:'East Wing',hours:'10am–11pm',status:'open',desc:'8-screen multiplex with 3D and IMAX halls.',tag:'popular'},
+  {id:'p04',v:'CM',icon:'🏦',name:'GTBank Branch',cat:'Banking',floor:'Level 1',zone:'Zone B',hours:'8am–4pm',status:'open',desc:'Full banking services including ATMs and foreign exchange.',tag:''},
+  {id:'p05',v:'CM',icon:'🛒',name:'Shoprite Supermarket',cat:'Grocery',floor:'Level 1',zone:'West Wing',hours:'8am–10pm',status:'open',desc:'Large-format supermarket with fresh produce and household goods.',tag:'busy'},
+  {id:'p06',v:'CM',icon:'🅿️',name:'Car Park A & B',cat:'Parking',floor:'Ground & B1',zone:'North Side',hours:'24/7',status:'open',desc:'800-space multi-level parking with CCTV and security.',tag:''},
+  {id:'p07',v:'CM',icon:'🚻',name:'Public Restrooms',cat:'Facility',floor:'All Levels',zone:'Near Lifts',hours:'9am–9pm',status:'open',desc:'Clean facilities on all floors near elevator banks.',tag:''},
+  {id:'p08',v:'CM',icon:'💊',name:'HealthPlus Pharmacy',cat:'Health',floor:'Level 1',zone:'Zone A',hours:'9am–9pm',status:'open',desc:'Full-service pharmacy with prescription and OTC medications.',tag:'new'},
+  // Airport
+  {id:'a01',v:'AP',icon:'🛫',name:'Departure Hall',cat:'Terminal',floor:'Level 2',zone:'International',hours:'24/7',status:'open',desc:'Domestic and international departures with 24 check-in counters.',tag:'busy'},
+  {id:'a02',v:'AP',icon:'🛬',name:'Arrivals Hall',cat:'Terminal',floor:'Level 1',zone:'International',hours:'24/7',status:'open',desc:'Baggage reclaim carousels 1–8. Customs and immigration.',tag:''},
+  {id:'a03',v:'AP',icon:'🍽️',name:'Airport Lounge (VIP)',cat:'Lounge',floor:'Level 2',zone:'Gate C',hours:'5am–11pm',status:'open',desc:'Premium lounge with buffet, wifi and showers.',tag:'popular'},
+  {id:'a04',v:'AP',icon:'🏧',name:'ATM Zone',cat:'Banking',floor:'Level 1 & 2',zone:'Main Hall',hours:'24/7',status:'open',desc:'Multi-bank ATMs: GTB, Access, Zenith, UBA.',tag:''},
+  {id:'a05',v:'AP',icon:'🧳',name:'Baggage Services',cat:'Service',floor:'Level 1',zone:'Arrivals',hours:'24/7',status:'open',desc:'Lost baggage reporting, storage and wrapping services.',tag:''},
+  {id:'a06',v:'AP',icon:'🚌',name:'Transport Hub',cat:'Transport',floor:'Ground',zone:'Forecourt',hours:'24/7',status:'open',desc:'Taxis, ride-hailing pick-up, shuttle buses and car hire.',tag:'busy'},
+  // Hospital
+  {id:'h01',v:'HC',icon:'🚑',name:'Emergency Ward',cat:'Medical',floor:'Ground Floor',zone:'Block A',hours:'24/7',status:'open',desc:'24-hour emergency and trauma centre. Ambulance bay.',tag:'busy'},
+  {id:'h02',v:'HC',icon:'🔬',name:'Diagnostics / Lab',cat:'Medical',floor:'Level 1',zone:'Block B',hours:'7am–8pm',status:'open',desc:'Blood tests, X-ray, MRI, ultrasound and CT scan.',tag:''},
+  {id:'h03',v:'HC',icon:'💊',name:'Hospital Pharmacy',cat:'Medical',floor:'Ground Floor',zone:'Block A',hours:'24/7',status:'open',desc:'Inpatient and outpatient prescription dispensing.',tag:'popular'},
+  {id:'h04',v:'HC',icon:'🧘',name:'Outpatient Clinic',cat:'Medical',floor:'Level 2',zone:'Block C',hours:'8am–5pm',status:'open',desc:'All specialist outpatient consultations. Booking required.',tag:''},
+  // University
+  {id:'u01',v:'UC',icon:'📚',name:'Main Library',cat:'Academic',floor:'Level 1–3',zone:'Central Campus',hours:'7am–10pm',status:'open',desc:'500,000+ volumes, digital archives and study rooms.',tag:'popular'},
+  {id:'u02',v:'UC',icon:'🍽️',name:'Student Cafeteria',cat:'Dining',floor:'Ground Floor',zone:'Student Centre',hours:'7am–8pm',status:'open',desc:'Affordable meals, snacks and beverages for students and staff.',tag:'busy'},
+  {id:'u03',v:'UC',icon:'🖥️',name:'ICT Centre',cat:'Academic',floor:'Level 2',zone:'Science Block',hours:'8am–9pm',status:'open',desc:'500 computer workstations, printing and internet access.',tag:''},
+  {id:'u04',v:'UC',icon:'⚽',name:'Sports Complex',cat:'Recreation',floor:'Ground',zone:'South Campus',hours:'6am–9pm',status:'open',desc:'Football pitch, courts, gym, swimming pool.',tag:'new'},
+  // Convention Centre
+  {id:'e01',v:'EX',icon:'🎤',name:'Main Auditorium',cat:'Events',floor:'Level 1',zone:'Hall A',hours:'By Event',status:'open',desc:'5,000-seat main stage for concerts, conferences and ceremonies.',tag:'popular'},
+  {id:'e02',v:'EX',icon:'🏛️',name:'Exhibition Hall B',cat:'Events',floor:'Level 1',zone:'Hall B',hours:'By Event',status:'open',desc:'Modular exhibition space for trade shows and fairs.',tag:''},
+  {id:'e03',v:'EX',icon:'🍷',name:'Banquet Hall',cat:'Dining',floor:'Level 2',zone:'Hall C',hours:'By Event',status:'open',desc:'Luxury banqueting for 200–800 guests with full catering.',tag:'new'},
+  // Hotel
+  {id:'ht01',v:'HT',icon:'🍽️',name:'Jarabi Restaurant',cat:'Dining',floor:'Level 1',zone:'Main Building',hours:'6am–11pm',status:'open',desc:'Fine dining Nigerian and continental cuisine.',tag:'popular'},
+  {id:'ht02',v:'HT',icon:'🏊',name:'Pool & Spa',cat:'Recreation',floor:'Level 4',zone:'Leisure Wing',hours:'6am–10pm',status:'open',desc:'Rooftop infinity pool, sauna, steam room and massage.',tag:'popular'},
+  {id:'ht03',v:'HT',icon:'🏋️',name:'Fitness Centre',cat:'Recreation',floor:'Level 3',zone:'Leisure Wing',hours:'5am–11pm',status:'open',desc:'State-of-the-art gym equipment, personal trainers.',tag:''},
+  {id:'ht04',v:'HT',icon:'🤝',name:'Business Centre',cat:'Service',floor:'Level 2',zone:'East Wing',hours:'7am–9pm',status:'open',desc:'Meeting rooms, boardrooms, printing and secretarial.',tag:''},
+];
+
+const events = [
+  {time:'NOW',title:'Abuja Tech Summit 2025',loc:'ICC Hall A',status:'live'},
+  {time:'14:00',title:'Fashion Week Preview',loc:'Central Mall – Level 3',status:'soon'},
+  {time:'17:30',title:'Live Music: Femi Kuti',loc:'Convention Centre',status:'today'},
+  {time:'19:00',title:'Food & Wine Festival',loc:'Transcorp Hilton Garden',status:'today'},
+  {time:'Tomorrow',title:'National Security Expo',loc:'ICC Exhibition Hall B',status:'today'},
+];
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let venue = null, bookings = [], galItems = [], galIdx = 0, starVal = 5, qtyVal = 1;
+
+// ══════════════════════════════════════
+// WHATSAPP
+// ══════════════════════════════════════
+function toWA(msg){ window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`,'_blank'); }
+
+// ══════════════════════════════════════
+// TIME
+// ══════════════════════════════════════
+function ts(){ return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}); }
+
+// ══════════════════════════════════════
+// CHAT
+// ══════════════════════════════════════
+function botMsg(html,extra=''){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div'); d.className='msg bot';
+  d.innerHTML=`<div class="av">🧭</div><div class="mcol"><div class="bbl">${html}</div>${extra}<div class="mtime">${ts()}</div></div>`;
+  a.appendChild(d); a.scrollTop=a.scrollHeight;
+}
+function userMsg(t){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div'); d.className='msg user';
+  d.innerHTML=`<div class="av">👤</div><div class="mcol"><div class="bbl">${t}</div><div class="mtime">${ts()}</div></div>`;
+  a.appendChild(d); a.scrollTop=a.scrollHeight;
+}
+function typing(cb,ms=750){
+  const a=document.getElementById('msgs');
+  const d=document.createElement('div'); d.className='msg bot'; d.id='typ';
+  d.innerHTML=`<div class="av">🧭</div><div class="mcol"><div class="tbbl"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
+  a.appendChild(d); a.scrollTop=a.scrollHeight;
+  setTimeout(()=>{ document.getElementById('typ')?.remove(); cb(); }, ms+Math.random()*220);
+}
+
+// ══════════════════════════════════════
+// VENUE SELECT
+// ══════════════════════════════════════
+function venueGrid(){
+  return `<div class="venue-grid">${venues.map(v=>`
+    <div class="vc" onclick="pickVenue('${v.id}',this)">
+      <span class="vc-tag ${v.tag==='busy'?'tag-busy':v.tag==='new'?'tag-new':'tag-open'}">${v.tag==='busy'?'BUSY':v.tag==='new'?'NEW':'OPEN'}</span>
+      <span class="vc-icon">${v.icon}</span>
+      <div class="vc-name">${v.name}</div>
+      <div class="vc-type">${v.type}</div>
+      <div class="vc-floor">${v.floors} FLOORS</div>
+    </div>`).join('')}</div>`;
+}
+
+function pickVenue(id,el){
+  venue=venues.find(v=>v.id===id);
+  document.querySelectorAll('.vc').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  userMsg(`${venue.icon} ${venue.name}`);
+  document.getElementById('lsIcon').textContent=venue.icon;
+  document.getElementById('lsName').textContent=venue.name;
+  document.getElementById('lsSub').textContent=venue.loc+' · '+venue.floors+' FLOORS';
+  document.getElementById('locStrip').classList.add('show');
+  typing(()=>{
+    botMsg(`Locked in: <strong>${venue.name}</strong> 📍<br>${venue.type} · ${venue.loc}<br><br>I can guide you anywhere inside. What do you need?`,mainMenu());
+  },900);
+}
+
+function changeVenue(){
+  venue=null; document.getElementById('locStrip').classList.remove('show');
+  typing(()=>{ botMsg('Select a venue to navigate:',venueGrid()); });
+}
+
+// ══════════════════════════════════════
+// MAIN MENU
+// ══════════════════════════════════════
+function mainMenu(){
+  return `<div class="chips">
+    <div class="chip" onclick="go('map')">🗺️ Floor Map</div>
+    <div class="chip" onclick="go('places')">🏪 Explore Places</div>
+    <div class="chip" onclick="go('gallery')">🖼️ Gallery</div>
+    <div class="chip" onclick="go('directions')">🧭 Get Directions</div>
+    <div class="chip" onclick="go('events')">🎤 Events & Schedule</div>
+    <div class="chip" onclick="go('parking')">🅿️ Parking</div>
+    <div class="chip" onclick="go('accessibility')">♿ Accessibility</div>
+    <div class="chip" onclick="go('booking')">📋 Book / Reserve</div>
+    <div class="chip" onclick="go('lost')">🔍 Lost & Found</div>
+    <div class="chip" onclick="go('emergency')">🚨 Emergency</div>
+    <div class="chip" onclick="go('support')">🎧 Support</div>
+    <div class="chip" onclick="go('feedback')">⭐ Feedback</div>
+    <div class="chip" onclick="go('categories')">📂 By Category</div>
+    <div class="chip" onclick="changeVenue()">🔄 Change Venue</div>
+  </div>`;
+}
+
+function go(a){
+  const labels={map:'🗺️ Floor Map',places:'🏪 Explore Places',gallery:'🖼️ Gallery',directions:'🧭 Get Directions',
+    events:'🎤 Events & Schedule',parking:'🅿️ Parking',accessibility:'♿ Accessibility',
+    booking:'📋 Book / Reserve',lost:'🔍 Lost & Found',emergency:'🚨 Emergency',
+    support:'🎧 Support',feedback:'⭐ Feedback',categories:'📂 By Category'};
+  if(labels[a]) userMsg(labels[a]);
+  switch(a){
+    case 'map': doMap(); break;
+    case 'places': doPlaces(); break;
+    case 'gallery': doGallery(); break;
+    case 'directions': openOv('ovDir'); break;
+    case 'events': doEvents(); break;
+    case 'parking': openOv('ovParking'); break;
+    case 'accessibility': openOv('ovAccess'); break;
+    case 'booking': openOv('ovBook'); break;
+    case 'lost': openOv('ovLost'); break;
+    case 'emergency': openOv('ovEmerg'); break;
+    case 'support': openOv('ovSupport'); break;
+    case 'feedback': openOv('ovFeedback'); break;
+    case 'categories': doCategories(); break;
+  }
+}
+
+// ══════════════════════════════════════
+// GALLERY (SLIDING)
+// ══════════════════════════════════════
+function buildGallery(items,title){
+  if(!items.length) return '<p style="color:var(--text-muted);font-size:13px;">No places found.</p>';
+  galItems=items; galIdx=0;
+  const slides=items.map(item=>`
+    <div class="gal-slide">
+      <div class="place-card">
+        <div class="pc-vis" onclick="openDetail('${item.id}')">
+          <span class="pc-vis-icon" style="font-size:76px;">${item.icon}</span>
+          ${item.tag?`<span class="pc-badge ${item.tag==='popular'?'pb-open':item.tag==='busy'?'pb-busy':item.tag==='new'?'pb-new':''}">${item.tag}</span>`:''}
+          <span class="pc-vis-floor">${item.floor}</span>
+          <span class="pc-vis-dir">${item.zone} →</span>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">${item.name}</div>
+          <div class="pc-desc">${item.desc}</div>
+          <div class="pc-meta">
+            <span class="meta-tag mt-floor">${item.floor}</span>
+            <span class="meta-tag mt-cat">${item.cat}</span>
+            <span class="meta-tag mt-time">⏰ ${item.hours}</span>
+          </div>
+          <div class="pc-btns">
+            <button class="pc-btn btn-ghost" onclick="openDetail('${item.id}')">📍 Details</button>
+            <button class="pc-btn btn-primary" onclick="directToPlace('${item.id}')">🧭 Navigate</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+  const dots=items.map((_,i)=>`<div class="gdot ${i===0?'on':''}" onclick="goSlide(${i})" id="gd-${i}"></div>`).join('');
+  return `<div class="gal-wrap">
+    <div class="gal-header">
+      <span class="gal-label">${title} — ${items.length}</span>
+      <span class="gal-count" id="galCnt">1 / ${items.length}</span>
+    </div>
+    <div class="gal-outer" id="galOut">
+      <div class="gal-track" id="galTrk">${slides}</div>
+    </div>
+    <div class="gal-nav">
+      <div class="garrow" onclick="shiftGal(-1)">◀</div>
+      <div class="gdots" id="galDts">${dots}</div>
+      <div class="garrow" onclick="shiftGal(1)">▶</div>
+    </div>
+  </div>`;
+}
+
+function shiftGal(d){ if(!galItems.length) return; galIdx=(galIdx+d+galItems.length)%galItems.length; updateGal(); }
+function goSlide(i){ galIdx=i; updateGal(); }
+function updateGal(){
+  const tr=document.getElementById('galTrk'); if(tr) tr.style.transform=`translateX(-${galIdx*100}%)`;
+  const cnt=document.getElementById('galCnt'); if(cnt) cnt.textContent=`${galIdx+1} / ${galItems.length}`;
+  document.querySelectorAll('.gdot').forEach((d,i)=>d.classList.toggle('on',i===galIdx));
+}
+let tS=0;
+document.addEventListener('touchstart',e=>{ if(e.target.closest('#galOut')) tS=e.touches[0].clientX; });
+document.addEventListener('touchend',e=>{ if(e.target.closest('#galOut')&&tS){ const dx=e.changedTouches[0].clientX-tS; if(Math.abs(dx)>40) shiftGal(dx<0?1:-1); tS=0; } });
+
+// ══════════════════════════════════════
+// PLACES
+// ══════════════════════════════════════
+function doPlaces(){
+  const items=venue?allPlaces.filter(p=>p.v===venue.id):allPlaces.slice(0,8);
+  typing(()=>{
+    botMsg(`<strong>${venue?.name||'All Venues'}</strong> — ${items.length} places found:`,
+      buildGallery(items,'📍 Places')+`<div class="chips" style="margin-top:8px;"><div class="chip" onclick="go('categories')">📂 By Category</div></div>`);
+  });
+}
+
+function doGallery(){
+  const items=venue?allPlaces.filter(p=>p.v===venue.id):allPlaces;
+  typing(()=>{
+    botMsg('Swipe to explore all locations 👉',buildGallery(items,'🖼️ Venue Gallery')+
+      `<div class="chips" style="margin-top:8px;"><div class="chip" onclick="openOv('ovDir')">🧭 Get Directions</div></div>`);
+  });
+}
+
+function doCategories(){
+  const items=venue?allPlaces.filter(p=>p.v===venue.id):allPlaces;
+  const cats=[...new Set(items.map(p=>p.cat))];
+  const emap={Retail:'👗',Dining:'🍽️',Entertainment:'🎬',Banking:'🏦',Grocery:'🛒',Parking:'🅿️',Facility:'🚻',Health:'💊',Terminal:'🛫',Lounge:'🍷',Service:'🤝',Transport:'🚌',Medical:'🏥',Academic:'📚',Recreation:'⚽',Events:'🎤'};
+  typing(()=>{
+    botMsg('Browse by category:',`<div class="chips">${cats.map(c=>`<div class="chip" onclick="doCat('${c}')">${emap[c]||'📍'} ${c}</div>`).join('')}</div>`);
+  });
+}
+
+function doCat(cat){
+  userMsg(cat);
+  const items=(venue?allPlaces.filter(p=>p.v===venue.id):allPlaces).filter(p=>p.cat===cat);
+  typing(()=>{
+    if(!items.length){
+      botMsg(`No <strong>${cat}</strong> facilities at ${venue?.name||'this venue'}.`,`<div class="chips"><div class="chip" onclick="go('categories')">← Back</div></div>`);
+    } else {
+      botMsg(`<strong>${cat}</strong> — ${items.length} location(s):`,buildGallery(items,cat)+
+        `<div class="chips" style="margin-top:8px;"><div class="chip" onclick="go('categories')">← Back</div></div>`);
+    }
+  });
+}
+
+// ══════════════════════════════════════
+// FLOOR MAP (VISUAL)
+// ══════════════════════════════════════
+function doMap(){
+  const cells=[
+    {t:'you',l:'YOU'},
+    {t:'store',l:'👗'},{t:'food',l:'🍔'},{t:'store',l:'🏦'},{t:'empty',l:''},{t:'store',l:'💊'},
+    {t:'empty',l:''},{t:'service',l:'🚻'},{t:'food',l:'☕'},{t:'store',l:'📱'},{t:'empty',l:''},{t:'service',l:'🅿️'},
+    {t:'food',l:'🍕'},{t:'empty',l:''},{t:'store',l:'👟'},{t:'service',l:'ℹ️'},{t:'store',l:'🛒'},{t:'food',l:'🥗'},
+    {t:'empty',l:''},{t:'store',l:'🎬'},{t:'empty',l:''},{t:'dest',l:'📍'},{t:'store',l:'💄'},{t:'empty',l:''},
+  ];
+  typing(()=>{
+    botMsg(`📍 <strong>${venue?.name||'Venue'} — Floor Plan</strong>`,
+      `<div class="floor-map">
+        <div class="fm-header">
+          <span class="fm-title">LEVEL 1 — INTERACTIVE MAP</span>
+          <div class="fm-legend">
+            <div class="fl-item"><div class="fl-dot" style="background:rgba(0,212,255,0.3);"></div>Store</div>
+            <div class="fl-item"><div class="fl-dot" style="background:rgba(0,255,179,0.3);"></div>Food</div>
+            <div class="fl-item"><div class="fl-dot" style="background:rgba(255,184,0,0.3);"></div>Service</div>
+          </div>
+        </div>
+        <div class="fm-grid">${cells.map(c=>`<div class="fm-cell cell-${c.t}" title="${c.l}">${c.l}</div>`).join('')}</div>
+        <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--text-dim);">
+          YOU = Your Position · 📍 = Destination · Tap a cell for info
+        </div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="openOv('ovDir')">🧭 Turn-by-Turn Directions</div>
+        <div class="chip" onclick="go('places')">📍 See All Places</div>
+      </div>`);
+  });
+}
+
+// ══════════════════════════════════════
+// PLACE DETAIL SHEET
+// ══════════════════════════════════════
+function openDetail(id){
+  const p=allPlaces.find(x=>x.id===id); if(!p) return;
+  document.getElementById('dtTitle').textContent=p.icon+' '+p.name;
+  document.getElementById('dtBody').innerHTML=`
+    <div style="text-align:center;height:130px;background:var(--navy4);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:72px;position:relative;overflow:hidden;">
+      <span style="filter:drop-shadow(0 4px 18px rgba(0,212,255,0.4));">${p.icon}</span>
+      ${p.tag?`<span class="pc-badge ${p.tag==='popular'?'pb-open':p.tag==='busy'?'pb-busy':'pb-new'}" style="position:absolute;">${p.tag}</span>`:''}
+    </div>
+    <div style="font-family:'Oxanium',sans-serif;font-size:17px;font-weight:800;margin-bottom:6px;">${p.name}</div>
+    <div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:12px;">${p.desc}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+      <span class="meta-tag mt-floor">${p.floor}</span>
+      <span class="meta-tag mt-cat">${p.cat}</span>
+      <span class="meta-tag mt-time">⏰ ${p.hours}</span>
+      <span class="meta-tag" style="background:rgba(139,168,204,0.1);color:var(--slate);border:1px solid rgba(139,168,204,0.15);">📍 ${p.zone}</span>
+    </div>
+    <div class="info-card">
+      <div class="ir"><div class="ir-icon">📍</div><div class="ir-text"><b>${p.floor}</b> · ${p.zone}</div></div>
+      <div class="ir"><div class="ir-icon">🕐</div><div class="ir-text"><b>Hours:</b> ${p.hours}</div></div>
+      <div class="ir"><div class="ir-icon">🏷️</div><div class="ir-text"><b>Category:</b> ${p.cat}</div></div>
+      <div class="ir"><div class="ir-icon">✅</div><div class="ir-text"><b>Status:</b> <span style="color:var(--electric);">${p.status.toUpperCase()}</span></div></div>
+    </div>`;
+  document.getElementById('dtFoot').innerHTML=`
+    <button class="cy-btn" onclick="directToPlace('${p.id}')">🧭 Navigate Here</button>
+    <button class="wa-btn wa-ghost" style="margin-top:8px;" onclick="askDirectionsWA('${p.name}','${p.floor}')">📲 Send Directions to WhatsApp</button>`;
+  openOv('ovDetail');
+}
+
+function directToPlace(id){
+  const p=allPlaces.find(x=>x.id===id); if(!p) return;
+  closeOv('ovDetail');
+  typing(()=>{
+    botMsg(`🧭 Directions to <strong>${p.name}</strong> (${p.floor}):`,
+      `<div class="dir-card">
+        <div class="dir-step"><div class="ds-num">1</div><div class="ds-text"><b>Head to the nearest lift or staircase</b> from the main entrance<div class="ds-dist">~20m</div></div></div>
+        <div class="dir-step"><div class="ds-num">2</div><div class="ds-text"><b>Proceed to ${p.floor}</b> using Lift Bank B or Staircase C<div class="ds-dist">1 floor up</div></div></div>
+        <div class="dir-step"><div class="ds-num">3</div><div class="ds-text"><b>Exit and turn right</b> towards ${p.zone}<div class="ds-dist">~35m</div></div></div>
+        <div class="dir-step"><div class="ds-num">4</div><div class="ds-text"><b>${p.name}</b> will be on your left, clearly signposted 📍<div class="ds-dist">Destination</div></div></div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="askDirectionsWA('${p.name}','${p.floor}')">📲 Send to WhatsApp</div>
+        <div class="chip" onclick="go('map')">🗺️ View Map</div>
+      </div>`);
+  });
+}
+
+function askDirectionsWA(name,floor){
+  toWA(`🧭 *WAYFINDING REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n📍 *Destination:* ${name}\n🏢 *Floor:* ${floor}\n\nPlease send me step-by-step directions or live assistance. 🙏\n\n⏰ ${ts()}`);
+}
+
+// ══════════════════════════════════════
+// DIRECTIONS IN-CHAT
+// ══════════════════════════════════════
+function showDirections(){
+  const from=document.getElementById('dirFrom').value;
+  const to=document.getElementById('dirTo').value.trim()||'Food Court';
+  const mode=document.getElementById('dirMode').value;
+  closeOv('ovDir');
+  typing(()=>{
+    botMsg(`🧭 Directions: <strong>${from}</strong> → <strong>${to}</strong><br><small style="color:var(--text-muted);">${mode}</small>`,
+      `<div class="dir-card">
+        <div class="dir-step"><div class="ds-num">1</div><div class="ds-text"><b>Start at ${from}</b> — face the central corridor<div class="ds-dist">Start</div></div></div>
+        <div class="dir-step"><div class="ds-num">2</div><div class="ds-text"><b>Walk straight ahead</b> for approximately 50 metres past the information desk<div class="ds-dist">~50m</div></div></div>
+        <div class="dir-step"><div class="ds-num">3</div><div class="ds-text"><b>${mode.includes('Wheelchair')||mode.includes('Lift')?"Take the accessible lift on your right":"Take the escalator or stairs"}</b> to the destination floor<div class="ds-dist">1–2 floors</div></div></div>
+        <div class="dir-step"><div class="ds-num">4</div><div class="ds-text"><b>Follow the yellow wayfinding signs</b> to ${to}<div class="ds-dist">~30m</div></div></div>
+        <div class="dir-step"><div class="ds-num">5</div><div class="ds-text"><b>Arrived: ${to}</b> 🎯<div class="ds-dist">Destination reached</div></div></div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="submitDirections()">📲 Send to WhatsApp</div>
+        <div class="chip" onclick="go('map')">🗺️ Floor Map</div>
+      </div>`);
+  });
+}
+
+function submitDirections(){
+  const from=document.getElementById('dirFrom').value;
+  const to=document.getElementById('dirTo').value.trim()||'requested destination';
+  const mode=document.getElementById('dirMode').value;
+  closeOv('ovDir');
+  toWA(`🧭 *DIRECTIONS REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n🚶 *From:* ${from}\n📍 *To:* ${to}\n♿ *Mode:* ${mode}\n\nPlease provide live step-by-step directions.\n\n⏰ ${ts()}`);
+  typing(()=>{ botMsg('📲 Redirected to WhatsApp! A staff member will send you live directions or meet you at your location.'); });
+}
+
+// ══════════════════════════════════════
+// EVENTS
+// ══════════════════════════════════════
+function doEvents(){
+  typing(()=>{
+    botMsg('🎤 <strong>Today\'s Events & Schedule</strong>',
+      `<div style="margin-top:8px;">${events.map(e=>`
+        <div class="event-item">
+          <div class="ei-header">
+            <span class="ei-time">${e.time}</span>
+            <span class="ei-title">${e.title}</span>
+            <span class="ei-status ${e.status==='live'?'es-live':e.status==='soon'?'es-soon':'es-today'}">${e.status==='live'?'LIVE':e.status==='soon'?'SOON':'TODAY'}</span>
+          </div>
+          <div class="ei-loc">📍 ${e.loc}</div>
+        </div>`).join('')}</div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip" onclick="openOv('ovBook')">📋 Book a Spot</div>
+        <div class="chip" onclick="openOv('ovDir')">🧭 Get Directions</div>
+      </div>`);
+  });
+}
+
+// ══════════════════════════════════════
+// BOOKINGS
+// ══════════════════════════════════════
+function openBookings(){
+  document.getElementById('cartBody')?.remove?.();
+  openOv('ovBook');
+}
+
+// ══════════════════════════════════════
+// SUBMIT HANDLERS → WhatsApp
+// ══════════════════════════════════════
+function submitBooking(){
+  const name=document.getElementById('bkName').value.trim();
+  const phone=document.getElementById('bkPhone').value.trim();
+  const what=document.getElementById('bkWhat').value.trim();
+  const date=document.getElementById('bkDate').value;
+  const time=document.getElementById('bkTime').value;
+  const dur=document.getElementById('bkDur').value;
+  const guests=document.getElementById('bkGuests').value;
+  const notes=document.getElementById('bkNotes').value.trim();
+  if(!name||!phone||!what){ alert('Please fill in name, phone and what to book.'); return; }
+  toWA(`📋 *BOOKING REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📦 *Booking:* ${what}\n📅 *Date:* ${date||'TBD'} at ${time}\n⏱ *Duration:* ${dur}\n👥 *Guests:* ${guests||1}\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()}`);
+  closeOv('ovBook');
+  bookings.push({what,date,time});
+  document.getElementById('bkBadge').textContent=bookings.length;
+  typing(()=>{ botMsg(`📋 <strong>Booking request sent!</strong> You've been redirected to WhatsApp. Staff will confirm your <strong>${what}</strong> reservation within 30 minutes.`); });
+}
+
+function submitSupport(){
+  const name=document.getElementById('spName').value.trim();
+  const type=document.getElementById('spType').value;
+  const loc=document.getElementById('spLoc').value.trim();
+  const desc=document.getElementById('spDesc').value.trim();
+  if(!name||!desc){ alert('Please fill in your name and describe your issue.'); return; }
+  toWA(`🎧 *SUPPORT REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n❓ *Issue:* ${type}\n📍 *Location:* ${loc||'Unknown'}\n📝 *Details:*\n${desc}\n\n⏰ ${ts()}`);
+  closeOv('ovSupport');
+  typing(()=>{ botMsg('🎧 <strong>Support request sent!</strong> A staff member will contact you via WhatsApp within 15 minutes.'); });
+}
+
+function submitFeedback(){
+  const name=document.getElementById('fbName').value.trim()||'Anonymous';
+  const about=document.getElementById('fbAbout').value.trim();
+  const stars=document.getElementById('fbStars').value;
+  const text=document.getElementById('fbText').value.trim();
+  if(!about||!text){ alert('Please fill in what the feedback is about and your thoughts.'); return; }
+  toWA(`⭐ *FEEDBACK — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📝 *About:* ${about}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n💬 *Feedback:*\n${text}\n\n⏰ ${ts()}`);
+  closeOv('ovFeedback');
+  typing(()=>{ botMsg('⭐ <strong>Thank you for your feedback!</strong> It has been shared with the venue management to improve your experience. 💚'); });
+}
+
+function submitLostFound(){
+  const name=document.getElementById('lfName').value.trim();
+  const phone=document.getElementById('lfPhone').value.trim();
+  const type=document.getElementById('lfType').value;
+  const item=document.getElementById('lfItem').value.trim();
+  const loc=document.getElementById('lfLoc').value.trim();
+  if(!name||!item){ alert('Please fill in your name and describe the item.'); return; }
+  toWA(`🔍 *LOST & FOUND — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📋 *Type:* ${type}\n🧳 *Item:* ${item}\n📍 *Location:* ${loc||'Unknown'}\n\n⏰ ${ts()}`);
+  closeOv('ovLost');
+  typing(()=>{ botMsg('🔍 <strong>Lost & Found report submitted!</strong> Our security team will respond via WhatsApp. Please keep your phone accessible.'); });
+}
+
+function submitEmergency(){
+  const name=document.getElementById('emName').value.trim();
+  const type=document.getElementById('emType').value;
+  const loc=document.getElementById('emLoc').value.trim();
+  if(!loc){ alert('Please provide your exact location.'); return; }
+  toWA(`🚨 *EMERGENCY ALERT — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name||'Anonymous'}\n🆘 *Emergency:* ${type}\n📍 *Location:* ${loc}\n\n⚠️ IMMEDIATE RESPONSE REQUIRED\n\n⏰ ${ts()}`);
+  closeOv('ovEmerg');
+  typing(()=>{ botMsg('🚨 <strong>Security alerted!</strong> You have been connected to our emergency response team on WhatsApp. Stay calm and remain at your location if safe to do so.',
+    `<div class="chips"><div class="chip" style="border-color:var(--rose);color:var(--rose);" onclick="openOv('ovEmerg')">🚨 Re-alert Security</div></div>`); });
+}
+
+function submitParking(){
+  const name=document.getElementById('pkName').value.trim();
+  const plate=document.getElementById('pkPlate').value.trim();
+  const type=document.getElementById('pkType').value;
+  const vehicle=document.getElementById('pkVehicle').value.trim();
+  if(!name||!plate){ alert('Please fill in your name and plate number.'); return; }
+  toWA(`🅿️ *PARKING REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n🚗 *Plate:* ${plate}\n🚙 *Vehicle:* ${vehicle||'Not specified'}\n📋 *Request:* ${type}\n\n⏰ ${ts()}`);
+  closeOv('ovParking');
+  typing(()=>{ botMsg('🅿️ <strong>Parking request sent!</strong> Our parking team will assist you via WhatsApp shortly.'); });
+}
+
+function submitAccessibility(){
+  const name=document.getElementById('acName').value.trim();
+  const phone=document.getElementById('acPhone').value.trim();
+  const type=document.getElementById('acType').value;
+  const loc=document.getElementById('acLoc').value.trim();
+  const dest=document.getElementById('acDest').value.trim();
+  if(!name||!phone){ alert('Please fill in your name and phone number.'); return; }
+  toWA(`♿ *ACCESSIBILITY REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n🦽 *Assistance:* ${type}\n📍 *Current Location:* ${loc||'Main Entrance'}\n🎯 *Destination:* ${dest||'N/A'}\n\n⏰ ${ts()}`);
+  closeOv('ovAccess');
+  typing(()=>{ botMsg('♿ <strong>Assistance request sent!</strong> A staff member trained in accessibility support will meet you at your location within 5 minutes.'); });
+}
+
+// ══════════════════════════════════════
+// SEARCH
+// ══════════════════════════════════════
+function openSearch(){ openOv('ovSearch'); setTimeout(()=>document.getElementById('srchInp').focus(),300); }
+
+function liveSearch(q){
+  const el=document.getElementById('srchRes');
+  if(!q.trim()){ el.innerHTML=''; return; }
+  const res=allPlaces.filter(p=>
+    p.name.toLowerCase().includes(q.toLowerCase())||
+    p.cat.toLowerCase().includes(q.toLowerCase())||
+    p.desc.toLowerCase().includes(q.toLowerCase())||
+    p.floor.toLowerCase().includes(q.toLowerCase())
+  );
+  if(!res.length){
+    el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--text-muted);">No results for "${q}"<br><br><button class="wa-btn" style="width:auto;padding:10px 16px;" onclick="searchWA('${q}')">📲 Ask Staff on WhatsApp</button></div>`;
+    return;
+  }
+  el.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px;">${res.slice(0,8).map(p=>`
+    <div class="info-card" style="cursor:pointer;" onclick="openDetail('${p.id}')">
+      <div class="ir">
+        <div class="ir-icon" style="font-size:22px;">${p.icon}</div>
+        <div class="ir-text" style="flex:1;">
+          <b>${p.name}</b><br>
+          <span style="font-size:10.5px;">${p.floor} · ${p.zone} · ⏰ ${p.hours}</span>
+          <div style="display:flex;gap:5px;margin-top:4px;"><span class="meta-tag mt-cat">${p.cat}</span></div>
+        </div>
+        <button class="pc-btn btn-primary" style="width:auto;padding:6px 10px;font-size:11px;flex-shrink:0;" onclick="event.stopPropagation();directToPlace('${p.id}')">🧭</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function searchWA(q){ toWA(`🔍 *VENUE SEARCH — WayBot*\n\n🏛️ Venue: ${venue?.name||'N/A'}\nLooking for: *${q}*\n\nPlease help me find this location. ⏰ ${ts()}`); }
+
+// ══════════════════════════════════════
+// STAR RATING
+// ══════════════════════════════════════
+function setStar(n){
+  starVal=n; document.getElementById('fbStars').value=n;
+  document.querySelectorAll('#starRow span').forEach((s,i)=>{ s.style.filter=i<n?'none':'grayscale(1) opacity(.3)'; });
+}
+
+// ══════════════════════════════════════
+// FAQ HELPERS
+// ══════════════════════════════════════
+const faqs={
+  hours:{a:'🕐 <strong>Opening Hours</strong><br><br>Most facilities: <b>9:00 AM – 9:00 PM</b><br>Food court: <b>9:00 AM – 10:00 PM</b><br>Parking: <b>24/7</b><br>Security: <b>24/7</b><br>Emergency: <b>24/7</b>'},
+  wifi:{a:'📶 <strong>Free WiFi</strong><br><br>Network: <b>VENUE_FREE_WIFI</b><br>Password: <b>welcome2024</b><br><br>Available throughout all public areas and lounges. Speed: up to 50 Mbps.'},
+  prayer:{a:'🕌 <strong>Prayer Room</strong><br><br>Located on <b>Level 2, Zone D</b> near the east staircase.<br>Open 24/7 with ablution facilities nearby.'},
+  atm:{a:'🏧 <strong>ATMs</strong><br><br>Multiple ATMs are located at:<br>• Ground Floor, Main Entrance<br>• Level 1, Banking Zone<br>• Level 2, Food Court corridor<br><br>Banks: GTB, Access, Zenith, UBA.'},
+};
+
+function showFAQ(k){ const f=faqs[k]; if(!f) return; typing(()=>{ botMsg(f.a,`<div class="chips"><div class="chip" onclick="openOv('ovSupport')">📝 Ask Staff</div></div>`); }); }
+
+// ══════════════════════════════════════
+// FREE TEXT CHAT
+// ══════════════════════════════════════
+function send(){
+  const inp=document.getElementById('inp');
+  const t=inp.value.trim(); if(!t) return;
+  inp.value=''; inp.style.height='auto';
+  userMsg(t); const l=t.toLowerCase();
+  if(!venue){ typing(()=>{ botMsg('Please select a venue first to begin wayfinding 🧭',venueGrid()); }); return; }
+  if(/^(hi|hello|hey|good|morn|afternoon|evening)/i.test(l)){ typing(()=>{ botMsg(`Hello! 👋 I'm WayBot, your guide at <strong>${venue.name}</strong>. How can I help you navigate today?`,mainMenu()); }); }
+  else if(/map|floor plan|layout/i.test(l)){ go('map'); }
+  else if(/direction|navigate|how.*get|find.*way|where.*is/i.test(l)){ openOv('ovDir'); }
+  else if(/park|car|vehicle|valet/i.test(l)){ openOv('ovParking'); }
+  else if(/emergency|fire|medical|help.*urgent|accident/i.test(l)){ openOv('ovEmerg'); }
+  else if(/lost|found|missing/i.test(l)){ openOv('ovLost'); }
+  else if(/wheelchair|access|disabled|mobility|lift only/i.test(l)){ openOv('ovAccess'); }
+  else if(/book|reserv|schedule/i.test(l)){ openOv('ovBook'); }
+  else if(/event|concert|conference|show|today/i.test(l)){ go('events'); }
+  else if(/toilet|restroom|bathroom|wc/i.test(l)){ typing(()=>{ botMsg('🚻 <strong>Restrooms</strong><br><br>Available on all floors near the lift banks.<br>• Ground Floor: Near Main Entrance<br>• Level 1–3: East & West Wings<br>• Accessible restrooms on all floors',`<div class="chips"><div class="chip" onclick="openOv('ovDir')">🧭 Navigate There</div></div>`); }); }
+  else if(/wifi|internet|network|password/i.test(l)){ showFAQ('wifi'); }
+  else if(/atm|cash|bank|money/i.test(l)){ showFAQ('atm'); }
+  else if(/prayer|mosque|church|worship/i.test(l)){ showFAQ('prayer'); }
+  else if(/open|hour|time|clos/i.test(l)){ showFAQ('hours'); }
+  else if(/eat|food|restaurant|cafe|dining/i.test(l)){ doCat('Dining'); }
+  else if(/shop|store|retail|buy/i.test(l)){ doCat('Retail'); }
+  else if(/hospital|medical|doctor|clinic|pharmacy/i.test(l)){ doCat('Medical'); }
+  else if(/entertain|cinema|movie|fun/i.test(l)){ doCat('Entertainment'); }
+  else if(/support|help|issue|problem/i.test(l)){ openOv('ovSupport'); }
+  else if(/feedback|review|rate/i.test(l)){ openOv('ovFeedback'); }
+  else if(/gallery|browse|explore|show/i.test(l)){ go('gallery'); }
+  else if(/change|venue|different/i.test(l)){ changeVenue(); }
+  else {
+    const res=allPlaces.filter(p=>p.name.toLowerCase().includes(l)||p.cat.toLowerCase().includes(l)||p.floor.toLowerCase().includes(l));
+    if(res.length){ typing(()=>{ botMsg(`Found <strong>${res.length}</strong> result(s) for "<strong>${t}</strong>":`,buildGallery(res,'Search Results')); }); }
+    else { typing(()=>{ botMsg(`I couldn't pinpoint "<strong>${t}</strong>" — let me get you staff assistance.`,
+      `<div class="chips"><div class="chip" onclick="searchWA('${t}')">📲 Ask Staff on WhatsApp</div><div class="chip" onclick="go('places')">📍 Browse All Places</div></div>${mainMenu()}`); }); }
+  }
+}
+
+// ══════════════════════════════════════
+// OVERLAY HELPERS
+// ══════════════════════════════════════
+function openOv(id){ document.getElementById(id).classList.add('open'); }
+function closeOv(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(el=>{ el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }); });
+
+// INPUT
+document.getElementById('inp').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } });
+document.getElementById('inp').addEventListener('input',function(){ this.style.height='auto'; this.style.height=this.scrollHeight+'px'; });
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+window.onload=()=>{
+  const h=new Date().getHours();
+  const gr=h<12?'Good morning':'Good afternoon';
+  setTimeout(()=>{
+    botMsg(`${gr}! 👋 I'm <strong>WayBot</strong> — your intelligent venue navigation assistant.<br><br>
+I can help you <strong>find places, get turn-by-turn directions, book facilities, report emergencies, request accessibility support</strong> and much more — all connected via WhatsApp. 🧭`);
+  },400);
+  setTimeout(()=>{
+    typing(()=>{
+      botMsg('To begin, please <strong>select a venue</strong> you are visiting today:',venueGrid());
+    },1300);
+  },1300);
+};
+</script>
+</body>
+</html>
