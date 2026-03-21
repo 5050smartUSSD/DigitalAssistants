@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AttendX – Smart Attendance System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #07080F;
+    --surface:   #0D1021;
+    --card:      #121628;
+    --panel:     #181D35;
+    --border:    rgba(99,102,241,0.18);
+    --border2:   rgba(255,255,255,0.05);
+    --indigo:    #6366F1;
+    --violet:    #8B5CF6;
+    --mint:      #10F5A8;
+    --amber:     #F59E0B;
+    --rose:      #F43F5E;
+    --text:      #E2E8F8;
+    --muted:     #5A607A;
+    --green:     #25D366;
+    --radius:    18px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Mesh gradient background */
+  .mesh {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(99,102,241,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 80%, rgba(139,92,246,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 50% 50%, rgba(16,245,168,0.04) 0%, transparent 60%);
+    animation: mesh-shift 12s ease-in-out infinite alternate;
+  }
+  @keyframes mesh-shift {
+    from { opacity: 0.7; }
+    to   { opacity: 1; }
+  }
+
+  /* Dot grid */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: radial-gradient(circle, rgba(99,102,241,0.15) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    width: 100%; max-width: 520px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 12px;
+    position: relative; z-index: 2;
+  }
+  .logo {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+    box-shadow: 0 0 30px rgba(99,102,241,0.45);
+    animation: logo-glow 3s ease-in-out infinite alternate;
+  }
+  @keyframes logo-glow {
+    from { box-shadow: 0 0 20px rgba(99,102,241,0.4); }
+    to   { box-shadow: 0 0 40px rgba(139,92,246,0.6); }
+  }
+  .header-text h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.3rem; font-weight: 600;
+    color: var(--text); letter-spacing: 0.03em;
+  }
+  .header-text h1 span { color: var(--indigo); }
+  .header-text p { font-size: 0.72rem; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+  .live-clock {
+    margin-top: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; color: var(--mint);
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 10px rgba(16,245,168,0.4);
+  }
+
+  /* ── CHAT WINDOW ── */
+  .chat-window {
+    width: 100%; max-width: 520px;
+    background: var(--surface);
+    border-radius: 26px;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 0 1px rgba(99,102,241,0.06), 0 40px 100px rgba(0,0,0,0.6);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    height: 76vh; max-height: 660px;
+    position: relative; z-index: 2;
+  }
+
+  /* Topbar */
+  .topbar {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative;
+  }
+  .topbar::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--indigo), transparent);
+    opacity: 0.5;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .agent-av {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .agent-info strong {
+    display: block; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; color: var(--indigo);
+  }
+  .agent-info span { font-size: 0.68rem; color: var(--muted); }
+
+  /* Stats strip */
+  .stats-strip {
+    display: flex; gap: 12px;
+  }
+  .stat-pill {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+  }
+  .stat-pill .sn { color: var(--muted); }
+  .stat-pill .sv { font-weight: 600; }
+  .sv-in  { color: var(--mint); }
+  .sv-out { color: var(--rose); }
+
+  /* Messages */
+  .messages {
+    flex: 1; overflow-y: auto;
+    padding: 20px 16px;
+    display: flex; flex-direction: column; gap: 15px;
+    scroll-behavior: smooth;
+  }
+  .messages::-webkit-scrollbar { width: 3px; }
+  .messages::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 4px; }
+
+  .msg { display: flex; align-items: flex-end; gap: 9px; animation: up 0.3s ease; }
+  @keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .msg.bot  { justify-content: flex-start; }
+  .msg.user { justify-content: flex-end; }
+
+  .bot-icon {
+    width: 34px; height: 34px; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15));
+    border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+    box-shadow: 0 0 12px rgba(99,102,241,0.15);
+  }
+
+  .bubble {
+    max-width: 80%; padding: 13px 16px;
+    font-size: 0.875rem; line-height: 1.6; border-radius: 18px;
+  }
+  .msg.bot .bubble {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 5px;
+    color: var(--text);
+  }
+  .msg.user .bubble {
+    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.2));
+    border: 1px solid rgba(99,102,241,0.4);
+    border-bottom-right-radius: 5px;
+    color: #A5B4FC; font-weight: 600; font-size: 0.84rem;
+  }
+  .bubble code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(99,102,241,0.12);
+    padding: 2px 7px; border-radius: 5px;
+    font-size: 0.78rem; color: var(--indigo);
+  }
+
+  /* Chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; padding: 0 16px 12px; }
+  .chip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text); border-radius: 100px;
+    padding: 7px 15px; font-size: 0.77rem;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500; transition: all 0.2s;
+  }
+  .chip:hover {
+    background: rgba(99,102,241,0.15); border-color: var(--indigo);
+    color: #A5B4FC; transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(99,102,241,0.2);
+  }
+  .chip.green  { border-color: rgba(16,245,168,0.35); color: var(--mint); }
+  .chip.green:hover  { background: rgba(16,245,168,0.1); border-color: var(--mint); }
+  .chip.red    { border-color: rgba(244,63,94,0.35); color: var(--rose); }
+  .chip.red:hover    { background: rgba(244,63,94,0.1); border-color: var(--rose); }
+
+  /* Input */
+  .input-area {
+    display: flex; align-items: center; gap: 9px;
+    padding: 12px 15px;
+    border-top: 1px solid var(--border);
+    background: var(--card);
+    position: relative;
+  }
+  .input-area::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.35), transparent);
+  }
+  #userInput {
+    flex: 1; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 13px;
+    padding: 11px 15px; color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #userInput:focus {
+    border-color: rgba(99,102,241,0.5);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+  }
+  #userInput::placeholder { color: var(--muted); font-size: 0.83rem; }
+
+  .send-btn {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border: none; border-radius: 13px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(99,102,241,0.35);
+  }
+  .send-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(99,102,241,0.5); }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+
+  /* Typing */
+  .typing { display: flex; align-items: center; gap: 5px; }
+  .dot { width: 7px; height: 7px; background: var(--muted); border-radius: 50%; animation: bounce 1.3s infinite; }
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
+
+  /* ── ACTION CARDS ── */
+  .action-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;
+  }
+  .action-card {
+    background: var(--panel);
+    border: 1.5px solid var(--border2);
+    border-radius: 14px; padding: 14px;
+    cursor: pointer; transition: all 0.22s;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px; text-align: center;
+  }
+  .action-card .ac-icon { font-size: 1.8rem; }
+  .action-card .ac-label { font-size: 0.82rem; font-weight: 700; }
+  .action-card .ac-sub   { font-size: 0.68rem; color: var(--muted); }
+
+  .action-card.checkin  { border-color: rgba(16,245,168,0.25); }
+  .action-card.checkin:hover  {
+    background: rgba(16,245,168,0.07); border-color: var(--mint);
+    color: var(--mint); transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(16,245,168,0.12);
+  }
+  .action-card.checkout { border-color: rgba(244,63,94,0.25); }
+  .action-card.checkout:hover {
+    background: rgba(244,63,94,0.07); border-color: var(--rose);
+    color: var(--rose); transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(244,63,94,0.12);
+  }
+  .action-card.view { border-color: rgba(99,102,241,0.25); }
+  .action-card.view:hover {
+    background: rgba(99,102,241,0.07); border-color: var(--indigo);
+    color: #A5B4FC; transform: translateY(-3px);
+  }
+  .action-card.report { border-color: rgba(245,158,11,0.25); }
+  .action-card.report:hover {
+    background: rgba(245,158,11,0.07); border-color: var(--amber);
+    color: var(--amber); transform: translateY(-3px);
+  }
+
+  /* Inline form */
+  .inline-input { display: flex; flex-direction: column; gap: 9px; margin-top: 10px; }
+  .inline-field {
+    background: var(--panel);
+    border: 1px solid var(--border); border-radius: 11px;
+    padding: 10px 14px; color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.84rem;
+    outline: none; width: 100%; transition: border-color 0.2s;
+  }
+  .inline-field:focus { border-color: rgba(99,102,241,0.5); }
+  .inline-field::placeholder { color: var(--muted); }
+  select.inline-field { cursor: pointer; }
+  select.inline-field option { background: var(--card); }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .submit-in {
+    border: none; border-radius: 12px;
+    padding: 12px; font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700; font-size: 0.875rem; cursor: pointer;
+    transition: all 0.2s; color: var(--bg);
+  }
+  .submit-in.in-btn  { background: linear-gradient(135deg, var(--mint), #05C882); box-shadow: 0 4px 16px rgba(16,245,168,0.25); }
+  .submit-in.out-btn { background: linear-gradient(135deg, var(--rose), #E11D48); box-shadow: 0 4px 16px rgba(244,63,94,0.25); color: white; }
+  .submit-in:hover   { transform: translateY(-1px); filter: brightness(1.08); }
+
+  /* Attendance record card */
+  .record-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 13px; margin-top: 9px;
+  }
+  .rc-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border2);
+  }
+  .rc-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px dashed var(--border2); font-size: 0.8rem;
+  }
+  .rc-row:last-child { border: none; }
+  .rc-key { color: var(--muted); }
+  .rc-val { font-weight: 600; }
+  .rc-val.in  { color: var(--mint); }
+  .rc-val.out { color: var(--rose); }
+  .rc-val.dur { color: var(--amber); }
+  .rc-val.norm{ color: var(--text); }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    border-radius: 100px; padding: 5px 12px;
+    font-size: 0.72rem; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em; margin-top: 8px;
+  }
+  .sb-in  { background: rgba(16,245,168,0.1); border: 1px solid rgba(16,245,168,0.3); color: var(--mint); }
+  .sb-out { background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); color: var(--rose); }
+
+  /* WhatsApp btn */
+  .wa-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--green); color: white;
+    border: none; border-radius: 12px;
+    padding: 13px 20px; font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 700;
+    cursor: pointer; margin-top: 10px; width: 100%;
+    justify-content: center; transition: all 0.2s;
+    text-decoration: none;
+    box-shadow: 0 5px 18px rgba(37,211,102,0.28);
+  }
+  .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(37,211,102,0.4); }
+  .wa-btn svg { width: 19px; height: 19px; fill: white; flex-shrink: 0; }
+
+  /* Log table */
+  .log-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 8px; }
+  .log-table th {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border2);
+  }
+  .log-table td { padding: 7px 8px; border-bottom: 1px solid var(--border2); }
+  .log-table tr:last-child td { border: none; }
+  .tag-in  { background: rgba(16,245,168,0.1); color: var(--mint); border-radius: 5px; padding: 2px 7px; font-size: 0.68rem; font-weight: 700; }
+  .tag-out { background: rgba(244,63,94,0.1); color: var(--rose); border-radius: 5px; padding: 2px 7px; font-size: 0.68rem; font-weight: 700; }
+
+  .err { color: var(--rose); font-size: 0.76rem; margin-top: 5px; }
+
+  .footer {
+    margin-top: 10px; font-size: 0.7rem; color: var(--muted);
+    text-align: center; position: relative; z-index: 2;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.03em;
+  }
+  .footer span { color: var(--indigo); }
+
+  /* Badge strip */
+  .badge-strip { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+  .badge {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.2);
+    color: #A5B4FC; border-radius: 100px;
+    padding: 4px 11px; font-size: 0.68rem; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+
+<div class="header">
+  <div class="logo">🎯</div>
+  <div class="header-text">
+    <h1><span>Attend</span>X</h1>
+    <p>// smart attendance system</p>
+    <div class="live-clock" id="clock">--:-- -- · ---</div>
+  </div>
+</div>
+
+<div class="chat-window">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="agent-av">📋</div>
+      <div class="agent-info">
+        <strong>ATTEND-BOT</strong>
+        <span>Check-in · Check-out · Reports</span>
+      </div>
+    </div>
+    <div class="stats-strip">
+      <div class="stat-pill"><span class="sn">IN</span><span class="sv sv-in" id="stat-in">0</span></div>
+      <div class="stat-pill"><span class="sn">OUT</span><span class="sv sv-out" id="stat-out">0</span></div>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+  <div class="chips" id="chips"></div>
+
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Type name, ID, or choose an action…" autocomplete="off"/>
+    <button class="send-btn" onclick="handleSend()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="footer">[ <span>AttendX</span> ] · Records sent via WhatsApp · localStorage enabled</div>
+
+<script>
+const WHATSAPP = "2348157505037";
+
+// ── In-memory attendance log (also persisted to localStorage) ─────────────
+let log = [];
+try { log = JSON.parse(localStorage.getItem("attendx_log") || "[]"); } catch(e){ log = []; }
+function saveLog() { try { localStorage.setItem("attendx_log", JSON.stringify(log)); } catch(e){} }
+function countIn()  { return log.filter(r => r.type==="CHECK-IN"  && isToday(r.timestamp)).length; }
+function countOut() { return log.filter(r => r.type==="CHECK-OUT" && isToday(r.timestamp)).length; }
+function isToday(ts) {
+  const d = new Date(ts), n = new Date();
+  return d.getDate()===n.getDate() && d.getMonth()===n.getMonth() && d.getFullYear()===n.getFullYear();
+}
+function updateStats() {
+  document.getElementById("stat-in").textContent  = countIn();
+  document.getElementById("stat-out").textContent = countOut();
+}
+
+// ── Live clock ────────────────────────────────────────────────────────────
+function tickClock() {
+  const now = new Date();
+  const time = now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const day  = now.toLocaleDateString("en-NG",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+  document.getElementById("clock").textContent = `${time} · ${day}`;
+}
+tickClock(); setInterval(tickClock, 1000);
+
+// ── State ─────────────────────────────────────────────────────────────────
+const state = {
+  step:       "home",
+  action:     "",   // checkin | checkout | view | report
+  name:       "",
+  staffId:    "",
+  dept:       "",
+  role:       "",
+  note:       "",
+};
+
+// ── DOM ───────────────────────────────────────────────────────────────────
+const messagesEl = document.getElementById("messages");
+const chipsEl    = document.getElementById("chips");
+const inputEl    = document.getElementById("userInput");
+
+function scrollBottom() { setTimeout(()=> messagesEl.scrollTop = messagesEl.scrollHeight, 80); }
+
+function addMsg(who, html) {
+  const w = document.createElement("div");
+  w.className = `msg ${who}`;
+  w.innerHTML = who === "bot"
+    ? `<div class="bot-icon">🎯</div><div class="bubble">${html}</div>`
+    : `<div class="bubble">${html}</div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+}
+
+function showTyping() {
+  const w = document.createElement("div");
+  w.className = "msg bot"; w.id = "typing";
+  w.innerHTML = `<div class="bot-icon">🎯</div><div class="bubble"><div class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+function removeTyping() { document.getElementById("typing")?.remove(); }
+
+function setChips(arr) {
+  chipsEl.innerHTML = "";
+  arr.forEach(([label, cls=""]) => {
+    const b = document.createElement("button");
+    b.className = `chip ${cls}`; b.textContent = label;
+    b.onclick = () => processInput(label);
+    chipsEl.appendChild(b);
+  });
+}
+
+function botReply(html, chips=[], delay=900) {
+  showTyping();
+  setTimeout(()=>{ removeTyping(); addMsg("bot", html); setChips(chips); }, delay);
+}
+
+// ── Home action grid ───────────────────────────────────────────────────────
+function renderHomeGrid() {
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:94%">
+      <div>What would you like to do?</div>
+      <div class="action-grid" style="margin-top:10px">
+        <div class="action-card checkin"  onclick="startAction('checkin')">
+          <span class="ac-icon">✅</span>
+          <span class="ac-label">Check In</span>
+          <span class="ac-sub">Log arrival time</span>
+        </div>
+        <div class="action-card checkout" onclick="startAction('checkout')">
+          <span class="ac-icon">🚪</span>
+          <span class="ac-label">Check Out</span>
+          <span class="ac-sub">Log departure</span>
+        </div>
+        <div class="action-card view"   onclick="startAction('view')">
+          <span class="ac-icon">📊</span>
+          <span class="ac-label">View Log</span>
+          <span class="ac-sub">Today's records</span>
+        </div>
+        <div class="action-card report" onclick="startAction('report')">
+          <span class="ac-icon">📤</span>
+          <span class="ac-label">Send Report</span>
+          <span class="ac-sub">WhatsApp summary</span>
+        </div>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+
+function startAction(action) {
+  state.action = action;
+  const labels = { checkin:"✅ Check In", checkout:"🚪 Check Out", view:"📊 View Log", report:"📤 Send Report" };
+  addMsg("user", labels[action]);
+
+  if (action === "view") { showTyping(); setTimeout(()=>{ removeTyping(); renderLogView(); }, 900); return; }
+  if (action === "report") { showTyping(); setTimeout(()=>{ removeTyping(); renderReportPreview(); }, 900); return; }
+
+  state.step = "collect_info";
+  const isIn = action === "checkin";
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    addMsg("bot", `${isIn ? "🟢 Logging <strong>Check-In</strong>" : "🔴 Logging <strong>Check-Out</strong>"} — please fill in your details below:`);
+    renderAttendanceForm(isIn);
+  }, 900);
+}
+
+// ── Attendance form ────────────────────────────────────────────────────────
+function renderAttendanceForm(isIn) {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"});
+  const dateStr = now.toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"});
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:93%">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span class="status-badge ${isIn?"sb-in":"sb-out"}">${isIn?"● CHECK-IN":"● CHECK-OUT"}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted)">${timeStr} · ${dateStr}</span>
+      </div>
+      <div class="inline-input" id="attendForm">
+        <input class="inline-field" id="f_name"   placeholder="Full name *" type="text"/>
+        <div class="field-row">
+          <input class="inline-field" id="f_id"   placeholder="Staff / Student ID *" type="text"/>
+          <select class="inline-field" id="f_dept">
+            <option value="" disabled selected>Department</option>
+            <option>Engineering</option>
+            <option>Marketing</option>
+            <option>Finance</option>
+            <option>HR</option>
+            <option>Operations</option>
+            <option>Sales</option>
+            <option>IT / Tech</option>
+            <option>Administration</option>
+            <option>Management</option>
+            <option>Student</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <input class="inline-field" id="f_note" placeholder="Note / Reason (optional — e.g. late arrival, early exit)"/>
+        <button class="submit-in ${isIn?"in-btn":"out-btn"}" onclick="submitAttendance(${isIn})">
+          ${isIn ? "✅ Confirm Check-In" : "🚪 Confirm Check-Out"}
+        </button>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+
+// ── Submit attendance ──────────────────────────────────────────────────────
+function submitAttendance(isIn) {
+  const name = document.getElementById("f_name")?.value.trim();
+  const id   = document.getElementById("f_id")?.value.trim();
+  const dept = document.getElementById("f_dept")?.value;
+  const note = document.getElementById("f_note")?.value.trim() || "";
+
+  if (!name || !id) { flashErr("Please enter your name and ID."); return; }
+
+  const now = new Date();
+  const record = {
+    id:        Date.now(),
+    type:      isIn ? "CHECK-IN" : "CHECK-OUT",
+    name,
+    staffId:   id,
+    dept:      dept || "Not specified",
+    note,
+    timestamp: now.toISOString(),
+    timeStr:   now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit",second:"2-digit"}),
+    dateStr:   now.toLocaleDateString("en-NG",{weekday:"long",day:"numeric",month:"long",year:"numeric"}),
+  };
+
+  log.push(record); saveLog(); updateStats();
+  document.getElementById("attendForm").style.display = "none";
+  addMsg("user", `${name} · ${id}`);
+  showTyping();
+  setTimeout(()=>{ removeTyping(); showConfirmation(record, isIn); }, 1100);
+}
+
+function flashErr(msg) {
+  document.getElementById("err_a")?.remove();
+  const el = document.createElement("div");
+  el.id="err_a"; el.className="err"; el.textContent="⚠ "+msg;
+  document.getElementById("attendForm")?.appendChild(el);
+  setTimeout(()=> el.remove(), 3000);
+}
+
+// ── Confirmation ───────────────────────────────────────────────────────────
+function showConfirmation(rec, isIn) {
+  const waText = [
+    `🎯 *ATTENDANCE ${rec.type} – AttendX*`,
+    ``,
+    `*Name:* ${rec.name}`,
+    `*ID:* ${rec.staffId}`,
+    `*Department:* ${rec.dept}`,
+    `*Type:* ${rec.type}`,
+    `*Time:* ${rec.timeStr}`,
+    `*Date:* ${rec.dateStr}`,
+    rec.note ? `*Note:* ${rec.note}` : null,
+    ``,
+    `Logged via AttendX System 🎯`
+  ].filter(Boolean).join("\n");
+
+  const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waText)}`;
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:93%">
+      <p>${isIn ? "✅ <strong>Checked In</strong> successfully!" : "🚪 <strong>Checked Out</strong> successfully!"} Record saved.</p>
+      <div class="record-card">
+        <div class="rc-header">// Attendance Record #${rec.id.toString().slice(-5)}</div>
+        <div class="rc-row"><span class="rc-key">Name</span><span class="rc-val norm">${rec.name}</span></div>
+        <div class="rc-row"><span class="rc-key">ID</span><span class="rc-val norm">${rec.staffId}</span></div>
+        <div class="rc-row"><span class="rc-key">Dept</span><span class="rc-val norm">${rec.dept}</span></div>
+        <div class="rc-row"><span class="rc-key">Type</span><span class="rc-val ${isIn?"in":"out"}">${rec.type}</span></div>
+        <div class="rc-row"><span class="rc-key">Time</span><span class="rc-val ${isIn?"in":"out"}">${rec.timeStr}</span></div>
+        <div class="rc-row"><span class="rc-key">Date</span><span class="rc-val norm">${rec.dateStr}</span></div>
+        ${rec.note ? `<div class="rc-row"><span class="rc-key">Note</span><span class="rc-val norm">${rec.note}</span></div>` : ""}
+      </div>
+      <a class="wa-btn" href="${waUrl}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Send Record via WhatsApp
+      </a>
+      <div class="badge-strip">
+        <span class="badge">✓ RECORD SAVED</span>
+        <span class="badge">⏱ ${rec.timeStr}</span>
+        <span class="badge">📅 TODAY</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  state.step = "home";
+  setChips([["✅ Another Check-In","green"],["🚪 Check-Out","red"],["📊 View Log"],["🏠 Home"]]);
+}
+
+// ── Log view ───────────────────────────────────────────────────────────────
+function renderLogView() {
+  const todayLog = log.filter(r => isToday(r.timestamp));
+
+  if (todayLog.length === 0) {
+    addMsg("bot","📊 No attendance records yet for today.<br><br>Use <strong>Check In</strong> or <strong>Check Out</strong> to start logging.");
+    setChips([["✅ Check In","green"],["🚪 Check Out","red"],["🏠 Home"]]);
+    return;
+  }
+
+  const rows = todayLog.slice(-12).reverse().map(r =>
+    `<tr>
+      <td style="color:var(--text);font-weight:600">${r.name}</td>
+      <td style="color:var(--muted)">${r.staffId}</td>
+      <td><span class="${r.type==="CHECK-IN"?"tag-in":"tag-out"}">${r.type==="CHECK-IN"?"IN":"OUT"}</span></td>
+      <td style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.72rem">${r.timeStr}</td>
+    </tr>`
+  ).join("");
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:96%">
+      <p>📊 <strong>Today's Attendance Log</strong> — ${todayLog.length} record${todayLog.length!==1?"s":""}</p>
+      <div class="record-card" style="overflow-x:auto">
+        <table class="log-table">
+          <thead>
+            <tr><th>Name</th><th>ID</th><th>Type</th><th>Time</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      ${todayLog.length > 12 ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:6px">Showing last 12 of ${todayLog.length} records.</div>` : ""}
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips([["📤 Send Report"],["✅ Check In","green"],["🚪 Check Out","red"],["🏠 Home"]]);
+}
+
+// ── Report ─────────────────────────────────────────────────────────────────
+function renderReportPreview() {
+  const todayLog = log.filter(r => isToday(r.timestamp));
+  const ins  = todayLog.filter(r=>r.type==="CHECK-IN");
+  const outs = todayLog.filter(r=>r.type==="CHECK-OUT");
+  const now  = new Date();
+  const dateStr = now.toLocaleDateString("en-NG",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+
+  const inLines  = ins.map(r=>`  • ${r.name} (${r.staffId}) – ${r.timeStr}${r.note?` [${r.note}]`:""}`).join("\n");
+  const outLines = outs.map(r=>`  • ${r.name} (${r.staffId}) – ${r.timeStr}${r.note?` [${r.note}]`:""}`).join("\n");
+
+  const waText = [
+    `🎯 *ATTENDANCE REPORT – AttendX*`,
+    `📅 ${dateStr}`,
+    ``,
+    `✅ *CHECK-INS: ${ins.length}*`,
+    ins.length > 0 ? inLines : "  (none)",
+    ``,
+    `🚪 *CHECK-OUTS: ${outs.length}*`,
+    outs.length > 0 ? outLines : "  (none)",
+    ``,
+    `📊 *Total Records: ${todayLog.length}*`,
+    ``,
+    `Generated by AttendX · ${now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})}`
+  ].join("\n");
+
+  const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waText)}`;
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:93%">
+      <p>📤 Ready to send today's attendance report to the administrator.</p>
+      <div class="record-card">
+        <div class="rc-header">// Daily Report · ${dateStr}</div>
+        <div class="rc-row"><span class="rc-key">Total Records</span><span class="rc-val norm">${todayLog.length}</span></div>
+        <div class="rc-row"><span class="rc-key">Check-Ins</span><span class="rc-val in">${ins.length} ✅</span></div>
+        <div class="rc-row"><span class="rc-key">Check-Outs</span><span class="rc-val out">${outs.length} 🚪</span></div>
+        <div class="rc-row"><span class="rc-key">Generated</span><span class="rc-val norm">${now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})}</span></div>
+      </div>
+      ${todayLog.length === 0
+        ? `<div style="color:var(--muted);font-size:0.8rem;margin-top:8px">⚠ No records to report today.</div>`
+        : `<a class="wa-btn" href="${waUrl}" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Send Daily Report via WhatsApp
+          </a>`
+      }
+      <div class="badge-strip">
+        <span class="badge">📅 ${dateStr.split(",")[0].toUpperCase()}</span>
+        <span class="badge">IN: ${ins.length}</span>
+        <span class="badge">OUT: ${outs.length}</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips([["✅ Check In","green"],["🚪 Check Out","red"],["📊 View Log"],["🏠 Home"]]);
+}
+
+// ── Core processor ─────────────────────────────────────────────────────────
+function processInput(raw) {
+  if (!raw.trim()) return;
+  const v = raw.toLowerCase();
+  chipsEl.innerHTML = "";
+
+  if (v.includes("home") || v.includes("start over") || v.includes("menu")) { resetChat(); return; }
+
+  if (v.includes("check in") || v.includes("check-in") || v.includes("another check")) {
+    addMsg("user", raw);
+    state.action = "checkin"; state.step = "collect_info";
+    showTyping();
+    setTimeout(()=>{ removeTyping(); addMsg("bot","🟢 Logging <strong>Check-In</strong> — please fill in your details:"); renderAttendanceForm(true); }, 900);
+    return;
+  }
+  if (v.includes("check out") || v.includes("checkout")) {
+    addMsg("user", raw);
+    state.action = "checkout"; state.step = "collect_info";
+    showTyping();
+    setTimeout(()=>{ removeTyping(); addMsg("bot","🔴 Logging <strong>Check-Out</strong> — please fill in your details:"); renderAttendanceForm(false); }, 900);
+    return;
+  }
+  if (v.includes("view") || v.includes("log") || v.includes("record")) {
+    addMsg("user", raw); showTyping();
+    setTimeout(()=>{ removeTyping(); renderLogView(); }, 900);
+    return;
+  }
+  if (v.includes("report") || v.includes("send")) {
+    addMsg("user", raw); showTyping();
+    setTimeout(()=>{ removeTyping(); renderReportPreview(); }, 900);
+    return;
+  }
+
+  addMsg("user", raw);
+  botReply("Please choose an action from the menu below 👇", [], 700);
+  setTimeout(()=> renderHomeGrid(), 1050);
+}
+
+function handleSend() {
+  const val = inputEl.value.trim();
+  if (!val) return;
+  inputEl.value = "";
+  processInput(val);
+}
+inputEl.addEventListener("keydown", e => { if(e.key==="Enter") handleSend(); });
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function resetChat() {
+  Object.assign(state,{step:"home",action:"",name:"",staffId:"",dept:"",role:"",note:""});
+  messagesEl.innerHTML=""; chipsEl.innerHTML="";
+  updateStats(); initChat();
+}
+
+function initChat() {
+  updateStats();
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    const now = new Date();
+    const hour = now.getHours();
+    const greet = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    addMsg("bot",
+      `${greet}! 👋 Welcome to <strong>AttendX</strong> — your smart attendance system.<br><br>` +
+      `📊 Today's count: <code>${countIn()} check-in${countIn()!==1?"s":""}</code> · <code>${countOut()} check-out${countOut()!==1?"s":""}</code><br><br>` +
+      `What would you like to do?`
+    );
+    renderHomeGrid();
+  }, 900);
+}
+
+initChat();
+</script>
+</body>
+</html>
