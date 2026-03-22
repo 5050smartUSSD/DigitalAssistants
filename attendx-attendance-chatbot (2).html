@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AttendX – Smart Attendance System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #07080F;
+    --surface:   #0D1021;
+    --card:      #121628;
+    --panel:     #181D35;
+    --border:    rgba(99,102,241,0.18);
+    --border2:   rgba(255,255,255,0.05);
+    --indigo:    #6366F1;
+    --violet:    #8B5CF6;
+    --mint:      #10F5A8;
+    --amber:     #F59E0B;
+    --rose:      #F43F5E;
+    --text:      #E2E8F8;
+    --muted:     #5A607A;
+    --green:     #25D366;
+    --radius:    18px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .mesh {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(99,102,241,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 80%, rgba(139,92,246,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 50% 50%, rgba(16,245,168,0.04) 0%, transparent 60%);
+    animation: mesh-shift 12s ease-in-out infinite alternate;
+  }
+  @keyframes mesh-shift { from{opacity:0.7} to{opacity:1} }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: radial-gradient(circle, rgba(99,102,241,0.15) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    width: 100%; max-width: 520px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 12px;
+    position: relative; z-index: 2;
+  }
+  .logo {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+    box-shadow: 0 0 30px rgba(99,102,241,0.45);
+    animation: logo-glow 3s ease-in-out infinite alternate;
+  }
+  @keyframes logo-glow {
+    from { box-shadow: 0 0 20px rgba(99,102,241,0.4); }
+    to   { box-shadow: 0 0 40px rgba(139,92,246,0.6); }
+  }
+  .header-text h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.3rem; font-weight: 600;
+    color: var(--text); letter-spacing: 0.03em;
+  }
+  .header-text h1 span { color: var(--indigo); }
+  .header-text p { font-size: 0.72rem; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+  .live-clock {
+    margin-top: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; color: var(--mint);
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 10px rgba(16,245,168,0.4);
+  }
+
+  /* ── CHAT WINDOW ── */
+  .chat-window {
+    width: 100%; max-width: 520px;
+    background: var(--surface);
+    border-radius: 26px;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 0 1px rgba(99,102,241,0.06), 0 40px 100px rgba(0,0,0,0.6);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    height: 76vh; max-height: 660px;
+    position: relative; z-index: 2;
+  }
+
+  .topbar {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative;
+  }
+  .topbar::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--indigo), transparent);
+    opacity: 0.5;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .agent-av {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .agent-info strong {
+    display: block; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; color: var(--indigo);
+  }
+  .agent-info span { font-size: 0.68rem; color: var(--muted); }
+
+  .stats-strip { display: flex; gap: 12px; }
+  .stat-pill {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+  }
+  .stat-pill .sn { color: var(--muted); }
+  .stat-pill .sv { font-weight: 600; }
+  .sv-in  { color: var(--mint); }
+  .sv-out { color: var(--rose); }
+
+  .messages {
+    flex: 1; overflow-y: auto;
+    padding: 20px 16px;
+    display: flex; flex-direction: column; gap: 15px;
+    scroll-behavior: smooth;
+  }
+  .messages::-webkit-scrollbar { width: 3px; }
+  .messages::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 4px; }
+
+  .msg { display: flex; align-items: flex-end; gap: 9px; animation: up 0.3s ease; }
+  @keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .msg.bot  { justify-content: flex-start; }
+  .msg.user { justify-content: flex-end; }
+
+  .bot-icon {
+    width: 34px; height: 34px; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15));
+    border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+    box-shadow: 0 0 12px rgba(99,102,241,0.15);
+  }
+
+  .bubble {
+    max-width: 80%; padding: 13px 16px;
+    font-size: 0.875rem; line-height: 1.6; border-radius: 18px;
+  }
+  .msg.bot .bubble {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 5px;
+    color: var(--text);
+  }
+  .msg.user .bubble {
+    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.2));
+    border: 1px solid rgba(99,102,241,0.4);
+    border-bottom-right-radius: 5px;
+    color: #A5B4FC; font-weight: 600; font-size: 0.84rem;
+  }
+  .bubble code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(99,102,241,0.12);
+    padding: 2px 7px; border-radius: 5px;
+    font-size: 0.78rem; color: var(--indigo);
+  }
+
+  /* Chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; padding: 0 16px 12px; }
+  .chip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text); border-radius: 100px;
+    padding: 7px 15px; font-size: 0.77rem;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500; transition: all 0.2s;
+  }
+  .chip:hover {
+    background: rgba(99,102,241,0.15); border-color: var(--indigo);
+    color: #A5B4FC; transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(99,102,241,0.2);
+  }
+  .chip.green { border-color: rgba(16,245,168,0.35); color: var(--mint); }
+  .chip.green:hover { background: rgba(16,245,168,0.1); border-color: var(--mint); }
+  .chip.red   { border-color: rgba(244,63,94,0.35); color: var(--rose); }
+  .chip.red:hover { background: rgba(244,63,94,0.1); border-color: var(--rose); }
+  .chip.amber { border-color: rgba(245,158,11,0.35); color: var(--amber); }
+  .chip.amber:hover { background: rgba(245,158,11,0.1); border-color: var(--amber); }
+
+  /* Input */
+  .input-area {
+    display: flex; align-items: center; gap: 9px;
+    padding: 12px 15px;
+    border-top: 1px solid var(--border);
+    background: var(--card);
+    position: relative;
+  }
+  .input-area::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.35), transparent);
+  }
+  #userInput {
+    flex: 1; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 13px;
+    padding: 11px 15px; color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #userInput:focus {
+    border-color: rgba(99,102,241,0.5);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+  }
+  #userInput::placeholder { color: var(--muted); font-size: 0.83rem; }
+
+  .send-btn {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border: none; border-radius: 13px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(99,102,241,0.35);
+  }
+  .send-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(99,102,241,0.5); }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+
+  /* Typing */
+  .typing { display: flex; align-items: center; gap: 5px; }
+  .dot { width: 7px; height: 7px; background: var(--muted); border-radius: 50%; animation: bounce 1.3s infinite; }
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
+
+  /* ── ACTION CARDS ── */
+  .action-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;
+  }
+  .action-card {
+    background: var(--panel);
+    border: 1.5px solid var(--border2);
+    border-radius: 14px; padding: 14px;
+    cursor: pointer; transition: all 0.22s;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px; text-align: center;
+  }
+  .action-card .ac-icon { font-size: 1.8rem; }
+  .action-card .ac-label { font-size: 0.82rem; font-weight: 700; }
+  .action-card .ac-sub   { font-size: 0.68rem; color: var(--muted); }
+  .action-card.checkin  { border-color: rgba(16,245,168,0.25); }
+  .action-card.checkin:hover  { background: rgba(16,245,168,0.07); border-color: var(--mint); color: var(--mint); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(16,245,168,0.12); }
+  .action-card.checkout { border-color: rgba(244,63,94,0.25); }
+  .action-card.checkout:hover { background: rgba(244,63,94,0.07); border-color: var(--rose); color: var(--rose); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(244,63,94,0.12); }
+  .action-card.view { border-color: rgba(99,102,241,0.25); }
+  .action-card.view:hover { background: rgba(99,102,241,0.07); border-color: var(--indigo); color: #A5B4FC; transform: translateY(-3px); }
+  .action-card.report { border-color: rgba(245,158,11,0.25); }
+  .action-card.report:hover { background: rgba(245,158,11,0.07); border-color: var(--amber); color: var(--amber); transform: translateY(-3px); }
+  .action-card.signup { border-color: rgba(139,92,246,0.25); }
+  .action-card.signup:hover { background: rgba(139,92,246,0.07); border-color: var(--violet); color: #C4B5FD; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(139,92,246,0.12); }
+
+  /* Inline form */
+  .inline-input { display: flex; flex-direction: column; gap: 9px; margin-top: 10px; }
+  .inline-field {
+    background: var(--panel);
+    border: 1px solid var(--border); border-radius: 11px;
+    padding: 10px 14px; color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.84rem;
+    outline: none; width: 100%; transition: border-color 0.2s;
+  }
+  .inline-field:focus { border-color: rgba(99,102,241,0.5); }
+  .inline-field::placeholder { color: var(--muted); }
+  select.inline-field { cursor: pointer; }
+  select.inline-field option { background: var(--card); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .submit-in {
+    border: none; border-radius: 12px;
+    padding: 12px; font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700; font-size: 0.875rem; cursor: pointer;
+    transition: all 0.2s; color: var(--bg);
+  }
+  .submit-in.in-btn  { background: linear-gradient(135deg, var(--mint), #05C882); box-shadow: 0 4px 16px rgba(16,245,168,0.25); }
+  .submit-in.out-btn { background: linear-gradient(135deg, var(--rose), #E11D48); box-shadow: 0 4px 16px rgba(244,63,94,0.25); color: white; }
+  .submit-in.signup-btn { background: linear-gradient(135deg, var(--violet), #7C3AED); box-shadow: 0 4px 16px rgba(139,92,246,0.3); color: white; }
+  .submit-in:hover   { transform: translateY(-1px); filter: brightness(1.08); }
+
+  /* Attendance record card */
+  .record-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 13px; margin-top: 9px;
+  }
+  .rc-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border2);
+  }
+  .rc-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px dashed var(--border2); font-size: 0.8rem;
+  }
+  .rc-row:last-child { border: none; }
+  .rc-key { color: var(--muted); }
+  .rc-val { font-weight: 600; }
+  .rc-val.in   { color: var(--mint); }
+  .rc-val.out  { color: var(--rose); }
+  .rc-val.dur  { color: var(--amber); }
+  .rc-val.norm { color: var(--text); }
+  .rc-val.violet { color: #C4B5FD; }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    border-radius: 100px; padding: 5px 12px;
+    font-size: 0.72rem; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em; margin-top: 8px;
+  }
+  .sb-in     { background: rgba(16,245,168,0.1); border: 1px solid rgba(16,245,168,0.3); color: var(--mint); }
+  .sb-out    { background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); color: var(--rose); }
+  .sb-signup { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); color: #C4B5FD; }
+
+  /* WhatsApp btn */
+  .wa-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--green); color: white;
+    border: none; border-radius: 12px;
+    padding: 13px 20px; font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 700;
+    cursor: pointer; margin-top: 10px; width: 100%;
+    justify-content: center; transition: all 0.2s;
+    text-decoration: none;
+    box-shadow: 0 5px 18px rgba(37,211,102,0.28);
+  }
+  .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(37,211,102,0.4); }
+  .wa-btn svg { width: 19px; height: 19px; fill: white; flex-shrink: 0; }
+
+  /* Log table */
+  .log-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 8px; }
+  .log-table th {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border2);
+  }
+  .log-table td { padding: 7px 8px; border-bottom: 1px solid var(--border2); }
+  .log-table tr:last-child td { border: none; }
+  .tag-in  { background: rgba(16,245,168,0.1); color: var(--mint); border-radius: 5px; padding: 2px 7px; font-size: 0.68rem; font-weight: 700; }
+  .tag-out { background: rgba(244,63,94,0.1); color: var(--rose); border-radius: 5px; padding: 2px 7px; font-size: 0.68rem; font-weight: 700; }
+
+  .err { color: var(--rose); font-size: 0.76rem; margin-top: 5px; }
+  .success-msg { color: var(--mint); font-size: 0.76rem; margin-top: 5px; }
+
+  .footer {
+    margin-top: 10px; font-size: 0.7rem; color: var(--muted);
+    text-align: center; position: relative; z-index: 2;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.03em;
+  }
+  .footer span { color: var(--indigo); }
+
+  .badge-strip { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+  .badge {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.2);
+    color: #A5B4FC; border-radius: 100px;
+    padding: 4px 11px; font-size: 0.68rem; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em;
+  }
+
+  /* ── CAMERA MODULE ── */
+  .camera-module {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px; margin-top: 10px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .cam-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .cam-label .cam-dot {
+    width: 7px; height: 7px; background: var(--rose); border-radius: 50%;
+    animation: blink 1.2s infinite;
+  }
+  .cam-dot.active { background: var(--mint); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .cam-preview-wrap {
+    position: relative; width: 100%; aspect-ratio: 4/3;
+    background: #000; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+  }
+  .cam-preview-wrap video,
+  .cam-preview-wrap canvas {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .cam-preview-wrap canvas { display: none; }
+  .cam-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(7,8,15,0.7);
+    flex-direction: column; gap: 10px;
+  }
+  .cam-overlay p {
+    font-size: 0.78rem; color: var(--muted); text-align: center;
+    padding: 0 20px; font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Face guide frame */
+  .face-guide {
+    position: absolute; inset: 0; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .face-guide-ring {
+    width: 110px; height: 130px;
+    border: 2px dashed rgba(99,102,241,0.5);
+    border-radius: 50% / 60%;
+    box-shadow: 0 0 20px rgba(99,102,241,0.15) inset;
+    animation: ring-pulse 2s ease-in-out infinite;
+  }
+  @keyframes ring-pulse {
+    0%,100% { border-color: rgba(99,102,241,0.4); }
+    50%      { border-color: rgba(16,245,168,0.6); }
+  }
+
+  /* Captured snapshot */
+  .snapshot-wrap {
+    position: relative; width: 100%; aspect-ratio: 4/3;
+    border-radius: 10px; overflow: hidden;
+    border: 2px solid rgba(16,245,168,0.4);
+    display: none;
+  }
+  .snapshot-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .snapshot-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(16,245,168,0.15); border: 1px solid var(--mint);
+    color: var(--mint); border-radius: 100px; padding: 3px 10px;
+    font-size: 0.65rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+  }
+
+  .cam-actions { display: flex; gap: 8px; }
+  .cam-btn {
+    flex: 1; border: none; border-radius: 10px;
+    padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600; font-size: 0.8rem; cursor: pointer;
+    transition: all 0.2s; display: flex; align-items: center;
+    justify-content: center; gap: 6px;
+  }
+  .cam-btn.start  { background: rgba(99,102,241,0.15); border: 1px solid var(--border); color: #A5B4FC; }
+  .cam-btn.start:hover { background: rgba(99,102,241,0.25); }
+  .cam-btn.capture { background: linear-gradient(135deg, var(--indigo), var(--violet)); color: white; box-shadow: 0 4px 14px rgba(99,102,241,0.3); }
+  .cam-btn.capture:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .cam-btn.retake  { background: rgba(244,63,94,0.12); border: 1px solid rgba(244,63,94,0.3); color: var(--rose); }
+  .cam-btn.retake:hover { background: rgba(244,63,94,0.22); }
+  .cam-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+  /* ── PIN PAD ── */
+  .pin-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px; margin-top: 6px;
+  }
+  .pin-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 10px;
+  }
+  .pin-dots {
+    display: flex; gap: 10px; justify-content: center; margin-bottom: 12px;
+  }
+  .pin-dot-el {
+    width: 14px; height: 14px;
+    border-radius: 50%; border: 2px solid rgba(99,102,241,0.4);
+    background: transparent; transition: all 0.18s;
+  }
+  .pin-dot-el.filled {
+    background: var(--indigo);
+    border-color: var(--indigo);
+    box-shadow: 0 0 8px rgba(99,102,241,0.5);
+  }
+  .pin-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px;
+  }
+  .pin-key {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem; font-weight: 600; color: var(--text);
+    cursor: pointer; text-align: center;
+    transition: all 0.15s; user-select: none;
+  }
+  .pin-key:hover { background: rgba(99,102,241,0.15); border-color: var(--indigo); color: #A5B4FC; transform: scale(1.04); }
+  .pin-key:active { transform: scale(0.97); }
+  .pin-key.del { color: var(--rose); border-color: rgba(244,63,94,0.2); font-size: 0.85rem; }
+  .pin-key.del:hover { background: rgba(244,63,94,0.1); border-color: var(--rose); }
+  .pin-key.empty { opacity: 0; pointer-events: none; }
+
+  /* ── ADMIN GATE ── */
+  .admin-gate {
+    background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(99,102,241,0.06));
+    border: 1.5px solid rgba(245,158,11,0.28);
+    border-radius: 16px; padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+    margin-top: 10px;
+  }
+  .admin-gate-header {
+    display: flex; align-items: center; gap: 9px;
+  }
+  .admin-shield {
+    width: 36px; height: 36px; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(99,102,241,0.15));
+    border: 1px solid rgba(245,158,11,0.35);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+  .admin-gate-title { font-weight: 700; font-size: 0.88rem; color: var(--amber); }
+  .admin-gate-sub   { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .admin-gate .submit-in.admin-btn {
+    background: linear-gradient(135deg, var(--amber), #D97706);
+    color: #07080F; box-shadow: 0 4px 16px rgba(245,158,11,0.28);
+  }
+
+  /* ── VOICE FEEDBACK RIPPLE ── */
+  .voice-ripple {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 6px 14px; border-radius: 100px;
+    font-size: 0.72rem; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em; margin-top: 8px;
+    animation: voice-in 0.3s ease;
+  }
+  .voice-ripple.granted {
+    background: rgba(16,245,168,0.1); border: 1px solid rgba(16,245,168,0.35);
+    color: var(--mint);
+  }
+  .voice-ripple.denied {
+    background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.35);
+    color: var(--rose);
+  }
+  @keyframes voice-in { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+  .voice-bars {
+    display: flex; align-items: center; gap: 2px; height: 14px;
+  }
+  .voice-bar {
+    width: 3px; border-radius: 2px;
+    animation: vbar 0.6s ease-in-out infinite alternate;
+  }
+  .granted .voice-bar { background: var(--mint); }
+  .denied  .voice-bar { background: var(--rose); }
+  .voice-bar:nth-child(1){ height:4px;  animation-delay:0s; }
+  .voice-bar:nth-child(2){ height:10px; animation-delay:0.1s; }
+  .voice-bar:nth-child(3){ height:14px; animation-delay:0.2s; }
+  .voice-bar:nth-child(4){ height:8px;  animation-delay:0.1s; }
+  .voice-bar:nth-child(5){ height:4px;  animation-delay:0s; }
+  @keyframes vbar { from{transform:scaleY(0.4)} to{transform:scaleY(1)} }
+
+  /* Lock icon on admin-only cards */
+  .action-card .ac-lock {
+    position: absolute; top: 8px; right: 8px;
+    font-size: 0.65rem; opacity: 0.55;
+  }
+  .action-card { position: relative; }
+
+  /* ── ADMIN DASHBOARD ── */
+  .dash-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .dash-tab {
+    padding: 5px 13px; border-radius: 100px;
+    font-size: 0.72rem; font-weight: 700; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    border: 1px solid var(--border); background: var(--panel);
+    color: var(--muted); transition: all 0.18s;
+  }
+  .dash-tab.active { background: rgba(99,102,241,0.18); border-color: var(--indigo); color: #A5B4FC; }
+  .dash-tab:hover  { color: var(--text); border-color: rgba(99,102,241,0.4); }
+  .dash-panel { display: none; }
+  .dash-panel.active { display: block; }
+
+  .member-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .member-row {
+    display: flex; align-items: center; gap: 9px;
+    background: var(--panel); border: 1px solid var(--border2);
+    border-radius: 11px; padding: 9px 11px; font-size: 0.8rem;
+  }
+  .member-avatar {
+    width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+    border: 1.5px solid var(--border); background: var(--card);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; overflow: hidden;
+  }
+  .member-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 7px; }
+  .member-info { flex: 1; min-width: 0; }
+  .member-name { font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .member-meta { font-size: 0.67rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .member-badge { font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 100px; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+  .mb-admin  { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: var(--amber); }
+  .mb-member { background: rgba(99,102,241,0.1);  border: 1px solid rgba(99,102,241,0.25); color: #A5B4FC; }
+  .member-actions { display: flex; gap: 5px; }
+  .mact-btn {
+    padding: 4px 9px; border-radius: 7px; font-size: 0.67rem; font-weight: 700;
+    cursor: pointer; border: 1px solid var(--border); background: var(--card);
+    color: var(--muted); transition: all 0.15s; font-family: 'JetBrains Mono', monospace;
+  }
+  .mact-btn.del  { border-color: rgba(244,63,94,0.3); color: var(--rose); }
+  .mact-btn.del:hover  { background: rgba(244,63,94,0.1); }
+  .mact-btn.tog  { border-color: rgba(245,158,11,0.3); color: var(--amber); }
+  .mact-btn.tog:hover { background: rgba(245,158,11,0.1); }
+
+  .date-picker-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .date-picker-row input[type=date] {
+    flex: 1; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 12px; color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+    outline: none; color-scheme: dark;
+  }
+  .date-picker-row .go-btn {
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border: none; border-radius: 10px; padding: 8px 14px;
+    color: white; font-size: 0.78rem; font-weight: 700;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; white-space: nowrap;
+  }
+  .export-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(16,245,168,0.08); border: 1px solid rgba(16,245,168,0.3);
+    border-radius: 11px; padding: 10px 16px;
+    color: var(--mint); font-weight: 700; font-size: 0.82rem;
+    cursor: pointer; transition: all 0.2s;
+    font-family: 'Plus Jakarta Sans', sans-serif; width: 100%;
+    text-decoration: none;
+  }
+  .export-btn:hover { background: rgba(16,245,168,0.15); transform: translateY(-1px); }
+
+  .tag-late {
+    background: rgba(245,158,11,0.12); color: var(--amber);
+    border-radius: 5px; padding: 2px 6px;
+    font-size: 0.63rem; font-weight: 700; margin-left: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .timeout-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+    background: linear-gradient(90deg, rgba(244,63,94,0.97), rgba(139,92,246,0.97));
+    color: white; text-align: center;
+    padding: 11px 16px; font-size: 0.82rem; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    display: none; animation: slide-down 0.3s ease; letter-spacing: 0.03em;
+    cursor: pointer;
+  }
+  @keyframes slide-down { from{transform:translateY(-100%)} to{transform:translateY(0)} }
+
+  .settings-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel); border: 1px solid var(--border2);
+    border-radius: 11px; padding: 10px 13px; font-size: 0.8rem;
+  }
+  .settings-row label { color: var(--muted); flex: 1; font-size: 0.77rem; font-family: 'JetBrains Mono', monospace; }
+  .settings-row input[type=time],
+  .settings-row input[type=number] {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 5px 10px; color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+    outline: none; width: 110px; color-scheme: dark;
+  }
+  .save-settings-btn {
+    background: linear-gradient(135deg, var(--amber), #D97706);
+    border: none; border-radius: 10px; padding: 10px 16px;
+    color: #07080F; font-weight: 700; font-size: 0.8rem;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.2s; width: 100%; margin-top: 4px;
+  }
+  .save-settings-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+<div class="timeout-banner" id="timeoutBanner" onclick="dismissTimeout()">
+  ⏱ Admin session expired due to inactivity — tap to dismiss
+</div>
+
+<div class="header">
+  <div class="logo">🎯</div>
+  <div class="header-text">
+    <h1><span>Attend</span>X</h1>
+    <p>// smart attendance system</p>
+    <div class="live-clock" id="clock">--:-- -- · ---</div>
+  </div>
+</div>
+
+<div class="chat-window">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="agent-av">📋</div>
+      <div class="agent-info">
+        <strong>ATTEND-BOT</strong>
+        <span>Check-in · Check-out · Reports</span>
+      </div>
+    </div>
+    <div class="stats-strip">
+      <div class="stat-pill"><span class="sn">IN</span><span class="sv sv-in" id="stat-in">0</span></div>
+      <div class="stat-pill"><span class="sn">OUT</span><span class="sv sv-out" id="stat-out">0</span></div>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+  <div class="chips" id="chips"></div>
+
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Type or choose an action below…" autocomplete="off"/>
+    <button class="send-btn" onclick="handleSend()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="footer">[ <span>AttendX</span> ] · Camera + PIN · localStorage enabled</div>
+
+<script>
+const WHATSAPP = "2348157505037";
+
+// ── Storage ────────────────────────────────────────────────────────────────
+let log = [];
+let members = []; // registered members
+try { log     = JSON.parse(localStorage.getItem("attendx_log")     || "[]"); } catch(e){ log = []; }
+try { members = JSON.parse(localStorage.getItem("attendx_members") || "[]"); } catch(e){ members = []; }
+
+function saveLog()     { try { localStorage.setItem("attendx_log",     JSON.stringify(log));     } catch(e){} }
+function saveMembers() { try { localStorage.setItem("attendx_members", JSON.stringify(members)); } catch(e){} }
+
+function countIn()  { return log.filter(r => r.type==="CHECK-IN"  && isToday(r.timestamp)).length; }
+function countOut() { return log.filter(r => r.type==="CHECK-OUT" && isToday(r.timestamp)).length; }
+function isToday(ts) {
+  const d = new Date(ts), n = new Date();
+  return d.getDate()===n.getDate() && d.getMonth()===n.getMonth() && d.getFullYear()===n.getFullYear();
+}
+function updateStats() {
+  document.getElementById("stat-in").textContent  = countIn();
+  document.getElementById("stat-out").textContent = countOut();
+}
+
+// ── Live clock ─────────────────────────────────────────────────────────────
+function tickClock() {
+  const now = new Date();
+  const time = now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const day  = now.toLocaleDateString("en-NG",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+  document.getElementById("clock").textContent = `${time} · ${day}`;
+}
+tickClock(); setInterval(tickClock, 1000);
+
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+  step: "home",
+  action: "",
+  capturedImage: null,   // base64 data URL
+  capturedPin: "",
+  currentStream: null,
+};
+
+// ── DOM ────────────────────────────────────────────────────────────────────
+const messagesEl = document.getElementById("messages");
+const chipsEl    = document.getElementById("chips");
+const inputEl    = document.getElementById("userInput");
+
+function scrollBottom() { setTimeout(()=> messagesEl.scrollTop = messagesEl.scrollHeight, 80); }
+
+function addMsg(who, html) {
+  const w = document.createElement("div");
+  w.className = `msg ${who}`;
+  w.innerHTML = who === "bot"
+    ? `<div class="bot-icon">🎯</div><div class="bubble">${html}</div>`
+    : `<div class="bubble">${html}</div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+}
+
+function showTyping() {
+  const w = document.createElement("div");
+  w.className = "msg bot"; w.id = "typing";
+  w.innerHTML = `<div class="bot-icon">🎯</div><div class="bubble"><div class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+function removeTyping() { document.getElementById("typing")?.remove(); }
+
+function setChips(arr) {
+  chipsEl.innerHTML = "";
+  arr.forEach(([label, cls=""]) => {
+    const b = document.createElement("button");
+    b.className = `chip ${cls}`; b.textContent = label;
+    b.onclick = () => processInput(label);
+    chipsEl.appendChild(b);
+  });
+}
+
+function botReply(html, chips=[], delay=900) {
+  showTyping();
+  setTimeout(()=>{ removeTyping(); addMsg("bot", html); setChips(chips); }, delay);
+}
+
+// ── Stop any active camera stream ──────────────────────────────────────────
+function stopCamera() {
+  if (state.currentStream) {
+    state.currentStream.getTracks().forEach(t => t.stop());
+    state.currentStream = null;
+  }
+}
+
+// ── Home action grid ───────────────────────────────────────────────────────
+function renderHomeGrid() {
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:94%">
+      <div>What would you like to do?</div>
+      <div class="action-grid" style="margin-top:10px">
+        <div class="action-card checkin"  onclick="startAction('checkin')">
+          <span class="ac-icon">✅</span>
+          <span class="ac-label">Check In</span>
+          <span class="ac-sub">Camera + PIN required</span>
+        </div>
+        <div class="action-card checkout" onclick="startAction('checkout')">
+          <span class="ac-icon">🚪</span>
+          <span class="ac-label">Check Out</span>
+          <span class="ac-sub">Camera + PIN required</span>
+        </div>
+        <div class="action-card view"   onclick="startAction('view')">
+          <span class="ac-lock">🔐</span>
+          <span class="ac-icon">📊</span>
+          <span class="ac-label">View Log</span>
+          <span class="ac-sub">Admin only</span>
+        </div>
+        <div class="action-card report" onclick="startAction('report')">
+          <span class="ac-lock">🔐</span>
+          <span class="ac-icon">📤</span>
+          <span class="ac-label">Send Report</span>
+          <span class="ac-sub">Admin only</span>
+        </div>
+        <div class="action-card signup" style="grid-column:1/-1" onclick="startAction('signup')">
+          <span class="ac-icon">👤</span>
+          <span class="ac-label">Add / Sign Up Attendee</span>
+          <span class="ac-sub">Register new member with PIN & photo</span>
+        </div>
+        <div class="action-card" style="grid-column:1/-1;border-color:rgba(245,158,11,0.25)" onclick="startAction('dashboard')">
+          <span class="ac-lock">🔐</span>
+          <span class="ac-icon">🛡️</span>
+          <span class="ac-label">Admin Dashboard</span>
+          <span class="ac-sub">Members · Logs · Settings · Export</span>
+        </div>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+
+function startAction(action) {
+  state.action = action;
+  stopCamera();
+  state.capturedImage = null;
+  state.capturedPin = "";
+  const labels = { checkin:"✅ Check In", checkout:"🚪 Check Out", view:"📊 View Log", report:"📤 Send Report", signup:"👤 Add Attendee", dashboard:"🛡️ Admin Dashboard" };
+  addMsg("user", labels[action]);
+
+  if (action === "view")      { showTyping(); setTimeout(()=>{ removeTyping(); renderAdminGate("view"); }, 900); return; }
+  if (action === "report")    { showTyping(); setTimeout(()=>{ removeTyping(); renderAdminGate("report"); }, 900); return; }
+  if (action === "dashboard") { showTyping(); setTimeout(()=>{ removeTyping(); renderAdminGate("dashboard"); }, 900); return; }
+  if (action === "signup")    { showTyping(); setTimeout(()=>{ removeTyping(); renderSignupForm(); }, 900); return; }
+
+  const isIn = action === "checkin";
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    addMsg("bot", `${isIn ? "🟢 Logging <strong>Check-In</strong>" : "🔴 Logging <strong>Check-Out</strong>"} — capture your photo and enter PIN:`);
+    renderCameraForm(isIn);
+  }, 900);
+}
+
+// ── VOICE FEEDBACK ─────────────────────────────────────────────────────────
+function speakVoice(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate   = 1.05;
+  utter.pitch  = 1.0;
+  utter.volume = 1.0;
+  // Prefer a natural-sounding English voice if available
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => /en[-_](US|GB|NG)/i.test(v.lang) && !v.name.toLowerCase().includes("compact"));
+  if (preferred) utter.voice = preferred;
+  window.speechSynthesis.speak(utter);
+}
+
+function showVoiceFeedback(container, type, text) {
+  const el = document.createElement("div");
+  el.className = `voice-ripple ${type}`;
+  el.innerHTML = `
+    <div class="voice-bars">
+      <div class="voice-bar"></div><div class="voice-bar"></div>
+      <div class="voice-bar"></div><div class="voice-bar"></div>
+      <div class="voice-bar"></div>
+    </div>
+    ${text}`;
+  container.appendChild(el);
+  setTimeout(()=>{ if(el.parentNode) el.style.opacity="0"; el.style.transition="opacity 1s"; setTimeout(()=>el.remove(),1100); }, 3200);
+}
+
+// ── ADMIN GATE ─────────────────────────────────────────────────────────────
+function renderAdminGate(targetAction) {
+  const formId = `adminGate_${Date.now()}`;
+  const labels = { view:"View Log", report:"Send Report", dashboard:"Admin Dashboard" };
+  const icons  = { view:"📊", report:"📤", dashboard:"🛡️" };
+  const actionLabel = labels[targetAction] || targetAction;
+  const actionIcon  = icons[targetAction]  || "🔐";
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:95%">
+      <p>🔐 <strong>${actionLabel}</strong> is restricted to verified admins only.</p>
+      <div class="admin-gate">
+        <div class="admin-gate-header">
+          <div class="admin-shield">🛡️</div>
+          <div>
+            <div class="admin-gate-title">Admin Verification Required</div>
+            <div class="admin-gate-sub">Enter your Admin ID and PIN to proceed</div>
+          </div>
+        </div>
+        <input class="inline-field" id="ag_id_${formId}"
+          placeholder="Admin Staff / Student ID *" type="text"
+          style="font-family:'JetBrains Mono',monospace;letter-spacing:0.04em"/>
+        ${buildPinPad(`ag_${formId}`, "Admin 4-digit PIN")}
+        <div id="ag_err_${formId}"></div>
+        <button class="submit-in admin-btn" style="width:100%"
+          onclick="submitAdminGate('${formId}','${targetAction}')">
+          ${actionIcon} Verify &amp; ${actionLabel}
+        </button>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+
+function submitAdminGate(formId, targetAction) {
+  const idVal  = document.getElementById(`ag_id_${formId}`)?.value.trim();
+  const pin    = getPinValue(`ag_${formId}`);
+  const errEl  = document.getElementById(`ag_err_${formId}`);
+  const bubble = document.querySelector(`#adminGate_${formId} .bubble`) ||
+                 document.querySelector(`.bubble`); // fallback
+
+  // Find the wrapping message node for voice feedback
+  const msgNode = document.getElementById(`adminGate_${formId}`) ||
+                  messagesEl.lastElementChild;
+
+  function showErr(msg) {
+    errEl.innerHTML = `<div class="err">⚠ ${msg}</div>`;
+    speakVoice("Access denied. " + msg.replace(/<[^>]+>/g,""));
+    // Voice feedback chip
+    const feedbackTarget = errEl.parentElement;
+    showVoiceFeedback(feedbackTarget, "denied", "🔴 ACCESS DENIED");
+    pinBuffers[`ag_${formId}`] = ""; updatePinDots(`ag_${formId}`);
+  }
+
+  if (!idVal)         { showErr("Please enter your Admin ID."); return; }
+  if (pin.length < 4) { showErr("Please enter your 4-digit PIN."); return; }
+
+  const member = members.find(m => m.staffId.toLowerCase() === idVal.toLowerCase());
+  if (!member)        { showErr("ID not found in the system."); return; }
+  if (!member.isAdmin){ showErr(`<strong>${member.name}</strong> does not have admin privileges.`); return; }
+  if (pin !== member.pin) { showErr("Incorrect PIN. Access denied."); return; }
+
+  // ✅ Admin verified — start session
+  adminSession.active   = true;
+  adminSession.adminId  = member.staffId;
+  adminSession.adminName = member.name;
+  resetIdleTimer();
+
+  speakVoice(`Access granted. Welcome, ${member.name}.`);
+  const feedbackTarget = errEl.parentElement;
+  showVoiceFeedback(feedbackTarget, "granted", `🟢 ACCESS GRANTED — ${member.name.toUpperCase()}`);
+
+  // Collapse gate and load target after short delay for voice to play
+  setTimeout(()=>{
+    const bubble = msgNode?.querySelector(".bubble");
+    if (bubble) bubble.innerHTML = `<div style="color:var(--mint);font-size:0.78rem;font-family:'JetBrains Mono',monospace;">// Admin verified · ${member.name}</div>`;
+    addMsg("user", `🔐 Admin: ${member.name}`);
+    showTyping();
+    setTimeout(()=>{
+      removeTyping();
+      if (targetAction === "view")      renderLogView();
+      if (targetAction === "report")    renderReportPreview();
+      if (targetAction === "dashboard") renderAdminDashboard(member);
+    }, 900);
+  }, 1400);
+}
+
+// ── CAMERA FORM (check-in / check-out) ────────────────────────────────────
+function renderCameraForm(isIn) {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"});
+  const dateStr = now.toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"});
+  const formId  = `camForm_${Date.now()}`;
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.id = formId;
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:95%">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span class="status-badge ${isIn?"sb-in":"sb-out"}">${isIn?"● CHECK-IN":"● CHECK-OUT"}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted)">${timeStr} · ${dateStr}</span>
+      </div>
+
+      <!-- Staff ID lookup -->
+      <div class="camera-module" id="idSection_${formId}">
+        <div class="cam-label">Staff / Student ID</div>
+        <input class="inline-field" id="ci_id_${formId}" placeholder="Enter your ID to look up your record *" type="text"/>
+        <button class="submit-in ${isIn?"in-btn":"out-btn"}" onclick="lookupMember('${formId}', ${isIn})">
+          🔍 Look Up
+        </button>
+        <div id="lookup_err_${formId}"></div>
+      </div>
+
+      <!-- Camera capture (hidden until lookup succeeds) -->
+      <div id="camSection_${formId}" style="display:none">
+        <div class="camera-module">
+          <div class="cam-label"><span class="cam-dot" id="camDot_${formId}"></span> LIVE CAMERA</div>
+          <div class="cam-preview-wrap" id="camWrap_${formId}">
+            <video id="camVideo_${formId}" autoplay playsinline muted></video>
+            <canvas id="camCanvas_${formId}"></canvas>
+            <div class="cam-overlay" id="camOverlay_${formId}">
+              <span style="font-size:2rem">📷</span>
+              <p>Press <strong>Start Camera</strong> to activate your device camera</p>
+            </div>
+            <div class="face-guide" id="faceGuide_${formId}" style="display:none">
+              <div class="face-guide-ring"></div>
+            </div>
+          </div>
+          <div class="snapshot-wrap" id="snapWrap_${formId}">
+            <img id="snapImg_${formId}" src="" alt="Captured photo"/>
+            <div class="snapshot-badge">✓ CAPTURED</div>
+          </div>
+          <div class="cam-actions">
+            <button class="cam-btn start" id="startBtn_${formId}" onclick="startCamera('${formId}')">📷 Start Camera</button>
+            <button class="cam-btn capture" id="captureBtn_${formId}" onclick="capturePhoto('${formId}')" disabled>⚡ Capture</button>
+            <button class="cam-btn retake" id="retakeBtn_${formId}" onclick="retakePhoto('${formId}')" style="display:none">↺ Retake</button>
+          </div>
+        </div>
+
+        <!-- PIN -->
+        ${buildPinPad(formId)}
+
+        <div id="cam_err_${formId}" style="margin-top:6px"></div>
+        <div id="memberInfo_${formId}" style="margin-top:8px"></div>
+
+        <button class="submit-in ${isIn?"in-btn":"out-btn"}" style="margin-top:10px;width:100%"
+          onclick="submitCameraAttendance('${formId}', ${isIn})">
+          ${isIn ? "✅ Confirm Check-In" : "🚪 Confirm Check-Out"}
+        </button>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+
+// ── Look up member by ID ───────────────────────────────────────────────────
+function lookupMember(formId, isIn) {
+  const idVal  = document.getElementById(`ci_id_${formId}`)?.value.trim();
+  const errEl  = document.getElementById(`lookup_err_${formId}`);
+  if (!idVal) { errEl.innerHTML = `<div class="err">⚠ Please enter your ID.</div>`; return; }
+
+  const member = members.find(m => m.staffId.toLowerCase() === idVal.toLowerCase());
+  if (!member) {
+    errEl.innerHTML = `<div class="err">⚠ ID not found. Please <strong>sign up</strong> first or check your ID.</div>`;
+    return;
+  }
+
+  // Show camera section, populate member info
+  document.getElementById(`idSection_${formId}`).style.display = "none";
+  document.getElementById(`camSection_${formId}`).style.display = "block";
+  const infoEl = document.getElementById(`memberInfo_${formId}`);
+  infoEl.innerHTML = `
+    <div class="record-card" style="margin-top:0">
+      <div class="rc-header">// Member Found</div>
+      <div class="rc-row"><span class="rc-key">Name</span><span class="rc-val norm">${member.name}</span></div>
+      <div class="rc-row"><span class="rc-key">ID</span><span class="rc-val norm">${member.staffId}</span></div>
+      <div class="rc-row"><span class="rc-key">Dept</span><span class="rc-val norm">${member.dept||"—"}</span></div>
+      <div class="rc-row"><span class="rc-key">Access</span><span class="rc-val ${member.isAdmin?"dur":"violet"}">${member.access||"Member"}</span></div>
+    </div>`;
+  scrollBottom();
+
+  // Store found member in form element dataset
+  document.getElementById(`camSection_${formId}`).dataset.memberId = member.staffId;
+}
+
+// ── Camera helpers ─────────────────────────────────────────────────────────
+async function startCamera(formId) {
+  const video    = document.getElementById(`camVideo_${formId}`);
+  const overlay  = document.getElementById(`camOverlay_${formId}`);
+  const faceG    = document.getElementById(`faceGuide_${formId}`);
+  const dot      = document.getElementById(`camDot_${formId}`);
+  const startBtn = document.getElementById(`startBtn_${formId}`);
+  const capBtn   = document.getElementById(`captureBtn_${formId}`);
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width:640, height:480 }, audio: false });
+    state.currentStream = stream;
+    video.srcObject = stream;
+    overlay.style.display = "none";
+    faceG.style.display = "flex";
+    dot.classList.add("active");
+    startBtn.style.display = "none";
+    capBtn.disabled = false;
+  } catch(err) {
+    overlay.innerHTML = `<span style="font-size:1.5rem">🚫</span><p style="color:var(--rose)">Camera access denied. Please allow camera permissions in your browser.</p>`;
+  }
+}
+
+function capturePhoto(formId) {
+  const video   = document.getElementById(`camVideo_${formId}`);
+  const canvas  = document.getElementById(`camCanvas_${formId}`);
+  const snapW   = document.getElementById(`snapWrap_${formId}`);
+  const snapImg = document.getElementById(`snapImg_${formId}`);
+  const camWrap = document.getElementById(`camWrap_${formId}`);
+  const capBtn  = document.getElementById(`captureBtn_${formId}`);
+  const retBtn  = document.getElementById(`retakeBtn_${formId}`);
+  const faceG   = document.getElementById(`faceGuide_${formId}`);
+  const dot     = document.getElementById(`camDot_${formId}`);
+
+  canvas.width  = video.videoWidth  || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+  state.capturedImage = dataUrl;
+
+  // Show snapshot, hide live feed
+  snapImg.src = dataUrl;
+  snapW.style.display = "block";
+  camWrap.style.display = "none";
+  capBtn.style.display = "none";
+  retBtn.style.display = "flex";
+  faceG.style.display = "none";
+  dot.classList.remove("active");
+  stopCamera();
+  scrollBottom();
+}
+
+function retakePhoto(formId) {
+  const snapW   = document.getElementById(`snapWrap_${formId}`);
+  const camWrap = document.getElementById(`camWrap_${formId}`);
+  const capBtn  = document.getElementById(`captureBtn_${formId}`);
+  const retBtn  = document.getElementById(`retakeBtn_${formId}`);
+  const overlay = document.getElementById(`camOverlay_${formId}`);
+  const faceG   = document.getElementById(`faceGuide_${formId}`);
+  const startBtn= document.getElementById(`startBtn_${formId}`);
+
+  state.capturedImage = null;
+  snapW.style.display = "none";
+  camWrap.style.display = "block";
+  overlay.style.display = "flex";
+  overlay.innerHTML = `<span style="font-size:2rem">📷</span><p>Press <strong>Start Camera</strong> to capture again</p>`;
+  faceG.style.display = "none";
+  startBtn.style.display = "flex";
+  capBtn.disabled = true;
+  capBtn.style.display = "flex";
+  retBtn.style.display = "none";
+  scrollBottom();
+}
+
+// ── PIN pad builder ────────────────────────────────────────────────────────
+function buildPinPad(formId, label="Enter your 4-digit PIN") {
+  return `
+  <div class="pin-section" id="pinSection_${formId}">
+    <div class="pin-label">🔒 ${label}</div>
+    <div class="pin-dots" id="pinDots_${formId}">
+      <div class="pin-dot-el" id="pd0_${formId}"></div>
+      <div class="pin-dot-el" id="pd1_${formId}"></div>
+      <div class="pin-dot-el" id="pd2_${formId}"></div>
+      <div class="pin-dot-el" id="pd3_${formId}"></div>
+    </div>
+    <div class="pin-grid">
+      ${[1,2,3,4,5,6,7,8,9].map(n=>`<div class="pin-key" onclick="pinKey('${formId}','${n}')">${n}</div>`).join("")}
+      <div class="pin-key empty"></div>
+      <div class="pin-key" onclick="pinKey('${formId}','0')">0</div>
+      <div class="pin-key del" onclick="pinDel('${formId}')">⌫ DEL</div>
+    </div>
+  </div>`;
+}
+
+// ── PIN key handlers ───────────────────────────────────────────────────────
+const pinBuffers = {};
+
+function pinKey(formId, digit) {
+  if (!pinBuffers[formId]) pinBuffers[formId] = "";
+  if (pinBuffers[formId].length >= 4) return;
+  pinBuffers[formId] += digit;
+  updatePinDots(formId);
+}
+
+function pinDel(formId) {
+  if (!pinBuffers[formId]) return;
+  pinBuffers[formId] = pinBuffers[formId].slice(0, -1);
+  updatePinDots(formId);
+}
+
+function updatePinDots(formId) {
+  const len = (pinBuffers[formId]||"").length;
+  for (let i=0; i<4; i++) {
+    const el = document.getElementById(`pd${i}_${formId}`);
+    if (el) el.classList.toggle("filled", i < len);
+  }
+}
+
+function getPinValue(formId) { return pinBuffers[formId] || ""; }
+
+// ── Submit camera attendance ───────────────────────────────────────────────
+function submitCameraAttendance(formId, isIn) {
+  const errEl   = document.getElementById(`cam_err_${formId}`);
+  const section = document.getElementById(`camSection_${formId}`);
+  const memberId = section?.dataset.memberId;
+  const member   = members.find(m => m.staffId === memberId);
+  const pin      = getPinValue(formId);
+
+  if (!member)              { errEl.innerHTML = `<div class="err">⚠ Member lookup error. Please refresh and try again.</div>`; return; }
+  if (!state.capturedImage) { errEl.innerHTML = `<div class="err">⚠ Please capture your photo first.</div>`; return; }
+  if (pin.length < 4)       { errEl.innerHTML = `<div class="err">⚠ Please enter your full 4-digit PIN.</div>`; return; }
+  if (pin !== member.pin)   {
+    errEl.innerHTML = `<div class="err">⚠ Incorrect PIN. Please try again.</div>`;
+    speakVoice("Access denied. Incorrect PIN.");
+    showVoiceFeedback(errEl.parentElement, "denied", "🔴 ACCESS DENIED");
+    pinBuffers[formId]=""; updatePinDots(formId); return;
+  }
+
+  errEl.innerHTML = "";
+  speakVoice(`Access granted. Welcome, ${member.name}.${isIn && record.late ? " Note: late arrival." : ""}`);
+  showVoiceFeedback(errEl.parentElement, "granted", `🟢 ACCESS GRANTED — ${member.name.toUpperCase()}`);
+  const now = new Date();
+  const timeStrFull = now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const record = {
+    id:        Date.now(),
+    type:      isIn ? "CHECK-IN" : "CHECK-OUT",
+    name:      member.name,
+    staffId:   member.staffId,
+    dept:      member.dept || "Not specified",
+    role:      member.role || "",
+    note:      "",
+    photo:     state.capturedImage,
+    late:      isIn ? isLate(now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})) : false,
+    timestamp: now.toISOString(),
+    timeStr:   timeStrFull,
+    dateStr:   now.toLocaleDateString("en-NG",{weekday:"long",day:"numeric",month:"long",year:"numeric"}),
+  };
+
+  log.push(record); saveLog(); updateStats();
+  // Collapse form
+  const bubble = document.querySelector(`#${formId} .bubble`);
+  if (bubble) bubble.innerHTML = `<div style="color:var(--muted);font-size:0.8rem;font-family:'JetBrains Mono',monospace;">// Attendance logged</div>`;
+  addMsg("user", `${member.name} · ${member.staffId}`);
+  showTyping();
+  state.capturedImage = null;
+  setTimeout(()=>{ removeTyping(); showConfirmation(record, isIn); }, 1100);
+}
+
+// ── SIGNUP FORM ────────────────────────────────────────────────────────────
+function renderSignupForm() {
+  const formId = `signup_${Date.now()}`;
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.id = formId;
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:95%">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span class="status-badge sb-signup">● NEW MEMBER</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted)">Registration</span>
+      </div>
+
+      <div class="inline-input" id="sgForm_${formId}">
+        <input class="inline-field" id="sg_name_${formId}"   placeholder="Full name *" type="text"/>
+        <div class="field-row">
+          <input class="inline-field" id="sg_id_${formId}"   placeholder="Staff / Student ID *" type="text"/>
+          <select class="inline-field" id="sg_dept_${formId}">
+            <option value="" disabled selected>Department</option>
+            <option>Engineering</option>
+            <option>Marketing</option>
+            <option>Finance</option>
+            <option>HR</option>
+            <option>Operations</option>
+            <option>Sales</option>
+            <option>IT / Tech</option>
+            <option>Administration</option>
+            <option>Management</option>
+            <option>Student</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <input class="inline-field" id="sg_role_${formId}" placeholder="Role / Title (optional)" type="text"/>
+          <select class="inline-field" id="sg_access_${formId}">
+            <option value="Member" selected>Member</option>
+            <option value="Admin">Admin 🔐</option>
+            <option value="Teacher">Teacher</option>
+            <option value="Student">Student</option>
+            <option value="Staff">Staff</option>
+            <option value="Supervisor">Supervisor</option>
+            <option value="Security">Security</option>
+            <option value="Guest">Guest</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Profile photo capture -->
+      <div class="camera-module" style="margin-top:10px">
+        <div class="cam-label"><span class="cam-dot" id="sgCamDot_${formId}"></span> PROFILE PHOTO (optional)</div>
+        <div class="cam-preview-wrap" id="sgCamWrap_${formId}">
+          <video id="sgCamVideo_${formId}" autoplay playsinline muted></video>
+          <canvas id="sgCamCanvas_${formId}"></canvas>
+          <div class="cam-overlay" id="sgCamOverlay_${formId}">
+            <span style="font-size:2rem">🤳</span>
+            <p>Capture a profile photo (recommended)</p>
+          </div>
+          <div class="face-guide" id="sgFaceGuide_${formId}" style="display:none">
+            <div class="face-guide-ring"></div>
+          </div>
+        </div>
+        <div class="snapshot-wrap" id="sgSnapWrap_${formId}">
+          <img id="sgSnapImg_${formId}" src="" alt="Profile photo"/>
+          <div class="snapshot-badge">✓ PROFILE SET</div>
+        </div>
+        <div class="cam-actions">
+          <button class="cam-btn start" id="sgStartBtn_${formId}" onclick="startSignupCamera('${formId}')">📷 Start Camera</button>
+          <button class="cam-btn capture" id="sgCaptureBtn_${formId}" onclick="captureSignupPhoto('${formId}')" disabled>⚡ Capture</button>
+          <button class="cam-btn retake"  id="sgRetakeBtn_${formId}"  onclick="retakeSignupPhoto('${formId}')"  style="display:none">↺ Retake</button>
+        </div>
+      </div>
+
+      <!-- PIN setup -->
+      <div style="margin-top:8px">
+        ${buildPinPad(`sg_${formId}`, "Create a 4-digit PIN for future logins")}
+      </div>
+
+      <div id="sg_err_${formId}" style="margin-top:6px"></div>
+
+      <button class="submit-in signup-btn" style="margin-top:10px;width:100%"
+        onclick="submitSignup('${formId}')">
+        👤 Register Attendee
+      </button>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+
+// Signup camera helpers
+let signupPhotoCaptures = {};
+
+async function startSignupCamera(formId) {
+  const video    = document.getElementById(`sgCamVideo_${formId}`);
+  const overlay  = document.getElementById(`sgCamOverlay_${formId}`);
+  const faceG    = document.getElementById(`sgFaceGuide_${formId}`);
+  const dot      = document.getElementById(`sgCamDot_${formId}`);
+  const startBtn = document.getElementById(`sgStartBtn_${formId}`);
+  const capBtn   = document.getElementById(`sgCaptureBtn_${formId}`);
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width:640, height:480 }, audio: false });
+    state.currentStream = stream;
+    video.srcObject = stream;
+    overlay.style.display = "none";
+    faceG.style.display = "flex";
+    dot.classList.add("active");
+    startBtn.style.display = "none";
+    capBtn.disabled = false;
+  } catch(err) {
+    overlay.innerHTML = `<span style="font-size:1.5rem">🚫</span><p style="color:var(--rose)">Camera access denied.</p>`;
+  }
+}
+
+function captureSignupPhoto(formId) {
+  const video   = document.getElementById(`sgCamVideo_${formId}`);
+  const canvas  = document.getElementById(`sgCamCanvas_${formId}`);
+  const snapW   = document.getElementById(`sgSnapWrap_${formId}`);
+  const snapImg = document.getElementById(`sgSnapImg_${formId}`);
+  const camWrap = document.getElementById(`sgCamWrap_${formId}`);
+  const capBtn  = document.getElementById(`sgCaptureBtn_${formId}`);
+  const retBtn  = document.getElementById(`sgRetakeBtn_${formId}`);
+  const faceG   = document.getElementById(`sgFaceGuide_${formId}`);
+  const dot     = document.getElementById(`sgCamDot_${formId}`);
+
+  canvas.width  = video.videoWidth  || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+  signupPhotoCaptures[formId] = dataUrl;
+
+  snapImg.src = dataUrl;
+  snapW.style.display = "block";
+  camWrap.style.display = "none";
+  capBtn.style.display = "none";
+  retBtn.style.display = "flex";
+  faceG.style.display = "none";
+  dot.classList.remove("active");
+  stopCamera();
+  scrollBottom();
+}
+
+function retakeSignupPhoto(formId) {
+  signupPhotoCaptures[formId] = null;
+  const snapW   = document.getElementById(`sgSnapWrap_${formId}`);
+  const camWrap = document.getElementById(`sgCamWrap_${formId}`);
+  const overlay = document.getElementById(`sgCamOverlay_${formId}`);
+  const capBtn  = document.getElementById(`sgCaptureBtn_${formId}`);
+  const retBtn  = document.getElementById(`sgRetakeBtn_${formId}`);
+  const startBtn= document.getElementById(`sgStartBtn_${formId}`);
+  const faceG   = document.getElementById(`sgFaceGuide_${formId}`);
+
+  snapW.style.display = "none";
+  camWrap.style.display = "block";
+  overlay.style.display = "flex";
+  overlay.innerHTML = `<span style="font-size:2rem">🤳</span><p>Press <strong>Start Camera</strong> to capture again</p>`;
+  faceG.style.display = "none";
+  startBtn.style.display = "flex";
+  capBtn.disabled = true;
+  capBtn.style.display = "flex";
+  retBtn.style.display = "none";
+  scrollBottom();
+}
+
+function submitSignup(formId) {
+  const name   = document.getElementById(`sg_name_${formId}`)?.value.trim();
+  const idVal  = document.getElementById(`sg_id_${formId}`)?.value.trim();
+  const dept   = document.getElementById(`sg_dept_${formId}`)?.value || "";
+  const role   = document.getElementById(`sg_role_${formId}`)?.value.trim() || "";
+  const access = document.getElementById(`sg_access_${formId}`)?.value || "Member";
+  const pin    = getPinValue(`sg_${formId}`);
+  const photo  = signupPhotoCaptures[formId] || null;
+  const errEl  = document.getElementById(`sg_err_${formId}`);
+
+  if (!name)        { errEl.innerHTML = `<div class="err">⚠ Full name is required.</div>`; return; }
+  if (!idVal)       { errEl.innerHTML = `<div class="err">⚠ Staff / Student ID is required.</div>`; return; }
+  if (pin.length < 4) { errEl.innerHTML = `<div class="err">⚠ Please set a 4-digit PIN.</div>`; return; }
+
+  const existing = members.find(m => m.staffId.toLowerCase() === idVal.toLowerCase());
+  if (existing)     { errEl.innerHTML = `<div class="err">⚠ ID <strong>${idVal}</strong> is already registered. Use a different ID.</div>`; return; }
+
+  const member = {
+    id:       Date.now(),
+    name, staffId: idVal, dept, role, access,
+    isAdmin:  access === "Admin",
+    pin, photo,
+    joinedAt: new Date().toISOString(),
+  };
+  members.push(member); saveMembers();
+  stopCamera();
+
+  // Collapse form
+  const bubble = document.querySelector(`#${formId} .bubble`);
+  if (bubble) bubble.innerHTML = `<div style="color:var(--muted);font-size:0.8rem;font-family:'JetBrains Mono',monospace;">// Member registered</div>`;
+  addMsg("user", `${name} · ${idVal}`);
+  showTyping();
+  setTimeout(()=>{ removeTyping(); showSignupConfirmation(member); }, 1100);
+}
+
+function showSignupConfirmation(member) {
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:93%">
+      <p>👤 <strong>${member.name}</strong> registered successfully!</p>
+      <div class="record-card">
+        <div class="rc-header">// New Member · #${member.id.toString().slice(-5)}</div>
+        <div class="rc-row"><span class="rc-key">Name</span><span class="rc-val norm">${member.name}</span></div>
+        <div class="rc-row"><span class="rc-key">ID</span><span class="rc-val violet">${member.staffId}</span></div>
+        <div class="rc-row"><span class="rc-key">Dept</span><span class="rc-val norm">${member.dept||"—"}</span></div>
+        <div class="rc-row"><span class="rc-key">Role</span><span class="rc-val norm">${member.role||"—"}</span></div>
+        <div class="rc-row"><span class="rc-key">Access Level</span><span class="rc-val ${member.isAdmin?"dur":"violet"}">${member.access||"Member"} ${member.isAdmin?"🔐":""}</span></div>
+        <div class="rc-row"><span class="rc-key">PIN</span><span class="rc-val norm">●●●●</span></div>
+        <div class="rc-row"><span class="rc-key">Photo</span><span class="rc-val ${member.photo?"in":"norm"}">${member.photo?"✓ Captured":"Not set"}</span></div>
+      </div>
+      ${member.photo ? `<div style="margin-top:8px"><img src="${member.photo}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;border:2px solid rgba(139,92,246,0.4)"/></div>` : ""}
+      <div class="badge-strip">
+        <span class="badge">✓ REGISTERED</span>
+        <span class="badge">🔒 PIN SET</span>
+        <span class="badge">👥 ${members.length} MEMBER${members.length!==1?"S":""}</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  state.step = "home";
+  setChips([["✅ Check In","green"],["🚪 Check Out","red"],["👤 Add Another","amber"],["🏠 Home"]]);
+}
+
+// ── Confirmation ───────────────────────────────────────────────────────────
+function showConfirmation(rec, isIn) {
+  const waText = [
+    `🎯 *ATTENDANCE ${rec.type} – AttendX*`,
+    ``,
+    `*Name:* ${rec.name}`,
+    `*ID:* ${rec.staffId}`,
+    `*Department:* ${rec.dept}`,
+    `*Type:* ${rec.type}`,
+    `*Time:* ${rec.timeStr}`,
+    `*Date:* ${rec.dateStr}`,
+    rec.note ? `*Note:* ${rec.note}` : null,
+    ``,
+    `Logged via AttendX System 🎯`
+  ].filter(Boolean).join("\n");
+
+  const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waText)}`;
+  const photoHtml = rec.photo
+    ? `<div style="margin-top:8px"><img src="${rec.photo}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;border:2px solid ${isIn?"rgba(16,245,168,0.4)":"rgba(244,63,94,0.4)"}"/></div>`
+    : "";
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:93%">
+      <p>${isIn ? "✅ <strong>Checked In</strong> successfully!" : "🚪 <strong>Checked Out</strong> successfully!"} Record saved.</p>
+      ${photoHtml}
+      <div class="record-card">
+        <div class="rc-header">// Attendance Record #${rec.id.toString().slice(-5)}</div>
+        <div class="rc-row"><span class="rc-key">Name</span><span class="rc-val norm">${rec.name}</span></div>
+        <div class="rc-row"><span class="rc-key">ID</span><span class="rc-val norm">${rec.staffId}</span></div>
+        <div class="rc-row"><span class="rc-key">Dept</span><span class="rc-val norm">${rec.dept}</span></div>
+        <div class="rc-row"><span class="rc-key">Type</span><span class="rc-val ${isIn?"in":"out"}">${rec.type}${rec.late?` <span class="tag-late">LATE</span>`:""}</span></div>
+        <div class="rc-row"><span class="rc-key">Time</span><span class="rc-val ${isIn?"in":"out"}">${rec.timeStr}</span></div>
+        <div class="rc-row"><span class="rc-key">Date</span><span class="rc-val norm">${rec.dateStr}</span></div>
+      </div>
+      <a class="wa-btn" href="${waUrl}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Send Record via WhatsApp
+      </a>
+      <div class="badge-strip">
+        <span class="badge">✓ RECORD SAVED</span>
+        <span class="badge">📷 PHOTO CAPTURED</span>
+        <span class="badge">⏱ ${rec.timeStr}</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  state.step = "home";
+  setChips([["✅ Another Check-In","green"],["🚪 Check-Out","red"],["🏠 Home"]]);
+}
+
+// ── ADMIN SESSION + IDLE TIMEOUT ──────────────────────────────────────────
+const adminSession = { active: false, adminId: null, adminName: null };
+let idleTimer = null;
+const IDLE_TIMEOUT_MS = () => (settings.timeoutMins || 5) * 60 * 1000;
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  if (!adminSession.active) return;
+  idleTimer = setTimeout(expireAdminSession, IDLE_TIMEOUT_MS());
+}
+function expireAdminSession() {
+  if (!adminSession.active) return;
+  adminSession.active = false; adminSession.adminId = null; adminSession.adminName = null;
+  const banner = document.getElementById("timeoutBanner");
+  if (banner) banner.style.display = "block";
+  speakVoice("Admin session expired due to inactivity.");
+}
+function dismissTimeout() { document.getElementById("timeoutBanner").style.display = "none"; }
+["click","keydown","touchstart"].forEach(ev =>
+  document.addEventListener(ev, ()=>{ if(adminSession.active) resetIdleTimer(); }, { passive:true })
+);
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────
+let settings = { lateCutoff: "09:00", timeoutMins: 5 };
+try { settings = JSON.parse(localStorage.getItem("attendx_settings") || JSON.stringify(settings)); } catch(e){}
+function saveSettings() { try { localStorage.setItem("attendx_settings", JSON.stringify(settings)); } catch(e){} }
+function isLate(timeStr) {
+  if (!settings.lateCutoff) return false;
+  const [ch, cm] = settings.lateCutoff.split(":").map(Number);
+  const [th, tm] = timeStr.split(":").map(Number);
+  return th * 60 + tm > ch * 60 + cm;
+}
+
+// ── ADMIN DASHBOARD ────────────────────────────────────────────────────────
+function renderAdminDashboard(admin) {
+  const todayLog = log.filter(r => isToday(r.timestamp));
+  const memberRows = members.length ? members.map((m, idx) => `
+    <div class="member-row" id="mrow_${idx}">
+      <div class="member-avatar">${m.photo ? `<img src="${m.photo}" alt="${m.name}"/>` : "👤"}</div>
+      <div class="member-info">
+        <div class="member-name">${m.name}</div>
+        <div class="member-meta">${m.staffId} · ${m.dept||"—"}</div>
+      </div>
+      <span class="member-badge ${m.isAdmin?"mb-admin":"mb-member"}">${m.access||"Member"}</span>
+      <div class="member-actions">
+        <button class="mact-btn tog" title="${m.isAdmin?"Revoke Admin":"Grant Admin"}"
+          onclick="toggleAdminRole(${idx})">${m.isAdmin?"👑":"↑"}</button>
+        <button class="mact-btn del" onclick="deleteMember(${idx},'mrow_${idx}')">✕</button>
+      </div>
+    </div>`).join("")
+  : `<div style="color:var(--muted);font-size:0.8rem;padding:8px">No members registered yet.</div>`;
+
+  const now = new Date();
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:97%">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span class="status-badge" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:var(--amber)">🛡️ ADMIN DASHBOARD</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted)">${admin.name} · session active</span>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px">
+        <div style="background:rgba(16,245,168,0.08);border:1px solid rgba(16,245,168,0.2);border-radius:8px;padding:6px 12px;font-size:0.75rem;font-family:'JetBrains Mono',monospace"><span style="color:var(--muted)">IN </span><span style="color:var(--mint);font-weight:700">${countIn()}</span></div>
+        <div style="background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.2);border-radius:8px;padding:6px 12px;font-size:0.75rem;font-family:'JetBrains Mono',monospace"><span style="color:var(--muted)">OUT </span><span style="color:var(--rose);font-weight:700">${countOut()}</span></div>
+        <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:8px;padding:6px 12px;font-size:0.75rem;font-family:'JetBrains Mono',monospace"><span style="color:var(--muted)">MEMBERS </span><span style="color:#A5B4FC;font-weight:700">${members.length}</span></div>
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:6px 12px;font-size:0.75rem;font-family:'JetBrains Mono',monospace"><span style="color:var(--muted)">LATE </span><span style="color:var(--amber);font-weight:700">${todayLog.filter(r=>r.type==="CHECK-IN"&&r.late).length}</span></div>
+      </div>
+      <div class="dash-tabs">
+        <div class="dash-tab active" onclick="dashTab(this,'dpMembers')">👥 Members</div>
+        <div class="dash-tab" onclick="dashTab(this,'dpLogs')">📋 Log Browser</div>
+        <div class="dash-tab" onclick="dashTab(this,'dpExport')">💾 Export</div>
+        <div class="dash-tab" onclick="dashTab(this,'dpSettings')">⚙️ Settings</div>
+      </div>
+      <div class="dash-panel active" id="dpMembers">
+        <div class="member-list" id="memberListEl">${memberRows}</div>
+      </div>
+      <div class="dash-panel" id="dpLogs">
+        <div class="date-picker-row">
+          <input type="date" id="logDatePicker" value="${now.toISOString().slice(0,10)}"/>
+          <button class="go-btn" onclick="loadLogByDate()">Load</button>
+        </div>
+        <div id="logBrowserResults"></div>
+      </div>
+      <div class="dash-panel" id="dpExport">
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+          <button class="export-btn" onclick="exportCSV('today')">⬇ Export Today's Log (CSV)</button>
+          <button class="export-btn" onclick="exportCSV('all')" style="border-color:rgba(99,102,241,0.3);color:#A5B4FC;background:rgba(99,102,241,0.07)">⬇ Export All Records (CSV)</button>
+          <button class="export-btn" onclick="exportMembersCSV()" style="border-color:rgba(139,92,246,0.3);color:#C4B5FD;background:rgba(139,92,246,0.07)">⬇ Export Members List (CSV)</button>
+          <div style="font-size:0.7rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px">Files download directly to your device.</div>
+        </div>
+      </div>
+      <div class="dash-panel" id="dpSettings">
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+          <div class="settings-row">
+            <label>Late arrival cutoff time</label>
+            <input type="time" id="stLateCutoff" value="${settings.lateCutoff||"09:00"}"/>
+          </div>
+          <div class="settings-row">
+            <label>Admin session timeout (mins)</label>
+            <input type="number" id="stTimeoutMins" value="${settings.timeoutMins||5}" min="1" max="60"/>
+          </div>
+          <button class="save-settings-btn" onclick="saveSettingsFromUI()">💾 Save Settings</button>
+          <div id="settingsSaved" style="color:var(--mint);font-size:0.75rem;font-family:'JetBrains Mono',monospace;display:none">✓ Settings saved</div>
+        </div>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  loadLogByDate();
+  setChips([["✅ Check In","green"],["🚪 Check Out","red"],["🏠 Home"]]);
+}
+
+function dashTab(el, panelId) {
+  el.closest(".bubble").querySelectorAll(".dash-tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  el.closest(".bubble").querySelectorAll(".dash-panel").forEach(p=>p.classList.remove("active"));
+  const panel = document.getElementById(panelId);
+  if (panel) panel.classList.add("active");
+  if (panelId === "dpLogs") loadLogByDate();
+}
+
+function toggleAdminRole(idx) {
+  if (!members[idx]) return;
+  members[idx].isAdmin = !members[idx].isAdmin;
+  members[idx].access  = members[idx].isAdmin ? "Admin" : "Member";
+  saveMembers();
+  const row = document.getElementById(`mrow_${idx}`);
+  if (row) {
+    const m = members[idx];
+    row.querySelector(".member-badge").className = `member-badge ${m.isAdmin?"mb-admin":"mb-member"}`;
+    row.querySelector(".member-badge").textContent = m.access;
+    const tog = row.querySelector(".mact-btn.tog");
+    if (tog) tog.textContent = m.isAdmin ? "👑" : "↑";
+  }
+}
+
+function deleteMember(idx, rowId) {
+  if (!confirm(`Remove ${members[idx]?.name} from the system?`)) return;
+  members.splice(idx, 1); saveMembers();
+  const row = document.getElementById(rowId);
+  if (row) { row.style.opacity="0"; row.style.transition="opacity 0.3s"; setTimeout(()=>row.remove(),300); }
+}
+
+function loadLogByDate() {
+  const picker = document.getElementById("logDatePicker");
+  const results= document.getElementById("logBrowserResults");
+  if (!picker || !results) return;
+  const dateVal = picker.value;
+  const filtered = log.filter(r => r.timestamp.startsWith(dateVal));
+  if (!filtered.length) {
+    results.innerHTML = `<div style="color:var(--muted);font-size:0.8rem;padding:8px;font-family:'JetBrains Mono',monospace">No records for ${dateVal}.</div>`;
+    return;
+  }
+  const rows = filtered.slice().reverse().map(r => {
+    const late = r.late ? `<span class="tag-late">LATE</span>` : "";
+    return `<tr>
+      <td style="color:var(--text);font-weight:600;font-size:0.77rem">${r.name}</td>
+      <td style="color:var(--muted);font-size:0.72rem">${r.staffId}</td>
+      <td><span class="${r.type==="CHECK-IN"?"tag-in":"tag-out"}">${r.type==="CHECK-IN"?"IN":"OUT"}</span>${late}</td>
+      <td style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.7rem">${r.timeStr}</td>
+    </tr>`;
+  }).join("");
+  results.innerHTML = `
+    <div class="record-card" style="overflow-x:auto;padding:8px">
+      <div class="rc-header" style="margin-bottom:6px">// ${filtered.length} record${filtered.length!==1?"s":""} · ${dateVal}</div>
+      <table class="log-table"><thead><tr><th>Name</th><th>ID</th><th>Type</th><th>Time</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+    </div>`;
+}
+
+function saveSettingsFromUI() {
+  settings.lateCutoff  = document.getElementById("stLateCutoff")?.value  || "09:00";
+  settings.timeoutMins = Math.max(1,Math.min(60, parseInt(document.getElementById("stTimeoutMins")?.value)||5));
+  saveSettings();
+  const saved = document.getElementById("settingsSaved");
+  if (saved) { saved.style.display="block"; setTimeout(()=>saved.style.display="none",2000); }
+}
+
+// ── CSV EXPORT ─────────────────────────────────────────────────────────────
+function exportCSV(scope) {
+  const data = scope==="today" ? log.filter(r=>isToday(r.timestamp)) : log;
+  if (!data.length) { alert("No records to export."); return; }
+  const header = ["ID","Type","Name","StaffID","Department","Role","Time","Date","Late"];
+  const rows = data.map(r=>[
+    r.id, r.type, `"${r.name}"`, r.staffId,
+    `"${r.dept||""}"`, `"${r.role||""}"`, r.timeStr,
+    `"${r.dateStr||r.timestamp.slice(0,10)}"`, r.late?"YES":"NO"
+  ].join(","));
+  downloadFile([header.join(","),...rows].join("\n"),
+    `attendx_log_${scope}_${new Date().toISOString().slice(0,10)}.csv`, "text/csv");
+}
+function exportMembersCSV() {
+  if (!members.length) { alert("No members registered."); return; }
+  const header = ["Name","StaffID","Department","Role","AccessLevel","RegisteredAt"];
+  const rows = members.map(m=>[
+    `"${m.name}"`, m.staffId, `"${m.dept||""}"`,
+    `"${m.role||""}"`, m.access||"Member",
+    `"${new Date(m.joinedAt).toLocaleString("en-NG")}"`
+  ].join(","));
+  downloadFile([header.join(","),...rows].join("\n"),
+    `attendx_members_${new Date().toISOString().slice(0,10)}.csv`, "text/csv");
+}
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content],{type:mime});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ── Log view ───────────────────────────────────────────────────────────────
+function renderLogView() {
+  const todayLog = log.filter(r => isToday(r.timestamp));
+  if (todayLog.length === 0) {
+    addMsg("bot","📊 No attendance records yet for today.<br><br>Use <strong>Check In</strong> or <strong>Check Out</strong> to start logging.");
+    setChips([["✅ Check In","green"],["🚪 Check Out","red"],["🏠 Home"]]);
+    return;
+  }
+  const lateCount = todayLog.filter(r=>r.type==="CHECK-IN"&&r.late).length;
+  const rows = todayLog.slice(-15).reverse().map(r => {
+    const late = r.late ? `<span class="tag-late">LATE</span>` : "";
+    return `<tr>
+      <td style="color:var(--text);font-weight:600;font-size:0.77rem">${r.name}</td>
+      <td style="color:var(--muted);font-size:0.72rem">${r.staffId}</td>
+      <td><span class="${r.type==="CHECK-IN"?"tag-in":"tag-out"}">${r.type==="CHECK-IN"?"IN":"OUT"}</span>${late}</td>
+      <td style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.7rem">${r.timeStr}</td>
+    </tr>`;
+  }).join("");
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:96%">
+      <p>📊 <strong>Today's Attendance Log</strong> — ${todayLog.length} record${todayLog.length!==1?"s":""}${lateCount>0?` · <span style="color:var(--amber)">${lateCount} late</span>`:""}</p>
+      <div class="record-card" style="overflow-x:auto">
+        <table class="log-table">
+          <thead><tr><th>Name</th><th>ID</th><th>Type</th><th>Time</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      ${todayLog.length > 15 ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:6px">Showing last 15 of ${todayLog.length} records.</div>` : ""}
+      <button class="export-btn" style="margin-top:10px" onclick="exportCSV('today')">⬇ Export Today's Log (CSV)</button>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips([["📤 Send Report"],["🛡️ Dashboard","amber"],["✅ Check In","green"],["🏠 Home"]]);
+}
+
+// ── Report ─────────────────────────────────────────────────────────────────
+function renderReportPreview() {
+  const todayLog = log.filter(r => isToday(r.timestamp));
+  const ins   = todayLog.filter(r=>r.type==="CHECK-IN");
+  const outs  = todayLog.filter(r=>r.type==="CHECK-OUT");
+  const lates = ins.filter(r=>r.late);
+  const now   = new Date();
+  const dateStr = now.toLocaleDateString("en-NG",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const inLines  = ins.map(r=>`  • ${r.name} (${r.staffId}) – ${r.timeStr}${r.late?" [LATE]":""}`).join("\n");
+  const outLines = outs.map(r=>`  • ${r.name} (${r.staffId}) – ${r.timeStr}`).join("\n");
+  const waText = [
+    `🎯 *ATTENDANCE REPORT – AttendX*`,`📅 ${dateStr}`,``,
+    `✅ *CHECK-INS: ${ins.length}*`, ins.length>0?inLines:"  (none)",``,
+    `🚪 *CHECK-OUTS: ${outs.length}*`, outs.length>0?outLines:"  (none)",``,
+    lates.length>0 ? `⚠ *LATE ARRIVALS: ${lates.length}*` : null,
+    `📊 *Total Records: ${todayLog.length}*`,``,
+    `Generated by AttendX · ${now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})}`
+  ].filter(x=>x!==null).join("\n");
+  const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waText)}`;
+  const WA_SVG = `<svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:93%">
+      <p>📤 Ready to send today's attendance report.</p>
+      <div class="record-card">
+        <div class="rc-header">// Daily Report · ${dateStr}</div>
+        <div class="rc-row"><span class="rc-key">Total Records</span><span class="rc-val norm">${todayLog.length}</span></div>
+        <div class="rc-row"><span class="rc-key">Check-Ins</span><span class="rc-val in">${ins.length} ✅</span></div>
+        <div class="rc-row"><span class="rc-key">Check-Outs</span><span class="rc-val out">${outs.length} 🚪</span></div>
+        <div class="rc-row"><span class="rc-key">Late Arrivals</span><span class="rc-val dur">${lates.length} ⚠</span></div>
+        <div class="rc-row"><span class="rc-key">Late Cutoff</span><span class="rc-val norm">${settings.lateCutoff||"09:00"}</span></div>
+        <div class="rc-row"><span class="rc-key">Members</span><span class="rc-val violet">${members.length}</span></div>
+        <div class="rc-row"><span class="rc-key">Generated</span><span class="rc-val norm">${now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})}</span></div>
+      </div>
+      ${todayLog.length===0
+        ? `<div style="color:var(--muted);font-size:0.8rem;margin-top:8px">⚠ No records to report today.</div>`
+        : `<a class="wa-btn" href="${waUrl}" target="_blank" rel="noopener">${WA_SVG} Send Daily Report via WhatsApp</a>
+           <button class="export-btn" style="margin-top:8px" onclick="exportCSV('today')">⬇ Export CSV</button>`
+      }
+      <div class="badge-strip">
+        <span class="badge">📅 ${dateStr.split(",")[0].toUpperCase()}</span>
+        <span class="badge">IN: ${ins.length}</span>
+        <span class="badge">OUT: ${outs.length}</span>
+        ${lates.length>0?`<span class="badge" style="color:var(--amber);border-color:rgba(245,158,11,0.3)">LATE: ${lates.length}</span>`:""}
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips([["✅ Check In","green"],["🚪 Check Out","red"],["🛡️ Dashboard","amber"],["🏠 Home"]]);
+}
+
+// ── Core processor ─────────────────────────────────────────────────────────
+function processInput(raw) {
+  if (!raw.trim()) return;
+  const v = raw.toLowerCase();
+  chipsEl.innerHTML = "";
+
+  if (v.includes("home") || v.includes("start over") || v.includes("menu")) { resetChat(); return; }
+  if (v.includes("dashboard")) { addMsg("user", raw); startAction("dashboard"); return; }
+  if (v.includes("check in") || v.includes("check-in") || v.includes("another check")) {
+    addMsg("user", raw); startAction("checkin"); return;
+  }
+  if (v.includes("check out") || v.includes("checkout")) {
+    addMsg("user", raw); startAction("checkout"); return;
+  }
+  if (v.includes("add another") || v.includes("sign up") || v.includes("signup") || v.includes("add attendee")) {
+    addMsg("user", raw); startAction("signup"); return;
+  }
+  if (v.includes("view") || v.includes("log") || v.includes("record")) {
+    addMsg("user", raw); showTyping(); setTimeout(()=>{ removeTyping(); renderAdminGate("view"); }, 900); return;
+  }
+  if (v.includes("report") || v.includes("send")) {
+    addMsg("user", raw); showTyping(); setTimeout(()=>{ removeTyping(); renderAdminGate("report"); }, 900); return;
+  }
+
+  addMsg("user", raw);
+  botReply("Please choose an action from the menu below 👇", [], 700);
+  setTimeout(()=> renderHomeGrid(), 1050);
+}
+
+function handleSend() {
+  const val = inputEl.value.trim();
+  if (!val) return;
+  inputEl.value = ""; processInput(val);
+}
+inputEl.addEventListener("keydown", e => { if(e.key==="Enter") handleSend(); });
+
+function resetChat() {
+  stopCamera();
+  adminSession.active = false; clearTimeout(idleTimer);
+  state.step="home"; state.action=""; state.capturedImage=null; state.capturedPin="";
+  messagesEl.innerHTML=""; chipsEl.innerHTML="";
+  updateStats(); initChat();
+}
+
+function initChat() {
+  updateStats();
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    const now = new Date();
+    const hour = now.getHours();
+    const greet = hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";
+    const lateToday = log.filter(r=>isToday(r.timestamp)&&r.type==="CHECK-IN"&&r.late).length;
+    addMsg("bot",
+      `${greet}! 👋 Welcome to <strong>AttendX</strong> — your smart attendance system.<br><br>` +
+      `📊 Today: <code>${countIn()} in</code> · <code>${countOut()} out</code>` +
+      (lateToday>0?` · <code style="color:var(--amber)">${lateToday} late</code>`:"") +
+      ` · <code>${members.length} members</code><br><br>` +
+      `Check-in/out requires a <strong>live photo + PIN</strong>. Admins access the <strong>Dashboard</strong> for full controls.`
+    );
+    renderHomeGrid();
+  }, 900);
+}
+
+initChat();
+</script>
+</body>
+</html>
