@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AttendX – Smart Attendance System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #07080F;
+    --surface:   #0D1021;
+    --card:      #121628;
+    --panel:     #181D35;
+    --border:    rgba(99,102,241,0.18);
+    --border2:   rgba(255,255,255,0.05);
+    --indigo:    #6366F1;
+    --violet:    #8B5CF6;
+    --mint:      #10F5A8;
+    --amber:     #F59E0B;
+    --rose:      #F43F5E;
+    --text:      #E2E8F8;
+    --muted:     #5A607A;
+    --green:     #25D366;
+    --radius:    18px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .mesh {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(99,102,241,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 80%, rgba(139,92,246,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 50% 50%, rgba(16,245,168,0.04) 0%, transparent 60%);
+    animation: mesh-shift 12s ease-in-out infinite alternate;
+  }
+  @keyframes mesh-shift { from { opacity: 0.7; } to { opacity: 1; } }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: radial-gradient(circle, rgba(99,102,241,0.15) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    width: 100%; max-width: 520px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 12px;
+    position: relative; z-index: 2;
+  }
+  .logo {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+    box-shadow: 0 0 30px rgba(99,102,241,0.45);
+    animation: logo-glow 3s ease-in-out infinite alternate;
+  }
+  @keyframes logo-glow {
+    from { box-shadow: 0 0 20px rgba(99,102,241,0.4); }
+    to   { box-shadow: 0 0 40px rgba(139,92,246,0.6); }
+  }
+  .header-text h1 { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 600; color: var(--text); letter-spacing: 0.03em; }
+  .header-text h1 span { color: var(--indigo); }
+  .header-text p { font-size: 0.72rem; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+  .live-clock { margin-top: 5px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--mint); letter-spacing: 0.04em; text-shadow: 0 0 10px rgba(16,245,168,0.4); }
+
+  /* ── CHAT WINDOW ── */
+  .chat-window {
+    width: 100%; max-width: 520px;
+    background: var(--surface);
+    border-radius: 26px;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 0 1px rgba(99,102,241,0.06), 0 40px 100px rgba(0,0,0,0.6);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    height: 76vh; max-height: 660px;
+    position: relative; z-index: 2;
+  }
+
+  /* Topbar */
+  .topbar {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative;
+  }
+  .topbar::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--indigo), transparent);
+    opacity: 0.5;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .agent-av { width: 36px; height: 36px; background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2)); border: 1px solid var(--border); border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .agent-info strong { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--indigo); }
+  .agent-info span { font-size: 0.68rem; color: var(--muted); }
+
+  .stats-strip { display: flex; gap: 12px; }
+  .stat-pill { display: flex; align-items: center; gap: 5px; background: var(--panel); border: 1px solid var(--border2); border-radius: 8px; padding: 4px 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; }
+  .stat-pill .sn { color: var(--muted); }
+  .stat-pill .sv { font-weight: 600; }
+  .sv-in  { color: var(--mint); }
+  .sv-out { color: var(--rose); }
+
+  /* Messages */
+  .messages { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+  .messages::-webkit-scrollbar { width: 3px; }
+  .messages::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 4px; }
+
+  .msg { display: flex; align-items: flex-end; gap: 9px; animation: up 0.3s ease; }
+  @keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .msg.bot  { justify-content: flex-start; }
+  .msg.user { justify-content: flex-end; }
+
+  .bot-icon { width: 34px; height: 34px; flex-shrink: 0; background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15)); border: 1px solid rgba(99,102,241,0.35); border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 15px; box-shadow: 0 0 12px rgba(99,102,241,0.15); }
+
+  .bubble { max-width: 80%; padding: 13px 16px; font-size: 0.875rem; line-height: 1.6; border-radius: 18px; }
+  .msg.bot .bubble { background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 5px; color: var(--text); }
+  .msg.user .bubble { background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.2)); border: 1px solid rgba(99,102,241,0.4); border-bottom-right-radius: 5px; color: #A5B4FC; font-weight: 600; font-size: 0.84rem; }
+  .bubble code { font-family: 'JetBrains Mono', monospace; background: rgba(99,102,241,0.12); padding: 2px 7px; border-radius: 5px; font-size: 0.78rem; color: var(--indigo); }
+
+  /* Chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; padding: 0 16px 12px; }
+  .chip { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 100px; padding: 7px 15px; font-size: 0.77rem; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; transition: all 0.2s; }
+  .chip:hover { background: rgba(99,102,241,0.15); border-color: var(--indigo); color: #A5B4FC; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(99,102,241,0.2); }
+  .chip.green { border-color: rgba(16,245,168,0.35); color: var(--mint); }
+  .chip.green:hover { background: rgba(16,245,168,0.1); border-color: var(--mint); }
+  .chip.red { border-color: rgba(244,63,94,0.35); color: var(--rose); }
+  .chip.red:hover { background: rgba(244,63,94,0.1); border-color: var(--rose); }
+  .chip.amber { border-color: rgba(245,158,11,0.35); color: var(--amber); }
+  .chip.amber:hover { background: rgba(245,158,11,0.1); border-color: var(--amber); }
+
+  /* Input */
+  .input-area { display: flex; align-items: center; gap: 9px; padding: 12px 15px; border-top: 1px solid var(--border); background: var(--card); position: relative; }
+  .input-area::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(99,102,241,0.35), transparent); }
+  #userInput { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 13px; padding: 11px 15px; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  #userInput:focus { border-color: rgba(99,102,241,0.5); box-shadow: 0 0 0 3px rgba(99,102,241,0.08); }
+  #userInput::placeholder { color: var(--muted); font-size: 0.83rem; }
+  .send-btn { width: 46px; height: 46px; background: linear-gradient(135deg, var(--indigo), var(--violet)); border: none; border-radius: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; box-shadow: 0 4px 16px rgba(99,102,241,0.35); }
+  .send-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(99,102,241,0.5); }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+
+  /* Typing */
+  .typing { display: flex; align-items: center; gap: 5px; }
+  .dot { width: 7px; height: 7px; background: var(--muted); border-radius: 50%; animation: bounce 1.3s infinite; }
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
+
+  /* ── ACTION CARDS ── */
+  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .action-card { background: var(--panel); border: 1.5px solid var(--border2); border-radius: 14px; padding: 14px; cursor: pointer; transition: all 0.22s; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+  .action-card .ac-icon { font-size: 1.8rem; }
+  .action-card .ac-label { font-size: 0.82rem; font-weight: 700; }
+  .action-card .ac-sub   { font-size: 0.68rem; color: var(--muted); }
+  .action-card.checkin  { border-color: rgba(16,245,168,0.25); }
+  .action-card.checkin:hover  { background: rgba(16,245,168,0.07); border-color: var(--mint); color: var(--mint); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(16,245,168,0.12); }
+  .action-card.checkout { border-color: rgba(244,63,94,0.25); }
+  .action-card.checkout:hover { background: rgba(244,63,94,0.07); border-color: var(--rose); color: var(--rose); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(244,63,94,0.12); }
+  .action-card.view { border-color: rgba(99,102,241,0.25); }
+  .action-card.view:hover { background: rgba(99,102,241,0.07); border-color: var(--indigo); color: #A5B4FC; transform: translateY(-3px); }
+  .action-card.report { border-color: rgba(245,158,11,0.25); }
+  .action-card.report:hover { background: rgba(245,158,11,0.07); border-color: var(--amber); color: var(--amber); transform: translateY(-3px); }
+  .action-card.signup { border-color: rgba(139,92,246,0.25); }
+  .action-card.signup:hover { background: rgba(139,92,246,0.07); border-color: var(--violet); color: #C4B5FD; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(139,92,246,0.12); }
+
+  /* ── CAMERA / PIN FORM ── */
+  .cam-form { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+
+  .cam-preview-wrap {
+    position: relative; border-radius: 14px; overflow: hidden;
+    border: 1.5px solid var(--border); background: #000;
+    aspect-ratio: 4/3;
+  }
+  .cam-preview-wrap video, .cam-preview-wrap canvas {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .cam-preview-wrap canvas { display: none; }
+  .cam-overlay {
+    position: absolute; inset: 0; pointer-events: none;
+    border: 2px dashed rgba(99,102,241,0.35);
+    border-radius: 14px;
+    animation: cam-pulse 2s ease-in-out infinite;
+  }
+  @keyframes cam-pulse { 0%,100%{border-color:rgba(99,102,241,0.35)} 50%{border-color:rgba(99,102,241,0.7)} }
+  .cam-corner {
+    position: absolute; width: 18px; height: 18px;
+    pointer-events: none;
+  }
+  .cam-corner.tl { top: 8px; left: 8px; border-top: 2px solid var(--mint); border-left: 2px solid var(--mint); }
+  .cam-corner.tr { top: 8px; right: 8px; border-top: 2px solid var(--mint); border-right: 2px solid var(--mint); }
+  .cam-corner.bl { bottom: 8px; left: 8px; border-bottom: 2px solid var(--mint); border-left: 2px solid var(--mint); }
+  .cam-corner.br { bottom: 8px; right: 8px; border-bottom: 2px solid var(--mint); border-right: 2px solid var(--mint); }
+  .cam-status {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    background: rgba(7,8,15,0.75); backdrop-filter: blur(8px);
+    border: 1px solid var(--border); border-radius: 100px;
+    padding: 3px 12px; font-size: 0.68rem;
+    font-family: 'JetBrains Mono', monospace; color: var(--mint);
+    letter-spacing: 0.05em;
+  }
+  .cam-captured-thumb {
+    width: 100%; height: 100%; object-fit: cover;
+    border-radius: 12px; display: none;
+  }
+
+  .cam-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .cam-btn {
+    border: none; border-radius: 11px; padding: 11px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8rem; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.2s;
+  }
+  .cam-btn.capture { background: linear-gradient(135deg, var(--indigo), var(--violet)); color: white; box-shadow: 0 4px 14px rgba(99,102,241,0.3); }
+  .cam-btn.retake  { background: var(--panel); border: 1px solid var(--border); color: var(--muted); }
+  .cam-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+
+  /* PIN pad */
+  .pin-section { display: flex; flex-direction: column; gap: 9px; }
+  .pin-label { font-size: 0.75rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em; }
+  .pin-display {
+    display: flex; gap: 8px; justify-content: center;
+    padding: 10px; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .pin-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1.5px solid var(--muted);
+    transition: all 0.2s;
+  }
+  .pin-dot.filled { background: var(--indigo); border-color: var(--indigo); box-shadow: 0 0 8px rgba(99,102,241,0.5); }
+
+  .pin-pad { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+  .pin-key {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 13px 8px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; text-align: center; color: var(--text);
+    transition: all 0.15s; user-select: none;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pin-key:hover { background: rgba(99,102,241,0.15); border-color: var(--indigo); color: #A5B4FC; transform: scale(1.04); }
+  .pin-key:active { transform: scale(0.96); }
+  .pin-key.del { color: var(--rose); font-size: 1.2rem; }
+  .pin-key.zero { grid-column: 2; }
+
+  /* Inline form fields */
+  .inline-input { display: flex; flex-direction: column; gap: 9px; margin-top: 10px; }
+  .inline-field { background: var(--panel); border: 1px solid var(--border); border-radius: 11px; padding: 10px 14px; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.84rem; outline: none; width: 100%; transition: border-color 0.2s; }
+  .inline-field:focus { border-color: rgba(99,102,241,0.5); }
+  .inline-field::placeholder { color: var(--muted); }
+  select.inline-field { cursor: pointer; }
+  select.inline-field option { background: var(--card); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .submit-in { border: none; border-radius: 12px; padding: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; color: var(--bg); }
+  .submit-in.in-btn  { background: linear-gradient(135deg, var(--mint), #05C882); box-shadow: 0 4px 16px rgba(16,245,168,0.25); }
+  .submit-in.out-btn { background: linear-gradient(135deg, var(--rose), #E11D48); box-shadow: 0 4px 16px rgba(244,63,94,0.25); color: white; }
+  .submit-in.reg-btn { background: linear-gradient(135deg, var(--violet), var(--indigo)); box-shadow: 0 4px 16px rgba(139,92,246,0.25); color: white; }
+  .submit-in:hover   { transform: translateY(-1px); filter: brightness(1.08); }
+  .submit-in:disabled { opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+
+  /* Record card */
+  .record-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 13px; margin-top: 9px; }
+  .rc-header { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border2); }
+  .rc-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border2); font-size: 0.8rem; }
+  .rc-row:last-child { border: none; }
+  .rc-key { color: var(--muted); }
+  .rc-val { font-weight: 600; }
+  .rc-val.in   { color: var(--mint); }
+  .rc-val.out  { color: var(--rose); }
+  .rc-val.dur  { color: var(--amber); }
+  .rc-val.norm { color: var(--text); }
+  .rc-val.reg  { color: #C4B5FD; }
+
+  /* Captured photo thumb in record */
+  .rc-photo { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; }
+
+  /* Status badge */
+  .status-badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 100px; padding: 5px 12px; font-size: 0.72rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em; margin-top: 8px; }
+  .sb-in  { background: rgba(16,245,168,0.1); border: 1px solid rgba(16,245,168,0.3); color: var(--mint); }
+  .sb-out { background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); color: var(--rose); }
+  .sb-reg { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); color: #C4B5FD; }
+
+  /* WhatsApp btn */
+  .wa-btn { display: flex; align-items: center; gap: 10px; background: var(--green); color: white; border: none; border-radius: 12px; padding: 13px 20px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; margin-top: 10px; width: 100%; justify-content: center; transition: all 0.2s; text-decoration: none; box-shadow: 0 5px 18px rgba(37,211,102,0.28); }
+  .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(37,211,102,0.4); }
+  .wa-btn svg { width: 19px; height: 19px; fill: white; flex-shrink: 0; }
+
+  /* Log table */
+  .log-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 8px; }
+  .log-table th { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border2); }
+  .log-table td { padding: 7px 8px; border-bottom: 1px solid var(--border2); vertical-align: middle; }
+  .log-table tr:last-child td { border: none; }
+  .tag-in  { background: rgba(16,245,168,0.1); color: var(--mint); border-radius: 5px; padding: 2px 7px; font-size: 0.68rem; font-weight: 700; }
+  .tag-out { background: rgba(244,63,94,0.1); color: var(--rose); border-radius: 5px; padding: 2px 7px; font-size: 0.68rem; font-weight: 700; }
+
+  .log-thumb { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); }
+
+  .err { color: var(--rose); font-size: 0.76rem; margin-top: 5px; }
+  .ok  { color: var(--mint); font-size: 0.76rem; margin-top: 5px; }
+
+  .footer { margin-top: 10px; font-size: 0.7rem; color: var(--muted); text-align: center; position: relative; z-index: 2; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.03em; }
+  .footer span { color: var(--indigo); }
+
+  .badge-strip { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+  .badge { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); color: #A5B4FC; border-radius: 100px; padding: 4px 11px; font-size: 0.68rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em; }
+
+  /* Camera error */
+  .cam-err-box {
+    background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.25);
+    border-radius: 12px; padding: 12px; font-size: 0.8rem; color: var(--rose);
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+
+  /* Signup photo preview */
+  .signup-photo-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .signup-photo-preview {
+    width: 52px; height: 52px; border-radius: 10px; object-fit: cover;
+    border: 1.5px solid var(--border); flex-shrink: 0;
+    background: var(--panel);
+  }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+
+<div class="header">
+  <div class="logo">🎯</div>
+  <div class="header-text">
+    <h1><span>Attend</span>X</h1>
+    <p>// smart attendance system</p>
+    <div class="live-clock" id="clock">--:-- -- · ---</div>
+  </div>
+</div>
+
+<div class="chat-window">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="agent-av">📋</div>
+      <div class="agent-info">
+        <strong>ATTEND-BOT</strong>
+        <span>Camera · PIN · Attendance</span>
+      </div>
+    </div>
+    <div class="stats-strip">
+      <div class="stat-pill"><span class="sn">IN</span><span class="sv sv-in" id="stat-in">0</span></div>
+      <div class="stat-pill"><span class="sn">OUT</span><span class="sv sv-out" id="stat-out">0</span></div>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+  <div class="chips" id="chips"></div>
+
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Type or choose an action below…" autocomplete="off"/>
+    <button class="send-btn" onclick="handleSend()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="footer">[ <span>AttendX</span> ] · Camera + PIN · Records via WhatsApp · localStorage</div>
+
+<script>
+const WHATSAPP = "2348157505037";
+
+// ── Persistent stores ──────────────────────────────────────────────────────
+let log = [];
+let members = []; // registered attendees: { id, name, staffId, dept, role, pin (hashed), photoData }
+try { log     = JSON.parse(localStorage.getItem("attendx_log")     || "[]"); } catch(e){ log = []; }
+try { members = JSON.parse(localStorage.getItem("attendx_members") || "[]"); } catch(e){ members = []; }
+function saveLog()     { try { localStorage.setItem("attendx_log",     JSON.stringify(log));     } catch(e){} }
+function saveMembers() { try { localStorage.setItem("attendx_members", JSON.stringify(members)); } catch(e){} }
+
+function countIn()  { return log.filter(r => r.type==="CHECK-IN"  && isToday(r.timestamp)).length; }
+function countOut() { return log.filter(r => r.type==="CHECK-OUT" && isToday(r.timestamp)).length; }
+function isToday(ts) {
+  const d = new Date(ts), n = new Date();
+  return d.getDate()===n.getDate() && d.getMonth()===n.getMonth() && d.getFullYear()===n.getFullYear();
+}
+function updateStats() {
+  document.getElementById("stat-in").textContent  = countIn();
+  document.getElementById("stat-out").textContent = countOut();
+}
+
+// simple PIN hash (not cryptographic — for demo purposes)
+function hashPin(pin) {
+  let h = 0;
+  for (let i = 0; i < pin.length; i++) { h = ((h << 5) - h) + pin.charCodeAt(i); h |= 0; }
+  return h.toString(16);
+}
+
+// ── Live clock ─────────────────────────────────────────────────────────────
+function tickClock() {
+  const now = new Date();
+  document.getElementById("clock").textContent =
+    now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit",second:"2-digit"}) + " · " +
+    now.toLocaleDateString("en-NG",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+}
+tickClock(); setInterval(tickClock, 1000);
+
+// ── State ──────────────────────────────────────────────────────────────────
+const state = { step: "home", action: "" };
+
+// ── DOM ────────────────────────────────────────────────────────────────────
+const messagesEl = document.getElementById("messages");
+const chipsEl    = document.getElementById("chips");
+const inputEl    = document.getElementById("userInput");
+
+function scrollBottom() { setTimeout(()=> messagesEl.scrollTop = messagesEl.scrollHeight, 80); }
+
+function addMsg(who, html) {
+  const w = document.createElement("div");
+  w.className = `msg ${who}`;
+  w.innerHTML = who === "bot"
+    ? `<div class="bot-icon">🎯</div><div class="bubble">${html}</div>`
+    : `<div class="bubble">${html}</div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+}
+function showTyping() {
+  const w = document.createElement("div");
+  w.className = "msg bot"; w.id = "typing";
+  w.innerHTML = `<div class="bot-icon">🎯</div><div class="bubble"><div class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+function removeTyping() { document.getElementById("typing")?.remove(); }
+function setChips(arr) {
+  chipsEl.innerHTML = "";
+  arr.forEach(([label, cls=""]) => {
+    const b = document.createElement("button");
+    b.className = `chip ${cls}`; b.textContent = label;
+    b.onclick = () => processInput(label);
+    chipsEl.appendChild(b);
+  });
+}
+function botReply(html, chips=[], delay=900) {
+  showTyping();
+  setTimeout(()=>{ removeTyping(); addMsg("bot", html); setChips(chips); }, delay);
+}
+
+// ── Home grid ──────────────────────────────────────────────────────────────
+function renderHomeGrid() {
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:94%">
+      <div>What would you like to do?</div>
+      <div class="action-grid" style="margin-top:10px">
+        <div class="action-card checkin"  onclick="startAction('checkin')">
+          <span class="ac-icon">✅</span>
+          <span class="ac-label">Check In</span>
+          <span class="ac-sub">Camera + PIN</span>
+        </div>
+        <div class="action-card checkout" onclick="startAction('checkout')">
+          <span class="ac-icon">🚪</span>
+          <span class="ac-label">Check Out</span>
+          <span class="ac-sub">Camera + PIN</span>
+        </div>
+        <div class="action-card signup" onclick="startAction('signup')">
+          <span class="ac-icon">➕</span>
+          <span class="ac-label">Sign Up</span>
+          <span class="ac-sub">Add attendee</span>
+        </div>
+        <div class="action-card view" onclick="startAction('view')">
+          <span class="ac-icon">📊</span>
+          <span class="ac-label">View Log</span>
+          <span class="ac-sub">Today's records</span>
+        </div>
+        <div class="action-card report" onclick="startAction('report')" style="grid-column:1/-1">
+          <span class="ac-icon">📤</span>
+          <span class="ac-label">Send Report</span>
+          <span class="ac-sub">WhatsApp daily summary</span>
+        </div>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+}
+
+function startAction(action) {
+  state.action = action;
+  const labels = { checkin:"✅ Check In", checkout:"🚪 Check Out", signup:"➕ Sign Up", view:"📊 View Log", report:"📤 Send Report" };
+  addMsg("user", labels[action]);
+  if (action === "view")   { showTyping(); setTimeout(()=>{ removeTyping(); renderLogView();     }, 900); return; }
+  if (action === "report") { showTyping(); setTimeout(()=>{ removeTyping(); renderReportPreview(); }, 900); return; }
+  if (action === "signup") { showTyping(); setTimeout(()=>{ removeTyping(); addMsg("bot","🟣 <strong>Add New Attendee</strong> — fill in the details and set a 4-digit PIN:"); renderSignupForm(); }, 900); return; }
+
+  const isIn = action === "checkin";
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    addMsg("bot", `${isIn ? "🟢 <strong>Check-In</strong>" : "🔴 <strong>Check-Out</strong>"} — capture your photo and enter your PIN:`);
+    renderCamPinForm(isIn);
+  }, 900);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ── CAMERA + PIN FORM (Check-In / Check-Out) ───────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+let camStream = null;
+
+function renderCamPinForm(isIn) {
+  const formId    = "camPinForm_" + Date.now();
+  const videoId   = "camVideo_" + Date.now();
+  const canvasId  = "camCanvas_" + Date.now();
+  const thumbId   = "camThumb_" + Date.now();
+  const statusId  = "camStatus_" + Date.now();
+  const captureBtnId = "captureBtn_" + Date.now();
+  const retakeBtnId  = "retakeBtn_" + Date.now();
+  const submitBtnId  = "camSubmitBtn_" + Date.now();
+  const pinDispId = "pinDisp_" + Date.now();
+  const errId     = "camErr_" + Date.now();
+  const staffInputId = "staffId_" + Date.now();
+
+  const now     = new Date();
+  const timeStr = now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"});
+  const dateStr = now.toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"});
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:95%">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span class="status-badge ${isIn?"sb-in":"sb-out"}">${isIn?"● CHECK-IN":"● CHECK-OUT"}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted)">${timeStr} · ${dateStr}</span>
+      </div>
+      <div class="cam-form" id="${formId}">
+
+        <!-- Staff ID (to look up member) -->
+        <input class="inline-field" id="${staffInputId}" placeholder="Staff / Student ID *" type="text"
+          style="font-family:'JetBrains Mono',monospace;letter-spacing:0.05em"/>
+
+        <!-- Camera preview -->
+        <div class="cam-preview-wrap" id="camWrap_${formId}">
+          <video id="${videoId}" autoplay playsinline muted></video>
+          <canvas id="${canvasId}"></canvas>
+          <img id="${thumbId}" class="cam-captured-thumb" alt="captured"/>
+          <div class="cam-overlay"></div>
+          <div class="cam-corner tl"></div><div class="cam-corner tr"></div>
+          <div class="cam-corner bl"></div><div class="cam-corner br"></div>
+          <div class="cam-status" id="${statusId}">📷 STARTING CAMERA…</div>
+        </div>
+
+        <!-- Capture / Retake buttons -->
+        <div class="cam-btns">
+          <button class="cam-btn capture" id="${captureBtnId}" disabled>📷 Capture Photo</button>
+          <button class="cam-btn retake"  id="${retakeBtnId}"  style="display:none">🔄 Retake</button>
+        </div>
+
+        <!-- PIN pad -->
+        <div class="pin-section">
+          <div class="pin-label">// ENTER YOUR 4-DIGIT PIN</div>
+          <div class="pin-display" id="${pinDispId}">
+            <div class="pin-dot"></div><div class="pin-dot"></div>
+            <div class="pin-dot"></div><div class="pin-dot"></div>
+          </div>
+          <div class="pin-pad">
+            ${[1,2,3,4,5,6,7,8,9].map(n=>`<div class="pin-key" data-pin="${n}" onclick="pinPress('${formId}','${pinDispId}','${submitBtnId}',${n})">${n}</div>`).join("")}
+            <div class="pin-key del" onclick="pinDel('${formId}','${pinDispId}','${submitBtnId}')">⌫</div>
+            <div class="pin-key zero" data-pin="0" onclick="pinPress('${formId}','${pinDispId}','${submitBtnId}',0)">0</div>
+          </div>
+        </div>
+
+        <div class="err" id="${errId}" style="display:none"></div>
+
+        <button class="submit-in ${isIn?"in-btn":"out-btn"}" id="${submitBtnId}"
+          disabled
+          onclick="submitCamPin('${formId}','${videoId}','${canvasId}','${thumbId}','${staffInputId}','${pinDispId}','${errId}',${isIn})">
+          ${isIn ? "✅ Confirm Check-In" : "🚪 Confirm Check-Out"}
+        </button>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+
+  // store per-form state
+  w._captured = false;
+  w._pin      = "";
+  w._formEl   = w;
+
+  // start camera
+  startCamera(videoId, canvasId, thumbId, statusId, captureBtnId, retakeBtnId, formId, submitBtnId, w);
+}
+
+// Camera helpers
+async function startCamera(videoId, canvasId, thumbId, statusId, captureBtnId, retakeBtnId, formId, submitBtnId, formHost) {
+  const video  = document.getElementById(videoId);
+  const status = document.getElementById(statusId);
+  const capBtn = document.getElementById(captureBtnId);
+  const retBtn = document.getElementById(retakeBtnId);
+
+  // stop existing stream
+  if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 640, height: 480 }, audio: false });
+    video.srcObject = camStream;
+    video.style.display = "block";
+    document.getElementById(thumbId).style.display = "none";
+    status.textContent = "● LIVE — Align face & capture";
+    status.style.color = "var(--mint)";
+    capBtn.disabled = false;
+    capBtn.onclick = () => capturePhoto(videoId, canvasId, thumbId, statusId, captureBtnId, retakeBtnId, formId, submitBtnId, formHost);
+    retBtn.onclick  = () => startCamera(videoId, canvasId, thumbId, statusId, captureBtnId, retakeBtnId, formId, submitBtnId, formHost);
+  } catch(err) {
+    status.textContent = "⚠ Camera unavailable";
+    status.style.color = "var(--rose)";
+    capBtn.disabled = false;
+    capBtn.textContent = "⚠ Camera Denied — skip";
+    capBtn.onclick = () => {
+      formHost._captured = true;
+      formHost._photoData = null;
+      capBtn.style.display = "none";
+      retBtn.style.display = "block";
+      retBtn.textContent = "🔄 Try Again";
+      status.textContent = "⚠ No photo — PIN only";
+      retBtn.onclick = () => startCamera(videoId, canvasId, thumbId, statusId, captureBtnId, retakeBtnId, formId, submitBtnId, formHost);
+      updateSubmitBtn(formId, submitBtnId, formHost);
+    };
+  }
+}
+
+function capturePhoto(videoId, canvasId, thumbId, statusId, captureBtnId, retakeBtnId, formId, submitBtnId, formHost) {
+  const video  = document.getElementById(videoId);
+  const canvas = document.getElementById(canvasId);
+  const thumb  = document.getElementById(thumbId);
+  const status = document.getElementById(statusId);
+  const capBtn = document.getElementById(captureBtnId);
+  const retBtn = document.getElementById(retakeBtnId);
+
+  canvas.width  = video.videoWidth  || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext("2d").drawImage(video, 0, 0);
+  const dataURL = canvas.toDataURL("image/jpeg", 0.7);
+
+  thumb.src = dataURL;
+  thumb.style.display = "block";
+  video.style.display = "none";
+
+  if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+
+  status.textContent = "✓ PHOTO CAPTURED";
+  status.style.color = "var(--mint)";
+
+  capBtn.style.display = "none";
+  retBtn.style.display = "block";
+
+  formHost._captured   = true;
+  formHost._photoData  = dataURL;
+
+  updateSubmitBtn(formId, submitBtnId, formHost);
+}
+
+// PIN helpers
+function pinPress(formId, pinDispId, submitBtnId, num) {
+  const form = findFormHost(formId);
+  if (!form || form._pin.length >= 4) return;
+  form._pin += String(num);
+  renderPinDots(pinDispId, form._pin.length);
+  updateSubmitBtn(formId, submitBtnId, form);
+}
+function pinDel(formId, pinDispId, submitBtnId) {
+  const form = findFormHost(formId);
+  if (!form || form._pin.length === 0) return;
+  form._pin = form._pin.slice(0, -1);
+  renderPinDots(pinDispId, form._pin.length);
+  updateSubmitBtn(formId, submitBtnId, form);
+}
+function renderPinDots(pinDispId, count) {
+  const disp = document.getElementById(pinDispId);
+  if (!disp) return;
+  disp.querySelectorAll(".pin-dot").forEach((d,i) => {
+    d.classList.toggle("filled", i < count);
+  });
+}
+function findFormHost(formId) {
+  const el = document.getElementById(formId);
+  if (!el) return null;
+  let p = el.parentElement;
+  while(p && !p._pin && p._pin !== "") p = p.parentElement;
+  return p;
+}
+function updateSubmitBtn(formId, submitBtnId, formHost) {
+  const btn = document.getElementById(submitBtnId);
+  if (!btn || !formHost) return;
+  const ready = formHost._captured && formHost._pin && formHost._pin.length === 4;
+  btn.disabled = !ready;
+}
+
+// ── Submit check-in / check-out ────────────────────────────────────────────
+function submitCamPin(formId, videoId, canvasId, thumbId, staffInputId, pinDispId, errId, isIn) {
+  const form    = document.getElementById(formId);
+  const errEl   = document.getElementById(errId);
+  const staffEl = document.getElementById(staffInputId);
+  const formHost = form ? (() => { let p = form.parentElement; while(p && p._pin === undefined) p = p.parentElement; return p; })() : null;
+
+  if (!formHost) return;
+
+  const staffId = staffEl?.value.trim();
+  const pin     = formHost._pin;
+  const photo   = formHost._photoData || null;
+
+  function showErr(msg) {
+    errEl.textContent = "⚠ " + msg;
+    errEl.style.display = "block";
+    setTimeout(()=>{ errEl.style.display="none"; }, 3500);
+  }
+
+  if (!staffId) { showErr("Please enter your Staff / Student ID."); return; }
+  if (pin.length < 4) { showErr("Please enter your 4-digit PIN."); return; }
+  if (!formHost._captured) { showErr("Please capture a photo first."); return; }
+
+  // Look up member
+  const member = members.find(m => m.staffId.toLowerCase() === staffId.toLowerCase());
+  if (!member) { showErr("ID not found. Please sign up first."); return; }
+  if (member.pin !== hashPin(pin)) { showErr("Incorrect PIN. Try again."); formHost._pin = ""; renderPinDots(pinDispId, 0); return; }
+
+  // Stop camera
+  if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+
+  const now = new Date();
+  const record = {
+    id:        Date.now(),
+    type:      isIn ? "CHECK-IN" : "CHECK-OUT",
+    name:      member.name,
+    staffId:   member.staffId,
+    dept:      member.dept || "Not specified",
+    note:      "",
+    photoData: photo,
+    timestamp: now.toISOString(),
+    timeStr:   now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit",second:"2-digit"}),
+    dateStr:   now.toLocaleDateString("en-NG",{weekday:"long",day:"numeric",month:"long",year:"numeric"}),
+  };
+
+  log.push(record); saveLog(); updateStats();
+  form.style.display = "none";
+  addMsg("user", `${member.name} · ${member.staffId}`);
+  showTyping();
+  setTimeout(()=>{ removeTyping(); showConfirmation(record, isIn); }, 1100);
+}
+
+// ── Confirmation ───────────────────────────────────────────────────────────
+function showConfirmation(rec, isIn) {
+  const waText = [
+    `🎯 *ATTENDANCE ${rec.type} – AttendX*`,
+    ``,
+    `*Name:* ${rec.name}`,
+    `*ID:* ${rec.staffId}`,
+    `*Department:* ${rec.dept}`,
+    `*Type:* ${rec.type}`,
+    `*Time:* ${rec.timeStr}`,
+    `*Date:* ${rec.dateStr}`,
+    rec.note ? `*Note:* ${rec.note}` : null,
+    ``,
+    `Logged via AttendX System 🎯`
+  ].filter(Boolean).join("\n");
+
+  const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waText)}`;
+  const photoHtml = rec.photoData
+    ? `<div class="rc-row"><span class="rc-key">Photo</span><img class="rc-photo" src="${rec.photoData}" alt="capture"/></div>`
+    : "";
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:93%">
+      <p>${isIn ? "✅ <strong>Checked In</strong> successfully!" : "🚪 <strong>Checked Out</strong> successfully!"} Record saved.</p>
+      <div class="record-card">
+        <div class="rc-header">// Attendance Record #${rec.id.toString().slice(-5)}</div>
+        ${photoHtml}
+        <div class="rc-row"><span class="rc-key">Name</span><span class="rc-val norm">${rec.name}</span></div>
+        <div class="rc-row"><span class="rc-key">ID</span><span class="rc-val norm">${rec.staffId}</span></div>
+        <div class="rc-row"><span class="rc-key">Dept</span><span class="rc-val norm">${rec.dept}</span></div>
+        <div class="rc-row"><span class="rc-key">Type</span><span class="rc-val ${isIn?"in":"out"}">${rec.type}</span></div>
+        <div class="rc-row"><span class="rc-key">Time</span><span class="rc-val ${isIn?"in":"out"}">${rec.timeStr}</span></div>
+        <div class="rc-row"><span class="rc-key">Date</span><span class="rc-val norm">${rec.dateStr}</span></div>
+      </div>
+      <a class="wa-btn" href="${waUrl}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Send Record via WhatsApp
+      </a>
+      <div class="badge-strip">
+        <span class="badge">✓ RECORD SAVED</span>
+        <span class="badge">⏱ ${rec.timeStr}</span>
+        <span class="badge">📅 TODAY</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  state.step = "home";
+  setChips([["✅ Another Check-In","green"],["🚪 Check-Out","red"],["📊 View Log"],["🏠 Home"]]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ── SIGN-UP FORM (Add New Attendee) ────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+function renderSignupForm() {
+  const formId    = "signupForm_" + Date.now();
+  const videoId   = "sgVideo_" + Date.now();
+  const canvasId  = "sgCanvas_" + Date.now();
+  const thumbId   = "sgThumb_" + Date.now();
+  const statusId  = "sgStatus_" + Date.now();
+  const capBtnId  = "sgCapBtn_" + Date.now();
+  const retBtnId  = "sgRetBtn_" + Date.now();
+  const pinDispId = "sgPinDisp_" + Date.now();
+  const submitBtnId = "sgSubmitBtn_" + Date.now();
+  const errId     = "sgErr_" + Date.now();
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:95%">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span class="status-badge sb-reg">➕ NEW ATTENDEE</span>
+      </div>
+      <div class="inline-input" id="${formId}">
+
+        <!-- Name + ID -->
+        <input class="inline-field" id="sg_name_${formId}"   placeholder="Full name *" type="text"/>
+        <div class="field-row">
+          <input class="inline-field" id="sg_id_${formId}"   placeholder="Staff / Student ID *" type="text" style="font-family:'JetBrains Mono',monospace"/>
+          <select class="inline-field" id="sg_dept_${formId}">
+            <option value="" disabled selected>Department</option>
+            <option>Engineering</option><option>Marketing</option><option>Finance</option>
+            <option>HR</option><option>Operations</option><option>Sales</option>
+            <option>IT / Tech</option><option>Administration</option>
+            <option>Management</option><option>Student</option><option>Other</option>
+          </select>
+        </div>
+
+        <!-- Profile photo via camera -->
+        <div style="font-size:0.75rem;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:0.04em">// PROFILE PHOTO (optional)</div>
+        <div class="cam-preview-wrap" style="max-height:180px">
+          <video id="${videoId}" autoplay playsinline muted style="height:180px"></video>
+          <canvas id="${canvasId}"></canvas>
+          <img id="${thumbId}" class="cam-captured-thumb" alt="profile"/>
+          <div class="cam-overlay"></div>
+          <div class="cam-corner tl"></div><div class="cam-corner tr"></div>
+          <div class="cam-corner bl"></div><div class="cam-corner br"></div>
+          <div class="cam-status" id="${statusId}">📷 STARTING CAMERA…</div>
+        </div>
+        <div class="cam-btns">
+          <button class="cam-btn capture" id="${capBtnId}" disabled>📷 Take Profile Photo</button>
+          <button class="cam-btn retake"  id="${retBtnId}" style="display:none">🔄 Retake</button>
+        </div>
+
+        <!-- Set PIN -->
+        <div class="pin-section">
+          <div class="pin-label">// SET A 4-DIGIT PIN FOR THIS ACCOUNT</div>
+          <div class="pin-display" id="${pinDispId}">
+            <div class="pin-dot"></div><div class="pin-dot"></div>
+            <div class="pin-dot"></div><div class="pin-dot"></div>
+          </div>
+          <div class="pin-pad">
+            ${[1,2,3,4,5,6,7,8,9].map(n=>`<div class="pin-key" onclick="pinPress('${formId}','${pinDispId}','${submitBtnId}',${n})">${n}</div>`).join("")}
+            <div class="pin-key del" onclick="pinDel('${formId}','${pinDispId}','${submitBtnId}')">⌫</div>
+            <div class="pin-key zero" onclick="pinPress('${formId}','${pinDispId}','${submitBtnId}',0)">0</div>
+          </div>
+        </div>
+
+        <div class="err" id="${errId}" style="display:none"></div>
+
+        <button class="submit-in reg-btn" id="${submitBtnId}" disabled
+          onclick="submitSignup('${formId}','${pinDispId}','${thumbId}','${errId}')">
+          ➕ Register Attendee
+        </button>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+
+  // init host state
+  w._pin = "";
+  w._captured = true; // photo is optional for signup
+  w._photoData = null;
+
+  // override updateSubmitBtn to also check name+id
+  const origUpdate = () => {
+    const btn  = document.getElementById(submitBtnId);
+    const name = document.getElementById(`sg_name_${formId}`)?.value.trim();
+    const id   = document.getElementById(`sg_id_${formId}`)?.value.trim();
+    if (btn) btn.disabled = !(name && id && w._pin.length === 4);
+  };
+
+  document.getElementById(`sg_name_${formId}`).addEventListener("input", origUpdate);
+  document.getElementById(`sg_id_${formId}`).addEventListener("input", origUpdate);
+
+  // Override generic updateSubmitBtn for this form
+  window[`_sgUpdate_${formId}`] = origUpdate;
+
+  // Patch pin helpers to call this override
+  const origPinPress = window.pinPress;
+  // We'll store pin state directly on w and use IDs
+  startSignupCamera(videoId, canvasId, thumbId, statusId, capBtnId, retBtnId, formId, submitBtnId, w);
+}
+
+async function startSignupCamera(videoId, canvasId, thumbId, statusId, capBtnId, retBtnId, formId, submitBtnId, formHost) {
+  const video  = document.getElementById(videoId);
+  const status = document.getElementById(statusId);
+  const capBtn = document.getElementById(capBtnId);
+  const retBtn = document.getElementById(retBtnId);
+  if (!video) return;
+
+  if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 640, height: 480 }, audio: false });
+    video.srcObject = camStream;
+    video.style.display = "block";
+    document.getElementById(thumbId).style.display = "none";
+    status.textContent = "● LIVE — Take profile photo";
+    status.style.color = "var(--mint)";
+    capBtn.disabled = false;
+    capBtn.onclick = () => captureSignupPhoto(videoId, canvasId, thumbId, statusId, capBtnId, retBtnId, formId, submitBtnId, formHost);
+    retBtn.onclick  = () => startSignupCamera(videoId, canvasId, thumbId, statusId, capBtnId, retBtnId, formId, submitBtnId, formHost);
+  } catch(err) {
+    status.textContent = "⚠ Camera unavailable — skip";
+    status.style.color = "var(--amber)";
+    capBtn.disabled = false;
+    capBtn.textContent = "⚠ Skip Photo";
+    capBtn.onclick = () => {
+      formHost._photoData = null;
+      capBtn.style.display = "none";
+      retBtn.style.display = "block";
+      retBtn.textContent = "🔄 Try Camera";
+      status.textContent = "No photo — name only";
+      retBtn.onclick = () => startSignupCamera(videoId, canvasId, thumbId, statusId, capBtnId, retBtnId, formId, submitBtnId, formHost);
+    };
+  }
+}
+
+function captureSignupPhoto(videoId, canvasId, thumbId, statusId, capBtnId, retBtnId, formId, submitBtnId, formHost) {
+  const video  = document.getElementById(videoId);
+  const canvas = document.getElementById(canvasId);
+  const thumb  = document.getElementById(thumbId);
+  const status = document.getElementById(statusId);
+  const capBtn = document.getElementById(capBtnId);
+  const retBtn = document.getElementById(retBtnId);
+
+  canvas.width  = video.videoWidth  || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext("2d").drawImage(video, 0, 0);
+  const dataURL = canvas.toDataURL("image/jpeg", 0.6);
+
+  thumb.src = dataURL;
+  thumb.style.display = "block";
+  video.style.display = "none";
+
+  if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+
+  status.textContent = "✓ PROFILE PHOTO SET";
+  status.style.color = "var(--mint)";
+  capBtn.style.display = "none";
+  retBtn.style.display = "block";
+
+  formHost._photoData = dataURL;
+}
+
+function submitSignup(formId, pinDispId, thumbId, errId) {
+  const form    = document.getElementById(formId);
+  const errEl   = document.getElementById(errId);
+  const name    = document.getElementById(`sg_name_${formId}`)?.value.trim();
+  const staffId = document.getElementById(`sg_id_${formId}`)?.value.trim();
+  const dept    = document.getElementById(`sg_dept_${formId}`)?.value || "Not specified";
+  const formHost = form ? (() => { let p = form.parentElement; while(p && p._pin === undefined) p = p.parentElement; return p; })() : null;
+
+  function showErr(msg) {
+    errEl.textContent = "⚠ " + msg;
+    errEl.style.display = "block";
+    setTimeout(()=>{ errEl.style.display="none"; }, 3500);
+  }
+
+  if (!name)    { showErr("Please enter full name."); return; }
+  if (!staffId) { showErr("Please enter Staff / Student ID."); return; }
+  if (!formHost || formHost._pin.length < 4) { showErr("Please set a 4-digit PIN."); return; }
+
+  // Check duplicate ID
+  if (members.find(m => m.staffId.toLowerCase() === staffId.toLowerCase())) {
+    showErr("This ID is already registered."); return;
+  }
+
+  if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+
+  const newMember = {
+    id:        Date.now(),
+    name,
+    staffId,
+    dept,
+    pin:       hashPin(formHost._pin),
+    photoData: formHost._photoData || null,
+    joinedAt:  new Date().toISOString(),
+  };
+  members.push(newMember); saveMembers();
+
+  form.style.display = "none";
+  addMsg("user", `➕ Registered: ${name} · ${staffId}`);
+  showTyping();
+  setTimeout(()=>{ removeTyping(); showSignupConfirmation(newMember); }, 1100);
+}
+
+function showSignupConfirmation(m) {
+  const photoHtml = m.photoData
+    ? `<div class="rc-row"><span class="rc-key">Photo</span><img class="rc-photo" src="${m.photoData}" alt="profile"/></div>`
+    : "";
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:93%">
+      <p>🎉 <strong>${m.name}</strong> has been registered successfully!</p>
+      <div class="record-card">
+        <div class="rc-header">// New Attendee Profile</div>
+        ${photoHtml}
+        <div class="rc-row"><span class="rc-key">Name</span><span class="rc-val norm">${m.name}</span></div>
+        <div class="rc-row"><span class="rc-key">ID</span><span class="rc-val reg">${m.staffId}</span></div>
+        <div class="rc-row"><span class="rc-key">Dept</span><span class="rc-val norm">${m.dept}</span></div>
+        <div class="rc-row"><span class="rc-key">PIN</span><span class="rc-val reg">●●●● SET</span></div>
+        <div class="rc-row"><span class="rc-key">Registered</span><span class="rc-val norm">${new Date(m.joinedAt).toLocaleString("en-NG")}</span></div>
+      </div>
+      <div class="badge-strip">
+        <span class="badge">✓ REGISTERED</span>
+        <span class="badge">👤 ${members.length} MEMBER${members.length!==1?"S":""}</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips([["✅ Check In","green"],["🚪 Check Out","red"],["➕ Add Another","amber"],["🏠 Home"]]);
+}
+
+// ── Override updateSubmitBtn to handle signup forms ────────────────────────
+// Re-route pinPress / pinDel to also trigger signup field validation
+const _origPinPress = window.pinPress;
+window.pinPress = function(formId, pinDispId, submitBtnId, num) {
+  const form = document.getElementById(formId);
+  const formHost = form ? (() => { let p = form.parentElement; while(p && p._pin === undefined) p = p.parentElement; return p; })() : null;
+  if (!formHost || formHost._pin.length >= 4) return;
+  formHost._pin += String(num);
+  renderPinDots(pinDispId, formHost._pin.length);
+  // signup-specific updater
+  const sgUpdater = window[`_sgUpdate_${formId}`];
+  if (sgUpdater) sgUpdater();
+  else updateSubmitBtn(formId, submitBtnId, formHost);
+};
+window.pinDel = function(formId, pinDispId, submitBtnId) {
+  const form = document.getElementById(formId);
+  const formHost = form ? (() => { let p = form.parentElement; while(p && p._pin === undefined) p = p.parentElement; return p; })() : null;
+  if (!formHost || formHost._pin.length === 0) return;
+  formHost._pin = formHost._pin.slice(0, -1);
+  renderPinDots(pinDispId, formHost._pin.length);
+  const sgUpdater = window[`_sgUpdate_${formId}`];
+  if (sgUpdater) sgUpdater();
+  else updateSubmitBtn(formId, submitBtnId, formHost);
+};
+
+// ── Log view ───────────────────────────────────────────────────────────────
+function renderLogView() {
+  const todayLog = log.filter(r => isToday(r.timestamp));
+  if (todayLog.length === 0) {
+    addMsg("bot","📊 No attendance records yet for today.<br><br>Use <strong>Check In</strong> or <strong>Check Out</strong> to start logging.");
+    setChips([["✅ Check In","green"],["🚪 Check Out","red"],["🏠 Home"]]);
+    return;
+  }
+  const rows = todayLog.slice(-12).reverse().map(r =>
+    `<tr>
+      <td>${r.photoData ? `<img class="log-thumb" src="${r.photoData}" alt=""/>` : `<div style="width:28px;height:28px;border-radius:6px;background:var(--panel);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.7rem">?</div>`}</td>
+      <td style="color:var(--text);font-weight:600">${r.name}</td>
+      <td style="color:var(--muted)">${r.staffId}</td>
+      <td><span class="${r.type==="CHECK-IN"?"tag-in":"tag-out"}">${r.type==="CHECK-IN"?"IN":"OUT"}</span></td>
+      <td style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.72rem">${r.timeStr}</td>
+    </tr>`
+  ).join("");
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:96%">
+      <p>📊 <strong>Today's Attendance Log</strong> — ${todayLog.length} record${todayLog.length!==1?"s":""}</p>
+      <div class="record-card" style="overflow-x:auto">
+        <table class="log-table">
+          <thead><tr><th></th><th>Name</th><th>ID</th><th>Type</th><th>Time</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      ${todayLog.length > 12 ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:6px">Showing last 12 of ${todayLog.length} records.</div>` : ""}
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips([["📤 Send Report"],["✅ Check In","green"],["🚪 Check Out","red"],["🏠 Home"]]);
+}
+
+// ── Report ─────────────────────────────────────────────────────────────────
+function renderReportPreview() {
+  const todayLog = log.filter(r => isToday(r.timestamp));
+  const ins  = todayLog.filter(r=>r.type==="CHECK-IN");
+  const outs = todayLog.filter(r=>r.type==="CHECK-OUT");
+  const now  = new Date();
+  const dateStr = now.toLocaleDateString("en-NG",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const inLines  = ins.map(r=>`  • ${r.name} (${r.staffId}) – ${r.timeStr}`).join("\n");
+  const outLines = outs.map(r=>`  • ${r.name} (${r.staffId}) – ${r.timeStr}`).join("\n");
+  const waText = [
+    `🎯 *ATTENDANCE REPORT – AttendX*`,`📅 ${dateStr}`,``,
+    `✅ *CHECK-INS: ${ins.length}*`, ins.length > 0 ? inLines : "  (none)",``,
+    `🚪 *CHECK-OUTS: ${outs.length}*`, outs.length > 0 ? outLines : "  (none)",``,
+    `📊 *Total Records: ${todayLog.length}*`,``,
+    `Generated by AttendX · ${now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})}`
+  ].join("\n");
+  const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waText)}`;
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">🎯</div>
+    <div class="bubble" style="max-width:93%">
+      <p>📤 Ready to send today's attendance report to the administrator.</p>
+      <div class="record-card">
+        <div class="rc-header">// Daily Report · ${dateStr}</div>
+        <div class="rc-row"><span class="rc-key">Total Records</span><span class="rc-val norm">${todayLog.length}</span></div>
+        <div class="rc-row"><span class="rc-key">Check-Ins</span><span class="rc-val in">${ins.length} ✅</span></div>
+        <div class="rc-row"><span class="rc-key">Check-Outs</span><span class="rc-val out">${outs.length} 🚪</span></div>
+        <div class="rc-row"><span class="rc-key">Members</span><span class="rc-val norm">${members.length} registered</span></div>
+        <div class="rc-row"><span class="rc-key">Generated</span><span class="rc-val norm">${now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})}</span></div>
+      </div>
+      ${todayLog.length === 0
+        ? `<div style="color:var(--muted);font-size:0.8rem;margin-top:8px">⚠ No records to report today.</div>`
+        : `<a class="wa-btn" href="${waUrl}" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Send Daily Report via WhatsApp
+          </a>`
+      }
+      <div class="badge-strip">
+        <span class="badge">📅 ${dateStr.split(",")[0].toUpperCase()}</span>
+        <span class="badge">IN: ${ins.length}</span>
+        <span class="badge">OUT: ${outs.length}</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w); scrollBottom();
+  setChips([["✅ Check In","green"],["🚪 Check Out","red"],["📊 View Log"],["🏠 Home"]]);
+}
+
+// ── Core processor ─────────────────────────────────────────────────────────
+function processInput(raw) {
+  if (!raw.trim()) return;
+  const v = raw.toLowerCase();
+  chipsEl.innerHTML = "";
+
+  if (v.includes("home") || v.includes("start over") || v.includes("menu")) { resetChat(); return; }
+  if (v.includes("check in") || v.includes("check-in") || v.includes("another check")) {
+    addMsg("user", raw); state.action = "checkin";
+    showTyping(); setTimeout(()=>{ removeTyping(); addMsg("bot","🟢 <strong>Check-In</strong> — capture your photo and enter your PIN:"); renderCamPinForm(true); }, 900); return;
+  }
+  if (v.includes("check out") || v.includes("checkout")) {
+    addMsg("user", raw); state.action = "checkout";
+    showTyping(); setTimeout(()=>{ removeTyping(); addMsg("bot","🔴 <strong>Check-Out</strong> — capture your photo and enter your PIN:"); renderCamPinForm(false); }, 900); return;
+  }
+  if (v.includes("sign up") || v.includes("signup") || v.includes("add") || v.includes("register") || v.includes("another")) {
+    addMsg("user", raw);
+    showTyping(); setTimeout(()=>{ removeTyping(); addMsg("bot","🟣 <strong>Add New Attendee</strong> — fill in the details and set a 4-digit PIN:"); renderSignupForm(); }, 900); return;
+  }
+  if (v.includes("view") || v.includes("log") || v.includes("record")) {
+    addMsg("user", raw); showTyping(); setTimeout(()=>{ removeTyping(); renderLogView(); }, 900); return;
+  }
+  if (v.includes("report") || v.includes("send")) {
+    addMsg("user", raw); showTyping(); setTimeout(()=>{ removeTyping(); renderReportPreview(); }, 900); return;
+  }
+  addMsg("user", raw);
+  botReply("Please choose an action from the menu below 👇", [], 700);
+  setTimeout(()=> renderHomeGrid(), 1050);
+}
+
+function handleSend() {
+  const val = inputEl.value.trim();
+  if (!val) return;
+  inputEl.value = "";
+  processInput(val);
+}
+inputEl.addEventListener("keydown", e => { if(e.key==="Enter") handleSend(); });
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function resetChat() {
+  Object.assign(state,{step:"home",action:""});
+  // stop camera if running
+  if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+  messagesEl.innerHTML=""; chipsEl.innerHTML="";
+  updateStats(); initChat();
+}
+
+function initChat() {
+  updateStats();
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    const now = new Date();
+    const hour = now.getHours();
+    const greet = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    addMsg("bot",
+      `${greet}! 👋 Welcome to <strong>AttendX</strong> — your smart attendance system.<br><br>` +
+      (members.length === 0
+        ? `ℹ️ No attendees registered yet. Start with <strong>Sign Up</strong> to add a member.<br><br>`
+        : `👥 <code>${members.length}</code> registered member${members.length!==1?"s":""} · `) +
+      `📊 Today: <code>${countIn()} check-in${countIn()!==1?"s":""}</code> · <code>${countOut()} check-out${countOut()!==1?"s":""}</code><br><br>` +
+      `What would you like to do?`
+    );
+    renderHomeGrid();
+  }, 900);
+}
+
+initChat();
+</script>
+</body>
+</html>
