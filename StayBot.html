@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Aria Concierge — Full PMS Hotel System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C9A84C;--gold-deep:#A8872A;--gold-light:#F0D78A;--gold-glow:rgba(201,168,76,0.18);
+  --navy:#1A2540;--navy-mid:#243050;--navy-light:#2E3D60;
+  --cream:#FAF7F0;--surface:#FFFFFF;--surface2:#F5F3EE;--surface3:#EDEBE4;
+  --border:#E4DDD0;--border2:#D5CCB8;
+  --text:#1A2332;--text-muted:#6B7A8F;--text-dim:#A0AEBF;
+  --shadow:0 2px 16px rgba(26,35,50,0.08);--shadow-lg:0 8px 40px rgba(26,35,50,0.18);
+  --radius:16px;--radius-sm:10px;
+  --emerald:#2EC4A0;--rose:#E87070;--amber:#F5A623;--sky:#5BA8D4;--violet:#7C6FF7;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;
+  background:linear-gradient(135deg,#1A2540 0%,#243050 45%,#1E2E4A 100%);}
+body::before{content:'';position:fixed;top:-100px;right:-80px;width:380px;height:380px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,0.12),transparent 70%);pointer-events:none;}
+body::after{content:'';position:fixed;bottom:-100px;left:-60px;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(46,196,160,0.08),transparent 70%);pointer-events:none;}
+
+/* CHAT WINDOW */
+.chat-window{width:100%;max-width:480px;height:100dvh;background:var(--surface);
+  border-radius:0;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;
+  position:relative;animation:rise .4s cubic-bezier(.34,1.56,.64,1);}
+@media(min-width:520px){.chat-window{height:92vh;max-height:860px;border-radius:24px;}}
+@keyframes rise{from{opacity:0;transform:translateY(30px) scale(.97);}to{opacity:1;transform:none;}}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--navy),var(--navy-mid));padding:12px 14px 10px;
+  display:flex;align-items:center;gap:10px;flex-shrink:0;position:relative;overflow:hidden;}
+.header::before{content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23C9A84C' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
+.header::after{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:rgba(201,168,76,0.08);}
+.bot-avatar{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--gold-deep),var(--gold));
+  display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;
+  box-shadow:0 2px 10px rgba(201,168,76,0.4);position:relative;z-index:1;}
+.header-info{flex:1;position:relative;z-index:1;}
+.header-name{font-size:16px;font-weight:400;color:#fff;line-height:1;font-family:'Cormorant Garamond',serif;font-style:italic;letter-spacing:.3px;}
+.header-sub{font-size:9.5px;font-weight:700;color:var(--gold-light);letter-spacing:.8px;text-transform:uppercase;margin-top:2px;}
+.header-status{font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px;display:flex;align-items:center;gap:5px;}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#A8F0DB;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.header-actions{display:flex;gap:5px;position:relative;z-index:1;}
+.hbtn{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,0.1);border:1px solid rgba(201,168,76,0.25);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(255,255,255,0.8);transition:.18s;}
+.hbtn:hover{background:rgba(201,168,76,0.2);color:#fff;}
+
+/* BANNER */
+.hotel-banner{background:linear-gradient(90deg,var(--gold-glow),transparent);border-bottom:1px solid var(--border);
+  padding:6px 14px;font-size:11px;color:var(--gold-deep);font-weight:700;display:none;align-items:center;gap:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hotel-banner.show{display:flex;}
+.hb-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+
+/* MESSAGES */
+.messages{flex:1;overflow-y:auto;padding:12px 11px;display:flex;flex-direction:column;gap:9px;background:var(--cream);}
+
+/* BUBBLES */
+.msg{display:flex;gap:8px;animation:fadeUp .25s ease;max-width:100%;}
+.msg.user{flex-direction:row-reverse;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.msg-av{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;margin-top:2px;}
+.msg.bot .msg-av{background:linear-gradient(135deg,var(--navy),var(--navy-mid));box-shadow:0 2px 8px rgba(26,37,64,0.3);}
+.msg.user .msg-av{background:var(--surface3);border:1px solid var(--border);}
+.msg-col{display:flex;flex-direction:column;max-width:86%;}
+.msg.user .msg-col{align-items:flex-end;}
+.bubble{padding:9px 13px;border-radius:17px;font-size:13px;line-height:1.65;}
+.msg.bot .bubble{background:var(--surface);border:1px solid var(--border);border-top-left-radius:4px;color:var(--text);}
+.msg.user .bubble{background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:#fff;border-top-right-radius:4px;box-shadow:0 3px 12px rgba(26,37,64,0.25);}
+.bubble b,.bubble strong{color:var(--gold-deep);}
+.msg.user .bubble b,.msg.user .bubble strong{color:var(--gold-light);}
+.msg-time{font-size:9.5px;color:var(--text-dim);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+
+/* TYPING */
+.typing-bubble{background:var(--surface);border:1px solid var(--border);border-radius:17px;border-top-left-radius:4px;padding:11px 15px;display:flex;gap:5px;align-items:center;}
+.td{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:tdB 1.1s infinite;}
+.td:nth-child(2){animation-delay:.18s;}.td:nth-child(3){animation-delay:.36s;}
+@keyframes tdB{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-5px);opacity:1;}}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+.chip{background:var(--surface);border:1.5px solid var(--border);color:var(--navy);
+  padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:.18s;white-space:nowrap;}
+.chip:hover{background:var(--navy);border-color:var(--navy);color:#fff;transform:translateY(-1px);}
+.chip.gold{border-color:var(--gold);color:var(--gold-deep);}
+.chip.gold:hover{background:var(--gold);border-color:var(--gold);color:#fff;}
+.chip.em{border-color:var(--emerald);color:#1A9E80;}
+.chip.em:hover{background:var(--emerald);color:#fff;}
+.chip.rose{border-color:var(--rose);color:var(--rose);}
+.chip.rose:hover{background:var(--rose);color:#fff;}
+
+/* GRIDS */
+.hotel-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px;width:100%;}
+.hotel-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px;cursor:pointer;transition:.2s;}
+.hotel-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 4px 16px var(--gold-glow);}
+.hc-stars{color:var(--gold);font-size:9px;margin-bottom:2px;}
+.hc-emoji{font-size:20px;margin-bottom:3px;}
+.hc-name{font-size:12.5px;font-weight:800;color:var(--text);font-family:'Cormorant Garamond',serif;}
+.hc-loc{font-size:10px;color:var(--text-muted);margin-top:1px;}
+.hc-price{font-size:10.5px;font-weight:700;color:var(--gold-deep);margin-top:3px;}
+.hc-badge{font-size:9px;padding:2px 6px;border-radius:7px;background:rgba(201,168,76,0.12);color:var(--gold-deep);border:1px solid rgba(201,168,76,0.25);margin-top:3px;display:inline-block;font-weight:700;}
+
+/* ROOM LIST */
+.room-list{display:flex;flex-direction:column;gap:7px;margin-top:7px;width:100%;}
+.room-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px;cursor:pointer;transition:.2s;display:flex;gap:9px;align-items:flex-start;}
+.room-card:hover{border-color:var(--gold);box-shadow:0 3px 12px var(--gold-glow);}
+.rc-icon{font-size:20px;width:38px;height:38px;background:linear-gradient(135deg,var(--navy),var(--navy-mid));border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rc-info{flex:1;min-width:0;}
+.rc-name{font-size:13.5px;font-weight:800;font-family:'Cormorant Garamond',serif;}
+.rc-desc{font-size:10.5px;color:var(--text-muted);margin-top:2px;line-height:1.45;}
+.rc-meta{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
+.rc-price{font-size:12.5px;font-weight:800;color:var(--gold-deep);}
+.rc-avail{font-size:9.5px;padding:2px 7px;border-radius:8px;font-weight:700;}
+.av-ok{background:rgba(46,196,160,0.12);color:#1A9E80;border:1px solid rgba(46,196,160,0.2);}
+.av-few{background:rgba(245,166,35,0.12);color:var(--amber);border:1px solid rgba(245,166,35,0.2);}
+.av-no{background:rgba(232,112,112,0.12);color:var(--rose);border:1px solid rgba(232,112,112,0.2);}
+.rc-btn{width:26px;height:26px;border-radius:7px;background:var(--gold);border:none;cursor:pointer;
+  color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.18s;flex-shrink:0;margin-top:2px;}
+.rc-btn:hover{background:var(--gold-deep);transform:scale(1.1);}
+
+/* CARDS */
+.bk-card{background:linear-gradient(135deg,rgba(26,37,64,0.05),rgba(201,168,76,0.04));border:1.5px solid rgba(201,168,76,0.25);border-radius:var(--radius-sm);padding:12px;margin-top:7px;width:100%;}
+.bk-head{display:flex;align-items:center;gap:7px;margin-bottom:9px;}
+.bk-title{font-size:13.5px;font-weight:800;color:var(--navy);font-family:'Cormorant Garamond',serif;}
+.bk-row{display:flex;align-items:baseline;gap:8px;padding:4px 0;border-bottom:1px solid rgba(201,168,76,0.1);}
+.bk-row:last-of-type{border-bottom:none;}
+.bk-label{font-size:10px;color:var(--text-muted);flex:1;text-transform:uppercase;letter-spacing:.4px;font-weight:600;}
+.bk-val{font-size:12px;font-weight:700;color:var(--text);}
+.bk-total{display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;border-top:1.5px solid rgba(201,168,76,0.25);}
+.bk-total-val{font-size:15px;font-weight:800;color:var(--gold-deep);}
+
+.confirm-card{background:linear-gradient(135deg,#1A2540,#2E3D60);border-radius:var(--radius-sm);padding:13px;color:#fff;margin-top:7px;width:100%;position:relative;overflow:hidden;}
+.confirm-card::before{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;background:rgba(201,168,76,0.1);}
+.cc-title{font-size:14px;font-weight:400;font-family:'Cormorant Garamond',serif;color:var(--gold-light);font-style:italic;}
+.cc-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;}
+.cc-row{display:flex;justify-content:space-between;padding:3px 0;font-size:11.5px;}
+.cc-rl{color:rgba(255,255,255,0.55);}
+.cc-rv{color:#fff;font-weight:600;}
+.cc-div{height:1px;background:rgba(201,168,76,0.2);margin:6px 0;}
+
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px;width:100%;}
+.svc-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 8px;cursor:pointer;transition:.2s;text-align:center;}
+.svc-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 4px 16px var(--gold-glow);}
+.svc-icon{font-size:20px;margin-bottom:4px;}
+.svc-name{font-size:11.5px;font-weight:700;color:var(--text);}
+.svc-sub{font-size:9.5px;color:var(--text-muted);margin-top:1px;}
+
+.info-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-top:7px;width:100%;}
+.ic-row{display:flex;gap:8px;align-items:flex-start;padding:4px 0;border-bottom:1px solid var(--border);}
+.ic-row:last-child{border-bottom:none;}
+.ic-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
+.ic-text{font-size:12px;line-height:1.55;flex:1;}
+.ic-label{font-size:9.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600;}
+
+.stay-card{background:linear-gradient(135deg,rgba(201,168,76,0.08),rgba(26,37,64,0.05));border:1.5px solid rgba(201,168,76,0.28);border-radius:var(--radius-sm);padding:12px;margin-top:7px;width:100%;}
+.stay-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.stay-title{font-size:13.5px;font-weight:800;font-family:'Cormorant Garamond',serif;color:var(--navy);}
+.stay-badge{font-size:9.5px;padding:2px 8px;border-radius:20px;background:rgba(46,196,160,0.12);color:#1A9E80;border:1px solid rgba(46,196,160,0.25);font-weight:700;}
+.stay-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(201,168,76,0.1);}
+.stay-row:last-child{border-bottom:none;}
+
+.food-list{display:flex;flex-direction:column;gap:6px;margin-top:7px;width:100%;}
+.food-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 10px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:9px;}
+.food-card:hover{border-color:var(--gold);box-shadow:0 3px 12px var(--gold-glow);}
+.food-card.in-order{border-color:var(--gold);background:rgba(201,168,76,0.05);}
+.fc-em{font-size:20px;width:38px;height:38px;background:var(--surface2);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.fc-info{flex:1;min-width:0;}
+.fc-name{font-size:12.5px;font-weight:700;}
+.fc-desc{font-size:10.5px;color:var(--text-muted);}
+.fc-price{font-size:12.5px;font-weight:800;color:var(--gold-deep);}
+.fc-add{width:26px;height:26px;border-radius:7px;background:var(--navy);border:none;cursor:pointer;
+  color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.18s;flex-shrink:0;}
+.fc-add:hover{background:var(--gold);transform:scale(1.1);}
+
+/* AMENITY TAGS */
+.a-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.a-tag{font-size:9.5px;padding:2px 7px;border-radius:7px;background:rgba(26,37,64,0.07);color:var(--navy-mid);border:1px solid rgba(26,37,64,0.1);font-weight:600;}
+
+/* PROMO */
+.promo-card{background:linear-gradient(135deg,var(--gold-deep),var(--gold));border-radius:var(--radius-sm);padding:9px 13px;display:flex;align-items:center;gap:9px;margin-top:7px;width:100%;}
+.promo-text{font-size:12px;font-weight:700;color:#fff;flex:1;}
+.promo-code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:rgba(255,255,255,0.28);padding:3px 8px;border-radius:6px;color:#fff;cursor:pointer;border:1px solid rgba(255,255,255,0.3);}
+
+/* ANALYTICS DASHBOARD */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px;width:100%;}
+.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px;transition:.2s;}
+.stat-card:hover{border-color:var(--gold);box-shadow:0 3px 12px var(--gold-glow);}
+.stat-icon{font-size:18px;margin-bottom:4px;}
+.stat-val{font-size:20px;font-weight:800;color:var(--navy);font-family:'Cormorant Garamond',serif;line-height:1;}
+.stat-label{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+.stat-trend{font-size:10px;font-weight:700;margin-top:3px;}
+.trend-up{color:var(--emerald);}
+.trend-dn{color:var(--rose);}
+
+/* INVOICE */
+.invoice-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px;margin-top:7px;width:100%;}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.inv-hotel{font-size:13px;font-weight:800;font-family:'Cormorant Garamond',serif;color:var(--navy);}
+.inv-id{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);}
+.inv-row{display:flex;justify-content:space-between;padding:4px 0;font-size:11.5px;border-bottom:1px dashed rgba(201,168,76,0.15);}
+.inv-row:last-of-type{border-bottom:none;}
+.inv-total{display:flex;justify-content:space-between;margin-top:9px;padding-top:9px;border-top:2px solid var(--navy);font-weight:800;font-size:13px;}
+.inv-total-val{color:var(--gold-deep);}
+.inv-paid{display:inline-block;font-size:9.5px;padding:2px 8px;border-radius:8px;background:rgba(46,196,160,0.12);color:#1A9E80;border:1px solid rgba(46,196,160,0.2);font-weight:700;}
+.inv-pending{background:rgba(245,166,35,0.12);color:var(--amber);border:1px solid rgba(245,166,35,0.2);}
+
+/* CHANNEL MANAGER */
+.channel-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:7px;width:100%;}
+.channel-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 7px;text-align:center;cursor:pointer;transition:.2s;}
+.channel-card:hover{border-color:var(--gold);transform:translateY(-1px);}
+.channel-card.active{border-color:var(--emerald);background:rgba(46,196,160,0.05);}
+.ch-logo{font-size:18px;margin-bottom:3px;}
+.ch-name{font-size:10px;font-weight:700;color:var(--text);}
+.ch-status{font-size:9px;margin-top:2px;font-weight:600;}
+.ch-on{color:var(--emerald);}
+.ch-off{color:var(--text-dim);}
+
+/* GUEST PROFILE */
+.guest-profile{background:linear-gradient(135deg,rgba(124,111,247,0.08),rgba(26,37,64,0.04));border:1.5px solid rgba(124,111,247,0.2);border-radius:var(--radius-sm);padding:12px;margin-top:7px;width:100%;}
+.gp-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.gp-av{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--violet),#9D94FF);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.gp-name{font-size:14px;font-weight:800;font-family:'Cormorant Garamond',serif;color:var(--navy);}
+.gp-tier{font-size:9.5px;padding:2px 7px;border-radius:8px;font-weight:700;}
+.tier-gold{background:rgba(201,168,76,0.15);color:var(--gold-deep);border:1px solid rgba(201,168,76,0.3);}
+.tier-silver{background:rgba(160,174,191,0.15);color:#5E6C7F;border:1px solid rgba(160,174,191,0.3);}
+.tier-platinum{background:rgba(124,111,247,0.12);color:var(--violet);border:1px solid rgba(124,111,247,0.25);}
+.gp-row{display:flex;justify-content:space-between;padding:4px 0;font-size:11.5px;border-bottom:1px solid rgba(124,111,247,0.1);}
+.gp-row:last-child{border-bottom:none;}
+.gp-label{color:var(--text-muted);}
+.gp-val{font-weight:700;color:var(--text);}
+
+/* HOUSEKEEPING BOARD */
+.hk-board{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px;width:100%;}
+.hk-room{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px;cursor:pointer;transition:.2s;}
+.hk-room:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,0.07);}
+.hk-num{font-size:14px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--navy);}
+.hk-type{font-size:10px;color:var(--text-muted);margin-top:1px;}
+.hk-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+.hk-clean{border-color:var(--emerald);}.hk-clean .hk-dot{background:var(--emerald);}
+.hk-clean .hk-status{color:var(--emerald);}
+.hk-dirty{border-color:var(--rose);}.hk-dirty .hk-dot{background:var(--rose);}
+.hk-dirty .hk-status{color:var(--rose);}
+.hk-inservice{border-color:var(--amber);}.hk-inservice .hk-dot{background:var(--amber);}
+.hk-inservice .hk-status{color:var(--amber);}
+.hk-checkout{border-color:var(--sky);}.hk-checkout .hk-dot{background:var(--sky);}
+.hk-checkout .hk-status{color:var(--sky);}
+.hk-status{font-size:9.5px;font-weight:700;margin-top:3px;}
+
+/* BUTTONS */
+.menu-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 16px;
+  background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:#fff;border:none;
+  border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:9px;
+  font-family:'Plus Jakarta Sans',sans-serif;transition:.2s;box-shadow:0 4px 14px rgba(26,37,64,0.28);}
+.menu-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(26,37,64,0.42);}
+.gold-btn{background:linear-gradient(135deg,var(--gold-deep),var(--gold));box-shadow:0 4px 14px rgba(201,168,76,0.32);}
+.gold-btn:hover{box-shadow:0 7px 22px rgba(201,168,76,0.48);}
+.ghost-btn{background:var(--surface2);color:var(--text);box-shadow:none;border:1.5px solid var(--border);}
+.ghost-btn:hover{background:var(--surface3);box-shadow:none;}
+.em-btn{background:linear-gradient(135deg,#1A9E80,var(--emerald));box-shadow:0 4px 14px rgba(46,196,160,0.28);}
+
+/* INPUT */
+.input-area{border-top:1px solid var(--border);padding:9px 11px;background:var(--surface);display:flex;gap:7px;align-items:flex-end;flex-shrink:0;}
+.input-box{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:13px;display:flex;align-items:flex-end;gap:6px;padding:8px 11px;transition:.2s;}
+.input-box:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow);}
+.chat-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;resize:none;max-height:80px;line-height:1.5;}
+.chat-input::placeholder{color:var(--text-dim);}
+.send-btn{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--navy),var(--navy-mid));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;box-shadow:0 3px 10px rgba(26,37,64,0.3);transition:.18s;flex-shrink:0;}
+.send-btn:hover{transform:scale(1.07);background:linear-gradient(135deg,var(--gold-deep),var(--gold));}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:rgba(26,35,50,0.55);backdrop-filter:blur(4px);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden;animation:slideUp .28s cubic-bezier(.34,1.2,.64,1);}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:none;}}
+.sheet-handle{width:38px;height:4px;border-radius:4px;background:var(--border2);margin:11px auto 0;}
+.sheet-header{padding:12px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sheet-title{font-size:16px;font-weight:400;font-family:'Cormorant Garamond',serif;font-style:italic;}
+.sheet-close{width:26px;height:26px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);}
+.sheet-body{flex:1;overflow-y:auto;padding:14px 16px;}
+.sheet-footer{padding:12px 16px;border-top:1px solid var(--border);}
+
+/* FORMS */
+.fg{margin-bottom:11px;}
+.fl{font-size:10.5px;font-weight:700;color:var(--text-muted);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.4px;}
+.fi,.fs,.fta{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:8px 11px;color:var(--text);font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:.2s;}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow);}
+.fta{resize:vertical;min-height:60px;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.fhint{font-size:10px;color:var(--text-dim);margin-top:3px;}
+.f3grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
+
+/* SECTION DIVIDER */
+.sec-div{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;
+  padding:4px 0;border-bottom:1px solid var(--border);margin:12px 0 8px;}
+
+/* PAYMENT METHODS */
+.pay-methods{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px;}
+.pay-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:8px;cursor:pointer;transition:.2s;text-align:center;}
+.pay-card:hover,.pay-card.sel{border-color:var(--gold);background:rgba(201,168,76,0.06);}
+.pay-icon{font-size:20px;margin-bottom:3px;}
+.pay-name{font-size:10px;font-weight:700;color:var(--text);}
+
+/* TABS */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:12px;overflow-x:auto;}
+.tab-bar::-webkit-scrollbar{height:0;}
+.tab{padding:8px 14px;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.18s;}
+.tab.active{color:var(--gold-deep);border-bottom-color:var(--gold);}
+
+/* PROGRESS BAR */
+.prog-bar{height:6px;background:var(--surface3);border-radius:6px;overflow:hidden;margin-top:4px;}
+.prog-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--gold-deep),var(--gold));transition:width .6s ease;}
+
+/* RESERVATION TABLE */
+.res-list{display:flex;flex-direction:column;gap:6px;margin-top:7px;width:100%;}
+.res-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 11px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:.2s;}
+.res-item:hover{border-color:var(--gold);box-shadow:0 2px 10px var(--gold-glow);}
+.res-room{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--navy),var(--navy-mid));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--gold-light);font-family:'JetBrains Mono',monospace;flex-shrink:0;}
+.res-info{flex:1;min-width:0;}
+.res-guest{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.res-dates{font-size:10.5px;color:var(--text-muted);margin-top:1px;}
+.res-badge{font-size:9px;padding:2px 7px;border-radius:8px;font-weight:700;white-space:nowrap;}
+.rb-confirmed{background:rgba(46,196,160,0.12);color:#1A9E80;border:1px solid rgba(46,196,160,0.2);}
+.rb-pending{background:rgba(245,166,35,0.12);color:var(--amber);border:1px solid rgba(245,166,35,0.2);}
+.rb-checkedin{background:rgba(91,168,212,0.12);color:var(--sky);border:1px solid rgba(91,168,212,0.2);}
+.rb-cancelled{background:rgba(232,112,112,0.12);color:var(--rose);border:1px solid rgba(232,112,112,0.2);}
+
+/* LOYALTY POINTS */
+.loyalty-card{background:linear-gradient(135deg,#1A2540,#2E3D60);border-radius:var(--radius-sm);padding:13px;color:#fff;margin-top:7px;width:100%;position:relative;overflow:hidden;}
+.loyalty-card::before{content:'✦';position:absolute;right:12px;top:8px;font-size:40px;opacity:.07;color:#C9A84C;}
+.lc-title{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,0.6);font-weight:700;}
+.lc-points{font-size:32px;font-weight:800;font-family:'Cormorant Garamond',serif;color:var(--gold-light);line-height:1;margin-top:4px;}
+.lc-tier{font-size:10.5px;font-weight:700;color:rgba(255,255,255,0.7);margin-top:2px;}
+.lc-progress{margin-top:10px;}
+.lc-prog-label{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;}
+</style>
+</head>
+<body>
+<div class="chat-window">
+  <div class="header">
+    <div class="bot-avatar">🏨</div>
+    <div class="header-info">
+      <div class="header-name">Aria Concierge</div>
+      <div class="header-sub">Full Property Management System</div>
+      <div class="header-status"><span class="status-dot"></span>PMS Online · 24/7</div>
+    </div>
+    <div class="header-actions">
+      <button class="hbtn" onclick="doReservations()" title="Reservations">📋</button>
+      <button class="hbtn" onclick="showCurrentBooking()" title="My Stay">🗝️</button>
+      <button class="hbtn" onclick="callFrontDesk()" title="Front Desk">📞</button>
+    </div>
+  </div>
+  <div class="hotel-banner" id="stayBanner"><span class="hb-dot"></span><span id="stayBannerText"></span></div>
+  <div class="messages" id="messages"></div>
+  <div class="input-area">
+    <div class="input-box">
+      <textarea class="chat-input" id="chatInput" placeholder="Type a message…" rows="1"></textarea>
+    </div>
+    <button class="send-btn" onclick="sendUserMsg()">➤</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     OVERLAYS
+═══════════════════════════════════════════ -->
+
+<!-- RESERVATION MANAGEMENT -->
+<div class="overlay" id="overlayReservations">
+  <div class="sheet" style="max-height:92dvh;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">📋 Reservation Management</div><div class="sheet-close" onclick="closeOverlay('overlayReservations')">✕</div></div>
+    <div class="sheet-body">
+      <div class="tab-bar">
+        <div class="tab active" onclick="loadResvTab('all',this)">All</div>
+        <div class="tab" onclick="loadResvTab('arriving',this)">Arriving</div>
+        <div class="tab" onclick="loadResvTab('inhouse',this)">In-House</div>
+        <div class="tab" onclick="loadResvTab('departing',this)">Departing</div>
+        <div class="tab" onclick="loadResvTab('cancelled',this)">Cancelled</div>
+      </div>
+      <div id="resvListBody"></div>
+    </div>
+    <div class="sheet-footer">
+      <button class="menu-btn gold-btn" onclick="closeOverlay('overlayReservations');openOverlay('overlayBook')">➕ New Reservation</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESERVATION DETAIL -->
+<div class="overlay" id="overlayResvDetail">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">📄 Reservation Detail</div><div class="sheet-close" onclick="closeOverlay('overlayResvDetail')">✕</div></div>
+    <div class="sheet-body" id="resvDetailBody"></div>
+    <div class="sheet-footer" id="resvDetailFooter"></div>
+  </div>
+</div>
+
+<!-- CHECK-IN -->
+<div class="overlay" id="overlayCheckin">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🗝️ Front Desk Check-In</div><div class="sheet-close" onclick="closeOverlay('overlayCheckin')">✕</div></div>
+    <div class="sheet-body">
+      <div class="fg"><label class="fl">Guest Full Name</label><input class="fi" id="ci_name" placeholder="e.g. Amara Osei"></div>
+      <div class="fg"><label class="fl">Booking Reference</label><input class="fi" id="ci_ref" placeholder="e.g. BK-284917" style="font-family:'JetBrains Mono',monospace;"><div class="fhint">Found in your confirmation email. Leave blank to walk-in.</div></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Check-in Date</label><input class="fi" id="ci_in" type="date"></div>
+        <div class="fg"><label class="fl">Check-out Date</label><input class="fi" id="ci_out" type="date"></div>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Guests</label>
+          <select class="fs" id="ci_guests"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5+</option></select>
+        </div>
+        <div class="fg"><label class="fl">Room Type</label>
+          <select class="fs" id="ci_room_type">
+            <option value="standard">Standard</option><option value="deluxe" selected>Deluxe</option>
+            <option value="suite">Suite</option><option value="presidential">Presidential</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">ID / Passport Number</label><input class="fi" id="ci_id" placeholder="NIN / Passport / Driver's Licence"></div>
+      <div class="fg"><label class="fl">Special Requests</label><textarea class="fta" id="ci_request" placeholder="e.g. extra pillows, high floor, cot required…"></textarea></div>
+      <div class="sec-div">Payment at Check-In</div>
+      <div class="fg"><label class="fl">Payment Method</label>
+        <div class="pay-methods" id="ci_pay_methods">
+          <div class="pay-card sel" onclick="selPay(this,'card')"><div class="pay-icon">💳</div><div class="pay-name">Card</div></div>
+          <div class="pay-card" onclick="selPay(this,'transfer')"><div class="pay-icon">🏦</div><div class="pay-name">Transfer</div></div>
+          <div class="pay-card" onclick="selPay(this,'cash')"><div class="pay-icon">💵</div><div class="pay-name">Cash</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-footer"><button class="menu-btn gold-btn" onclick="submitCheckin()">✅ Complete Check-In</button></div>
+  </div>
+</div>
+
+<!-- CHECKOUT -->
+<div class="overlay" id="overlayCheckout">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🚪 Check Out & Invoice</div><div class="sheet-close" onclick="closeOverlay('overlayCheckout')">✕</div></div>
+    <div class="sheet-body" id="checkoutBody"></div>
+    <div class="sheet-footer" id="checkoutFooter"></div>
+  </div>
+</div>
+
+<!-- BOOK ROOM -->
+<div class="overlay" id="overlayBook">
+  <div class="sheet" style="max-height:92dvh;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">📋 New Reservation</div><div class="sheet-close" onclick="closeOverlay('overlayBook')">✕</div></div>
+    <div class="sheet-body">
+      <div class="fg"><label class="fl">Guest Full Name *</label><input class="fi" id="bk_name" placeholder="e.g. Chioma Adeyemi"></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Phone *</label><input class="fi" id="bk_phone" placeholder="+234 800 000 0000"></div>
+        <div class="fg"><label class="fl">Email</label><input class="fi" id="bk_email" type="email" placeholder="you@email.com"></div>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Check-in *</label><input class="fi" id="bk_in" type="date"></div>
+        <div class="fg"><label class="fl">Check-out *</label><input class="fi" id="bk_out" type="date"></div>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Guests</label>
+          <select class="fs" id="bk_guests"><option>1</option><option selected>2</option><option>3</option><option>4</option></select>
+        </div>
+        <div class="fg"><label class="fl">Source</label>
+          <select class="fs" id="bk_source"><option>Direct / Walk-in</option><option>Website</option><option>Booking.com</option><option>Expedia</option><option>Airbnb</option><option>Phone</option><option>Travel Agent</option></select>
+        </div>
+      </div>
+      <div id="bk_room_info"></div>
+      <div class="fg"><label class="fl">Special Requests</label><textarea class="fta" id="bk_req" placeholder="Early check-in, anniversary setup, dietary needs…"></textarea></div>
+      <div class="sec-div">Rate & Payment</div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Rate Plan</label>
+          <select class="fs" id="bk_rate"><option>Standard Rate</option><option>Advance Purchase</option><option>Corporate Rate</option><option>Loyalty Member</option><option>OTA Rate</option></select>
+        </div>
+        <div class="fg"><label class="fl">Deposit</label>
+          <select class="fs" id="bk_deposit"><option>No Deposit</option><option>50% Deposit</option><option>Full Prepayment</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-footer"><button class="menu-btn gold-btn" onclick="submitBooking()">✅ Confirm Reservation</button></div>
+  </div>
+</div>
+
+<!-- EXTEND STAY -->
+<div class="overlay" id="overlayExtend">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">📅 Extend Stay</div><div class="sheet-close" onclick="closeOverlay('overlayExtend')">✕</div></div>
+    <div class="sheet-body">
+      <div id="extendInfo"></div>
+      <div class="fg" style="margin-top:13px;"><label class="fl">New Check-out Date</label><input class="fi" id="ext_date" type="date"></div>
+      <div class="fg"><label class="fl">Reason (Optional)</label>
+        <select class="fs" id="ext_reason"><option>Leisure / Vacation</option><option>Business Extension</option><option>Personal Reasons</option><option>Attending Local Event</option></select>
+      </div>
+    </div>
+    <div class="sheet-footer"><button class="menu-btn gold-btn" onclick="submitExtend()">✅ Confirm Extension</button></div>
+  </div>
+</div>
+
+<!-- ROOM SERVICE -->
+<div class="overlay" id="overlayRS">
+  <div class="sheet" style="max-height:92dvh;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🍽️ Room Service Menu</div><div class="sheet-close" onclick="closeOverlay('overlayRS')">✕</div></div>
+    <div class="sheet-body" id="rsBody"></div>
+    <div class="sheet-footer" id="rsFooter"></div>
+  </div>
+</div>
+
+<!-- HOUSEKEEPING -->
+<div class="overlay" id="overlayHK">
+  <div class="sheet" style="max-height:92dvh;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🧹 Housekeeping Management</div><div class="sheet-close" onclick="closeOverlay('overlayHK')">✕</div></div>
+    <div class="sheet-body" id="hkBody"></div>
+    <div class="sheet-footer" id="hkFooter"></div>
+  </div>
+</div>
+
+<!-- SPA -->
+<div class="overlay" id="overlaySpa">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">💆 Spa &amp; Wellness</div><div class="sheet-close" onclick="closeOverlay('overlaySpa')">✕</div></div>
+    <div class="sheet-body">
+      <div class="fg"><label class="fl">Treatment</label>
+        <select class="fs" id="spa_type">
+          <option>Swedish Massage (60 min) — ₦25,000</option><option>Deep Tissue Massage (90 min) — ₦38,000</option>
+          <option>Luxury Facial (45 min) — ₦20,000</option><option>Couples Massage (60 min) — ₦45,000</option>
+          <option>Manicure &amp; Pedicure — ₦15,000</option><option>Full Body Wrap (120 min) — ₦55,000</option>
+        </select>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Date</label><input class="fi" id="spa_date" type="date"></div>
+        <div class="fg"><label class="fl">Time</label>
+          <select class="fs" id="spa_time"><option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option><option>12:00 PM</option><option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option><option>5:00 PM</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Therapist Preference</label>
+        <select class="fs" id="spa_pref"><option>No Preference</option><option>Female Therapist</option><option>Male Therapist</option></select>
+      </div>
+    </div>
+    <div class="sheet-footer"><button class="menu-btn gold-btn" onclick="submitSpa()">✅ Book Treatment</button></div>
+  </div>
+</div>
+
+<!-- TRANSPORT -->
+<div class="overlay" id="overlayTransport">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🚗 Transport Request</div><div class="sheet-close" onclick="closeOverlay('overlayTransport')">✕</div></div>
+    <div class="sheet-body">
+      <div class="fg"><label class="fl">Type</label>
+        <select class="fs" id="tr_type"><option>Airport Transfer</option><option>City Taxi</option><option>City Tour</option><option>Private Charter</option></select>
+      </div>
+      <div class="fg"><label class="fl">Pickup</label><input class="fi" id="tr_from" placeholder="Hotel lobby / Airport / Address"></div>
+      <div class="fg"><label class="fl">Destination</label><input class="fi" id="tr_to" placeholder="Airport / Hotel / Address"></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">Date</label><input class="fi" id="tr_date" type="date"></div>
+        <div class="fg"><label class="fl">Time</label><input class="fi" id="tr_time" type="time"></div>
+      </div>
+    </div>
+    <div class="sheet-footer"><button class="menu-btn" onclick="submitTransport()">🚗 Confirm Transport</button></div>
+  </div>
+</div>
+
+<!-- BILLING / INVOICE -->
+<div class="overlay" id="overlayBilling">
+  <div class="sheet" style="max-height:92dvh;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">💳 Billing &amp; Invoicing</div><div class="sheet-close" onclick="closeOverlay('overlayBilling')">✕</div></div>
+    <div class="sheet-body" id="billingBody"></div>
+    <div class="sheet-footer" id="billingFooter"></div>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="overlay" id="overlayAnalytics">
+  <div class="sheet" style="max-height:92dvh;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">📊 Reports &amp; Analytics</div><div class="sheet-close" onclick="closeOverlay('overlayAnalytics')">✕</div></div>
+    <div class="sheet-body" id="analyticsBody"></div>
+    <div class="sheet-footer"><button class="menu-btn ghost-btn" onclick="closeOverlay('overlayAnalytics')">Close</button></div>
+  </div>
+</div>
+
+<!-- GUEST PROFILE -->
+<div class="overlay" id="overlayGuestProfile">
+  <div class="sheet" style="max-height:92dvh;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">👤 Guest Profile &amp; CRM</div><div class="sheet-close" onclick="closeOverlay('overlayGuestProfile')">✕</div></div>
+    <div class="sheet-body" id="guestProfileBody"></div>
+    <div class="sheet-footer" id="guestProfileFooter"></div>
+  </div>
+</div>
+
+<!-- CHANNEL MANAGER -->
+<div class="overlay" id="overlayChannels">
+  <div class="sheet" style="max-height:92dvh;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">🌐 Channel Manager</div><div class="sheet-close" onclick="closeOverlay('overlayChannels')">✕</div></div>
+    <div class="sheet-body" id="channelBody"></div>
+    <div class="sheet-footer" id="channelFooter"></div>
+  </div>
+</div>
+
+<!-- PAYMENT PROCESSING -->
+<div class="overlay" id="overlayPayment">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">💳 Payment Processing</div><div class="sheet-close" onclick="closeOverlay('overlayPayment')">✕</div></div>
+    <div class="sheet-body" id="paymentBody"></div>
+    <div class="sheet-footer" id="paymentFooter"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════
+// STATE & STORAGE
+// ═══════════════════════════════
+let selHotel=null,selRoom=null,foodOrder=[],selPayMethod='card';
+let currentStay=JSON.parse(localStorage.getItem('aria_stay')||'null');
+let guestProfiles=JSON.parse(localStorage.getItem('aria_guests')||'[]');
+let reservations=JSON.parse(localStorage.getItem('aria_reservations')||'null');
+if(!reservations){
+  reservations=[
+    {id:'BK-112934',guest:'Adaeze Nwosu',room:312,type:'Deluxe King',checkin:'2025-03-20',checkout:'2025-03-25',nights:5,total:600000,status:'checkedin',source:'Booking.com',phone:'+234 803 111 2222',email:'adaeze@email.com',requests:'Non-smoking room'},
+    {id:'BK-229811',guest:'Emeka Okonkwo',room:208,type:'Standard Room',checkin:'2025-03-22',checkout:'2025-03-24',nights:2,total:170000,status:'confirmed',source:'Direct',phone:'+234 705 333 4444',email:'emeka@email.com',requests:''},
+    {id:'BK-348720',guest:'Fatima Al-Hassan',room:501,type:'Executive Suite',checkin:'2025-03-25',checkout:'2025-03-28',nights:3,total:660000,status:'arriving',source:'Expedia',phone:'+234 809 555 6666',email:'fatima@email.com',requests:'Airport pickup'},
+    {id:'BK-457831',guest:'Tunde Fashola',room:105,type:'Classic Room',checkin:'2025-03-18',checkout:'2025-03-23',nights:5,total:425000,status:'departing',source:'Website',phone:'+234 701 777 8888',email:'tunde@email.com',requests:''},
+    {id:'BK-566912',guest:'Ngozi Eze',room:420,type:'Deluxe Ocean',checkin:'2025-03-10',checkout:'2025-03-15',nights:5,total:775000,status:'cancelled',source:'Airbnb',phone:'+234 812 999 0000',email:'ngozi@email.com',requests:'Honeymoon setup'},
+  ];
+  localStorage.setItem('aria_reservations',JSON.stringify(reservations));
+}
+let hkRooms=JSON.parse(localStorage.getItem('aria_hk')||'null');
+if(!hkRooms){
+  hkRooms=[
+    {num:101,type:'Classic Room',status:'clean'},{num:102,type:'Classic Room',status:'dirty'},
+    {num:201,type:'Superior Twin',status:'inservice'},{num:202,type:'Superior Twin',status:'clean'},
+    {num:301,type:'Deluxe King',status:'checkout'},{num:302,type:'Deluxe King',status:'clean'},
+    {num:401,type:'Ocean Suite',status:'dirty'},{num:402,type:'Ocean Suite',status:'inservice'},
+    {num:501,type:'Exec Suite',status:'clean'},{num:502,type:'Exec Suite',status:'checkout'},
+    {num:601,type:'Presidential',status:'clean'},{num:602,type:'Presidential',status:'dirty'},
+  ];
+  localStorage.setItem('aria_hk',JSON.stringify(hkRooms));
+}
+const channels=[
+  {id:'direct',name:'Direct Website',icon:'🌐',enabled:true,rate:'Full rate',rooms:12},
+  {id:'booking',name:'Booking.com',icon:'🔵',enabled:true,rate:'-15%',rooms:8},
+  {id:'expedia',name:'Expedia',icon:'🟡',enabled:true,rate:'-18%',rooms:6},
+  {id:'airbnb',name:'Airbnb',icon:'🔴',enabled:false,rate:'-12%',rooms:4},
+  {id:'tripadvisor',name:'TripAdvisor',icon:'🟢',enabled:true,rate:'-10%',rooms:5},
+  {id:'agent',name:'Travel Agents',icon:'✈️',enabled:true,rate:'-20%',rooms:3},
+];
+
+// ═══════════════════════════════
+// HOTEL & ROOM DATA
+// ═══════════════════════════════
+const hotels=[
+  {id:'h1',em:'🏰',name:'The Grand Meridian',loc:'Victoria Island, Lagos',stars:'★★★★★',price:85000,badge:'Flagship',amenities:['Pool','Spa','Gym','Restaurant','Bar','WiFi','Parking'],occupancy:82},
+  {id:'h2',em:'🌊',name:'Eko Shoreline Resort',loc:'Bar Beach, Lagos',stars:'★★★★★',price:72000,badge:'Beachfront',amenities:['Private Beach','Pool','Spa','WiFi','Restaurant'],occupancy:76},
+  {id:'h3',em:'🌿',name:'Abuja Hilltop Suites',loc:'Maitama, Abuja',stars:'★★★★',price:55000,badge:'Business',amenities:['Conference Room','Gym','Restaurant','WiFi','Lounge'],occupancy:68},
+  {id:'h4',em:'✨',name:'Asokoro Palace Hotel',loc:'Asokoro, Abuja',stars:'★★★★★',price:95000,badge:'Luxury',amenities:['Rooftop Pool','Spa','Helipad','Restaurant','Concierge'],occupancy:91},
+  {id:'h5',em:'🏙️',name:'The Radisson Port',loc:'Port Harcourt',stars:'★★★★',price:48000,badge:'City View',amenities:['Pool','Restaurant','WiFi','Gym','Parking'],occupancy:59},
+  {id:'h6',em:'🌺',name:'Ibadan Heritage Inn',loc:'Bodija, Ibadan',stars:'★★★',price:28000,badge:'Cultural',amenities:['Restaurant','WiFi','Garden','Parking'],occupancy:44},
+];
+const rooms={
+  standard:[
+    {id:'r1',icon:'🛏️',name:'Classic Room',desc:'Queen bed · City view · 28m²',price:85000,avail:8,tag:'Popular'},
+    {id:'r2',icon:'🛌',name:'Superior Twin',desc:'Twin beds · Garden view · 30m²',price:78000,avail:5,tag:''},
+  ],
+  deluxe:[
+    {id:'r3',icon:'🏙️',name:'Deluxe King Room',desc:'King bed · Panoramic view · Minibar · 38m²',price:120000,avail:4,tag:'Best Value'},
+    {id:'r4',icon:'🌊',name:'Deluxe Ocean Suite',desc:'King bed · Private balcony · Ocean view · 48m²',price:155000,avail:2,tag:'Premium'},
+  ],
+  suite:[
+    {id:'r5',icon:'👑',name:'Executive Suite',desc:'Separate living area · King bed · Lounge · 68m²',price:220000,avail:2,tag:'Top Choice'},
+    {id:'r6',icon:'🌟',name:'Presidential Suite',desc:'2-bed · Private butler · Rooftop terrace · 120m²',price:450000,avail:1,tag:'Exclusive'},
+  ]
+};
+const food={
+  breakfast:[
+    {em:'🥞',name:'Continental Breakfast',desc:'Fresh pastries, juice, fruit',price:8500},
+    {em:'🍳',name:'Full English Breakfast',desc:'Eggs, bacon, sausage, beans',price:12000},
+    {em:'🥗',name:'Tropical Fruit Platter',desc:'Seasonal fresh fruits',price:6500},
+  ],
+  mains:[
+    {em:'🍖',name:'Grilled Pepper Chicken',desc:'With jollof rice and coleslaw',price:18500},
+    {em:'🐠',name:'Grilled Sea Bass',desc:'Lemon butter sauce, steamed veg',price:24000},
+    {em:'🥩',name:'Prime Beef Steak',desc:'250g wagyu, garlic mash',price:35000},
+    {em:'🍲',name:'Egusi Soup & Pounded Yam',desc:'Assorted meat, traditional style',price:15000},
+  ],
+  drinks:[
+    {em:'🍷',name:'House Red Wine',desc:'Cabernet Sauvignon, 750ml',price:22000},
+    {em:'🥂',name:'Sparkling Water (6-pack)',desc:'Chilled Perrier',price:4500},
+    {em:'☕',name:'Coffee & Tea Selection',desc:'Espresso, cappuccino, teas',price:3500},
+    {em:'🧃',name:'Fresh Juice Blend',desc:'Orange, carrot, ginger',price:5000},
+  ]
+};
+const faqs={
+  wifi:{q:'WiFi password?',a:'Network: <strong>HotelGuest_5G</strong> · Password: <strong style="font-family:\'JetBrains Mono\'">StayWell2024</strong>. Complimentary throughout the property.'},
+  pool:{q:'Pool hours?',a:'Outdoor pool: <strong>6:00 AM – 10:00 PM</strong>. Indoor heated pool: <strong>24 hours</strong>. Towels provided at poolside.'},
+  breakfast:{q:'Is breakfast included?',a:'Included with Deluxe & Suite bookings. Standard rooms may add breakfast for <strong>₦8,500/person/day</strong>. Served 6:30–11:00 AM.'},
+  parking:{q:'Parking info?',a:'Complimentary valet for all guests. Self-park in our 200-space secured garage. EV charging on Level 2.'},
+  late:{q:'Late checkout options?',a:'Until 2:00 PM complimentary (subject to availability). Until 4:00 PM costs <strong>₦15,000</strong>. Request by 9:00 AM checkout day.'},
+};
+
+// ═══════════════════════════════
+// UTILS
+// ═══════════════════════════════
+const fmt=n=>'₦'+n.toLocaleString();
+const genRef=()=>'BK-'+Math.floor(100000+Math.random()*900000);
+const nowT=()=>{const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');};
+const today=()=>new Date().toISOString().split('T')[0];
+const scroll=()=>{const m=document.getElementById('messages');setTimeout(()=>m.scrollTop=m.scrollHeight,80);};
+function saveAll(){
+  localStorage.setItem('aria_stay',JSON.stringify(currentStay));
+  localStorage.setItem('aria_reservations',JSON.stringify(reservations));
+  localStorage.setItem('aria_guests',JSON.stringify(guestProfiles));
+  localStorage.setItem('aria_hk',JSON.stringify(hkRooms));
+  updateBanner();
+}
+function selPay(el,method){
+  selPayMethod=method;
+  document.querySelectorAll('.pay-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function botMsg(text,extras=''){
+  const m=document.getElementById('messages');
+  const d=document.createElement('div');d.className='msg bot';
+  d.innerHTML=`<div class="msg-av">🏨</div><div class="msg-col"><div class="bubble">${text}</div>${extras?`<div>${extras}</div>`:''}<div class="msg-time">${nowT()}</div></div>`;
+  m.appendChild(d);scroll();
+}
+function userMsg(text){
+  const m=document.getElementById('messages');
+  const d=document.createElement('div');d.className='msg user';
+  d.innerHTML=`<div class="msg-col"><div class="bubble">${text}</div><div class="msg-time">${nowT()}</div></div><div class="msg-av">👤</div>`;
+  m.appendChild(d);scroll();
+}
+function typing(cb,delay=900){
+  const m=document.getElementById('messages');
+  const t=document.createElement('div');t.className='msg bot';t.id='t_ind';
+  t.innerHTML=`<div class="msg-av">🏨</div><div class="msg-col"><div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
+  m.appendChild(t);scroll();
+  setTimeout(()=>{t.remove();cb();},delay);
+}
+function openOverlay(id){document.getElementById(id)?.classList.add('open');}
+function closeOverlay(id){document.getElementById(id)?.classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+function updateBanner(){
+  const b=document.getElementById('stayBanner');
+  if(currentStay){b.classList.add('show');document.getElementById('stayBannerText').textContent=`🏨 ${currentStay.hotel} · Room ${currentStay.room} · Out: ${currentStay.checkout}`;}
+  else b.classList.remove('show');
+}
+
+// ═══════════════════════════════
+// MENUS
+// ═══════════════════════════════
+function mainMenu(){
+  if(currentStay)return guestMenu();
+  return `<div class="chips">
+    <div class="chip gold" onclick="doFindHotel()">🏨 Find Hotel</div>
+    <div class="chip" onclick="openOverlay('overlayCheckin')">🗝️ Check In</div>
+    <div class="chip" onclick="doReservations()">📋 Reservations</div>
+    <div class="chip" onclick="doChannels()">🌐 Channels</div>
+    <div class="chip" onclick="doAnalytics()">📊 Reports</div>
+    <div class="chip" onclick="doFaq()">❓ FAQs</div>
+  </div>`;
+}
+function guestMenu(){
+  return `<div class="chips">
+    <div class="chip gold" onclick="doRoomService()">🍽️ Room Service</div>
+    <div class="chip" onclick="doServices()">🛎️ Services</div>
+    <div class="chip" onclick="doExtend()">📅 Extend Stay</div>
+    <div class="chip" onclick="doGuestProfile()">👤 My Profile</div>
+    <div class="chip" onclick="doBilling()">💳 My Bill</div>
+    <div class="chip" onclick="doCheckout()">🚪 Check Out</div>
+    <div class="chip" onclick="doFaq()">❓ FAQs</div>
+  </div>`;
+}
+function staffMenu(){
+  return `<div class="chips">
+    <div class="chip gold" onclick="doReservations()">📋 Reservations</div>
+    <div class="chip em" onclick="doHousekeepingBoard()">🧹 Housekeeping</div>
+    <div class="chip" onclick="doAnalytics()">📊 Reports</div>
+    <div class="chip" onclick="doChannels()">🌐 Channels</div>
+  </div>`;
+}
+
+// ═══════════════════════════════
+// HOTEL & ROOM BROWSE
+// ═══════════════════════════════
+function doFindHotel(){
+  userMsg('🏨 Find a hotel');
+  typing(()=>{
+    botMsg('Here are our <strong>featured properties</strong> across Nigeria:',
+      `<div class="hotel-grid">${hotels.map(h=>`
+        <div class="hotel-card" onclick="selectHotel('${h.id}')">
+          <div class="hc-stars">${h.stars}</div><div class="hc-emoji">${h.em}</div>
+          <div class="hc-name">${h.name}</div><div class="hc-loc">📍 ${h.loc}</div>
+          <div class="hc-price">${fmt(h.price)}/night</div>
+          <div class="hc-badge">${h.badge}</div>
+        </div>`).join('')}</div>
+      <div class="chips"><div class="chip" onclick="filterByCity()">🔍 By City</div><div class="chip" onclick="filterByBudget()">💰 By Budget</div></div>`);
+  });
+}
+function selectHotel(id){
+  selHotel=hotels.find(h=>h.id===id);
+  userMsg(`Tell me about ${selHotel.name}`);
+  typing(()=>{
+    botMsg(`${selHotel.em} <strong>${selHotel.name}</strong><br>📍 ${selHotel.loc} · ${selHotel.stars}<br>From <strong>${fmt(selHotel.price)}/night</strong>`,
+      `<div class="a-tags">${selHotel.amenities.map(a=>`<span class="a-tag">${a}</span>`).join('')}</div>
+      <div class="info-card" style="margin-top:7px;">
+        <div class="ic-row"><div class="ic-icon">📊</div><div class="ic-text"><div class="ic-label">Current Occupancy</div>${selHotel.occupancy}%<div class="prog-bar" style="margin-top:4px;"><div class="prog-fill" style="width:${selHotel.occupancy}%"></div></div></div></div>
+      </div>
+      <div class="chips" style="margin-top:8px;">
+        <div class="chip gold" onclick="browseRooms()">🛏️ Browse Rooms</div>
+        <div class="chip" onclick="doFindHotel()">← All Hotels</div>
+      </div>`);
+  });
+}
+function filterByCity(){
+  userMsg('Filter by city');
+  typing(()=>{botMsg('Which city?',`<div class="chips"><div class="chip" onclick="filterCity('Lagos')">🌊 Lagos</div><div class="chip" onclick="filterCity('Abuja')">🏛️ Abuja</div><div class="chip" onclick="filterCity('Port Harcourt')">🛢️ Port Harcourt</div><div class="chip" onclick="filterCity('Ibadan')">🌺 Ibadan</div></div>`);});
+}
+function filterCity(city){
+  userMsg(`Hotels in ${city}`);
+  const list=hotels.filter(h=>h.loc.includes(city));
+  typing(()=>{botMsg(`<strong>${list.length}</strong> hotel(s) in ${city}:`,`<div class="hotel-grid">${list.map(h=>`<div class="hotel-card" onclick="selectHotel('${h.id}')"><div class="hc-stars">${h.stars}</div><div class="hc-emoji">${h.em}</div><div class="hc-name">${h.name}</div><div class="hc-loc">📍 ${h.loc}</div><div class="hc-price">${fmt(h.price)}/night</div><div class="hc-badge">${h.badge}</div></div>`).join('')}</div>`);});
+}
+function filterByBudget(){
+  userMsg('Filter by budget');
+  typing(()=>{botMsg('Your nightly budget?',`<div class="chips"><div class="chip" onclick="fBudget(30000,'Under ₦30k',0)">💚 Under ₦30k</div><div class="chip" onclick="fBudget(60000,'₦30k–₦60k',30000)">🟡 ₦30k–₦60k</div><div class="chip" onclick="fBudget(100000,'₦60k–₦100k',60000)">🔶 ₦60k–₦100k</div><div class="chip gold" onclick="fBudget(999999,'₦100k+',100000)">💎 ₦100k+</div></div>`);});
+}
+function fBudget(max,label,min){
+  userMsg(`Budget: ${label}`);
+  const list=hotels.filter(h=>h.price<=max&&h.price>=min);
+  typing(()=>{botMsg(`Hotels in the <strong>${label}</strong> range:`,list.length?`<div class="hotel-grid">${list.map(h=>`<div class="hotel-card" onclick="selectHotel('${h.id}')"><div class="hc-stars">${h.stars}</div><div class="hc-emoji">${h.em}</div><div class="hc-name">${h.name}</div><div class="hc-loc">📍 ${h.loc}</div><div class="hc-price">${fmt(h.price)}/night</div><div class="hc-badge">${h.badge}</div></div>`).join('')}</div>`:`<div class="info-card"><div class="ic-row"><div class="ic-icon">😔</div><div class="ic-text">No hotels in that range. Try a different budget!</div></div></div>`);});
+}
+function browseRooms(){
+  userMsg('Browse rooms');
+  typing(()=>{botMsg(`Room categories at <strong>${selHotel?.name||'the hotel'}</strong>:`,`<div class="chips"><div class="chip" onclick="showRoomCat('standard')">🛏️ Standard</div><div class="chip" onclick="showRoomCat('deluxe')">🏙️ Deluxe</div><div class="chip gold" onclick="showRoomCat('suite')">👑 Suites</div></div>`);});
+}
+function avTag(r){
+  if(r.avail>4)return`<span class="rc-avail av-ok">✓ ${r.avail} available</span>`;
+  if(r.avail>1)return`<span class="rc-avail av-few">⚠ ${r.avail} left</span>`;
+  if(r.avail===1)return`<span class="rc-avail av-few">⚠ Last room!</span>`;
+  return`<span class="rc-avail av-no">✗ Sold out</span>`;
+}
+function showRoomCat(cat){
+  const labels={standard:'Standard Rooms',deluxe:'Deluxe Rooms',suite:'Suites'};
+  userMsg(labels[cat]);
+  typing(()=>{botMsg(`<strong>${labels[cat]}</strong> — select a room:`,
+    `<div class="room-list">${rooms[cat].map(r=>`
+      <div class="room-card">
+        <div class="rc-icon">${r.icon}</div>
+        <div class="rc-info">
+          <div class="rc-name">${r.name}${r.tag?` <span style="font-size:8.5px;padding:2px 6px;border-radius:7px;background:rgba(201,168,76,0.12);color:var(--gold-deep);border:1px solid rgba(201,168,76,0.25);font-weight:700;">${r.tag}</span>`:''}</div>
+          <div class="rc-desc">${r.desc}</div>
+          <div class="rc-meta"><span class="rc-price">${fmt(r.price)}<span style="font-size:9.5px;color:var(--text-dim);font-weight:400;">/night</span></span>${avTag(r)}</div>
+        </div>
+        <button class="rc-btn" onclick="pickRoom('${r.id}','${cat}')" ${r.avail===0?'disabled':''}>→</button>
+      </div>`).join('')}</div>
+    <div class="chips"><div class="chip" onclick="browseRooms()">← Categories</div></div>`);
+  });
+}
+function pickRoom(rid,cat){
+  selRoom=rooms[cat].find(x=>x.id===rid);
+  userMsg(`I'd like the ${selRoom.name}`);
+  typing(()=>{botMsg(`<strong>${selRoom.name}</strong> selected 🌟`,
+    `<div class="bk-card"><div class="bk-head"><span>🛏️</span><span class="bk-title">${selRoom.name}</span></div>
+    <div class="bk-row"><span class="bk-label">Description</span><span class="bk-val" style="font-size:11px;">${selRoom.desc}</span></div>
+    <div class="bk-row"><span class="bk-label">Rate</span><span class="bk-val">${fmt(selRoom.price)}/night</span></div>
+    <div class="bk-row"><span class="bk-label">Availability</span><span class="bk-val">${selRoom.avail} room(s) left</span></div></div>
+    <div class="chips"><div class="chip gold" onclick="openBookingForm()">📋 Reserve This Room</div><div class="chip" onclick="showRoomCat('${cat}')">← Other Rooms</div></div>`);
+  });
+}
+function openBookingForm(){
+  if(!selRoom){botMsg('Please select a room first.');return;}
+  const t=today(),out=new Date();out.setDate(out.getDate()+2);
+  document.getElementById('bk_in').value=t;
+  document.getElementById('bk_out').value=out.toISOString().split('T')[0];
+  document.getElementById('bk_room_info').innerHTML=`<div class="info-card" style="margin-bottom:4px;"><div class="ic-row"><div class="ic-icon">🛏️</div><div class="ic-text"><div class="ic-label">Selected Room</div>${selRoom.name} — ${fmt(selRoom.price)}/night</div></div></div>`;
+  openOverlay('overlayBook');
+}
+
+// ═══════════════════════════════
+// RESERVATION MANAGEMENT
+// ═══════════════════════════════
+function doReservations(){
+  openOverlay('overlayReservations');
+  loadResvTab('all',document.querySelector('#overlayReservations .tab'));
+}
+function loadResvTab(filter,tabEl){
+  document.querySelectorAll('#overlayReservations .tab').forEach(t=>t.classList.remove('active'));
+  if(tabEl)tabEl.classList.add('active');
+  const list=filter==='all'?reservations:reservations.filter(r=>r.status===filter);
+  const statusMap={confirmed:'rb-confirmed',arriving:'rb-confirmed',checkedin:'rb-checkedin',departing:'rb-pending',cancelled:'rb-cancelled'};
+  const statusLabel={confirmed:'Confirmed',arriving:'Arriving Today',checkedin:'In-House',departing:'Departing',cancelled:'Cancelled'};
+  document.getElementById('resvListBody').innerHTML=list.length?
+    `<div class="res-list">${list.map(r=>`
+      <div class="res-item" onclick="showResvDetail('${r.id}')">
+        <div class="res-room">${r.room}</div>
+        <div class="res-info">
+          <div class="res-guest">${r.guest}</div>
+          <div class="res-dates">📅 ${r.checkin} → ${r.checkout} · ${r.nights}N · ${r.type}</div>
+        </div>
+        <span class="res-badge ${statusMap[r.status]||'rb-pending'}">${statusLabel[r.status]||r.status}</span>
+      </div>`).join('')}</div>`:
+    `<div style="text-align:center;padding:28px;color:var(--text-muted);font-size:13px;">No reservations found for this filter.</div>`;
+}
+function showResvDetail(id){
+  const r=reservations.find(x=>x.id===id);if(!r)return;
+  const statusLabel={confirmed:'Confirmed',arriving:'Arriving Today',checkedin:'In-House',departing:'Departing',cancelled:'Cancelled'};
+  document.getElementById('resvDetailBody').innerHTML=`
+    <div class="confirm-card">
+      <div class="cc-title">Reservation — ${r.id}</div>
+      <div class="cc-id">Source: ${r.source}</div>
+      <div class="cc-row"><span class="cc-rl">Guest</span><span class="cc-rv">${r.guest}</span></div>
+      <div class="cc-row"><span class="cc-rl">Room</span><span class="cc-rv">#${r.room} · ${r.type}</span></div>
+      <div class="cc-row"><span class="cc-rl">Check-in</span><span class="cc-rv">${r.checkin}</span></div>
+      <div class="cc-row"><span class="cc-rl">Check-out</span><span class="cc-rv">${r.checkout}</span></div>
+      <div class="cc-row"><span class="cc-rl">Guests</span><span class="cc-rv">${r.nights} nights</span></div>
+      <div class="cc-div"></div>
+      <div class="cc-row"><span class="cc-rl">Total</span><span class="cc-rv" style="color:var(--gold-light)">${fmt(r.total)}</span></div>
+      <div class="cc-row"><span class="cc-rl">Status</span><span class="cc-rv">${statusLabel[r.status]||r.status}</span></div>
+    </div>
+    <div class="info-card">
+      <div class="ic-row"><div class="ic-icon">📞</div><div class="ic-text"><div class="ic-label">Contact</div>${r.phone} · ${r.email}</div></div>
+      ${r.requests?`<div class="ic-row"><div class="ic-icon">📝</div><div class="ic-text"><div class="ic-label">Special Requests</div>${r.requests}</div></div>`:''}
+    </div>`;
+  const actions=[];
+  if(r.status==='confirmed'||r.status==='arriving')actions.push(`<button class="menu-btn gold-btn" onclick="checkInFromResv('${r.id}')">🗝️ Check In Guest</button>`);
+  if(r.status==='checkedin'||r.status==='departing')actions.push(`<button class="menu-btn" onclick="checkOutFromResv('${r.id}')">🚪 Check Out</button>`);
+  if(r.status!=='cancelled')actions.push(`<button class="menu-btn ghost-btn" style="margin-top:6px;" onclick="cancelResv('${r.id}')">✕ Cancel Reservation</button>`);
+  document.getElementById('resvDetailFooter').innerHTML=actions.join('');
+  closeOverlay('overlayReservations');
+  openOverlay('overlayResvDetail');
+}
+function checkInFromResv(id){
+  const r=reservations.find(x=>x.id===id);if(!r)return;
+  r.status='checkedin';
+  currentStay={name:r.guest,ref:r.id,checkin:r.checkin,checkout:r.checkout,hotel:selHotel?.name||'Grand Meridian Hotel',room:r.room,guests:'2',status:'active'};
+  saveAll();
+  closeOverlay('overlayResvDetail');
+  typing(()=>{botMsg(`✅ <strong>${r.guest}</strong> has been checked in to Room <strong>#${r.room}</strong>!`,guestMenu());});
+}
+function checkOutFromResv(id){
+  const r=reservations.find(x=>x.id===id);if(!r)return;
+  r.status='cancelled';
+  if(currentStay&&currentStay.ref===id){currentStay=null;}
+  saveAll();
+  closeOverlay('overlayResvDetail');
+  typing(()=>{botMsg(`✅ <strong>${r.guest}</strong> has been checked out from Room <strong>#${r.room}</strong>.`,mainMenu());});
+}
+function cancelResv(id){
+  if(!confirm('Cancel this reservation?'))return;
+  const r=reservations.find(x=>x.id===id);if(!r)return;
+  r.status='cancelled';saveAll();
+  closeOverlay('overlayResvDetail');
+  typing(()=>{botMsg(`Reservation <strong>${id}</strong> has been cancelled.`,mainMenu());});
+}
+
+// ═══════════════════════════════
+// BOOKING FORM
+// ═══════════════════════════════
+function submitBooking(){
+  const name=document.getElementById('bk_name').value.trim();
+  const phone=document.getElementById('bk_phone').value.trim();
+  const checkin=document.getElementById('bk_in').value;
+  const checkout=document.getElementById('bk_out').value;
+  const source=document.getElementById('bk_source').value;
+  const rate=document.getElementById('bk_rate').value;
+  if(!name||!phone||!checkin||!checkout){alert('Please fill all required fields.');return;}
+  const ref=genRef();
+  const nights=Math.max(1,Math.round((new Date(checkout)-new Date(checkin))/(864e5)));
+  const total=nights*(selRoom?.price||85000);
+  const newResv={id:ref,guest:name,room:Math.floor(100+Math.random()*900),type:selRoom?.name||'Standard Room',checkin,checkout,nights,total,status:'confirmed',source,phone,email:document.getElementById('bk_email').value,requests:document.getElementById('bk_req').value};
+  reservations.unshift(newResv);
+  // Update guest profile
+  let gp=guestProfiles.find(g=>g.phone===phone);
+  if(!gp){gp={name,phone,email:newResv.email,stays:0,totalSpend:0,tier:'Silver',points:0,preferences:[]};guestProfiles.push(gp);}
+  gp.stays++;gp.totalSpend+=total;gp.points+=Math.floor(total/1000);
+  if(gp.totalSpend>2000000)gp.tier='Platinum';
+  else if(gp.totalSpend>500000)gp.tier='Gold';
+  saveAll();
+  closeOverlay('overlayBook');
+  userMsg('Confirm reservation');
+  typing(()=>{botMsg('🎉 Reservation <strong>confirmed</strong>!',
+    `<div class="confirm-card">
+      <div class="cc-title">Booking Confirmation</div><div class="cc-id">${ref} · ${source}</div>
+      <div class="cc-row"><span class="cc-rl">Guest</span><span class="cc-rv">${name}</span></div>
+      <div class="cc-row"><span class="cc-rl">Hotel</span><span class="cc-rv">${selHotel?.name||'Grand Hotel'}</span></div>
+      <div class="cc-row"><span class="cc-rl">Room</span><span class="cc-rv">${selRoom?.name||'Standard Room'}</span></div>
+      <div class="cc-row"><span class="cc-rl">Dates</span><span class="cc-rv">${checkin} → ${checkout}</span></div>
+      <div class="cc-row"><span class="cc-rl">Rate Plan</span><span class="cc-rv">${rate}</span></div>
+      <div class="cc-div"></div>
+      <div class="cc-row"><span class="cc-rl">${nights} night(s)</span><span class="cc-rv" style="color:var(--gold-light)">${fmt(total)}</span></div>
+    </div>
+    <div class="chips"><div class="chip gold" onclick="openOverlay('overlayCheckin')">🗝️ Check In Now</div><div class="chip" onclick="mainMenuChat()">🏠 Menu</div></div>`);
+  });
+}
+
+// ═══════════════════════════════
+// CHECK-IN
+// ═══════════════════════════════
+function submitCheckin(){
+  const name=document.getElementById('ci_name').value.trim();
+  const ref=document.getElementById('ci_ref').value.trim()||genRef();
+  const checkin=document.getElementById('ci_in').value;
+  const checkout=document.getElementById('ci_out').value;
+  const guests=document.getElementById('ci_guests').value;
+  const roomType=document.getElementById('ci_room_type').value;
+  if(!name||!checkin||!checkout){alert('Please fill all required fields.');return;}
+  const room=Math.floor(100+Math.random()*900);
+  currentStay={name,ref,checkin,checkout,hotel:selHotel?.name||'Grand Meridian Hotel',room,guests,roomType,payMethod:selPayMethod,status:'active'};
+  const r=reservations.find(x=>x.id===ref);if(r)r.status='checkedin';
+  // Upsert guest profile
+  let gp=guestProfiles.find(g=>g.name===name);
+  if(!gp){gp={name,phone:'',email:'',stays:1,totalSpend:0,tier:'Silver',points:0,preferences:[document.getElementById('ci_request').value].filter(Boolean)};guestProfiles.push(gp);}
+  else{gp.stays++;if(document.getElementById('ci_request').value&&!gp.preferences.includes(document.getElementById('ci_request').value))gp.preferences.push(document.getElementById('ci_request').value);}
+  saveAll();
+  closeOverlay('overlayCheckin');
+  userMsg('Check in');
+  typing(()=>{botMsg(`Welcome, <strong>${name}</strong>! 🎉 Room <strong>#${room}</strong> is ready.`,
+    `<div class="confirm-card">
+      <div class="cc-title">Check-In Confirmed</div><div class="cc-id">Ref: ${ref}</div>
+      <div class="cc-row"><span class="cc-rl">Room</span><span class="cc-rv">#${room} · ${roomType.charAt(0).toUpperCase()+roomType.slice(1)}</span></div>
+      <div class="cc-row"><span class="cc-rl">Floor</span><span class="cc-rv">${Math.floor(room/100)}th Floor</span></div>
+      <div class="cc-row"><span class="cc-rl">Check-out</span><span class="cc-rv">${checkout}</span></div>
+      <div class="cc-row"><span class="cc-rl">Guests</span><span class="cc-rv">${guests}</span></div>
+      <div class="cc-row"><span class="cc-rl">Payment</span><span class="cc-rv">${selPayMethod==='card'?'💳 Card':'selPayMethod'==='transfer'?'🏦 Transfer':'💵 Cash'}</span></div>
+    </div>${guestMenu()}`);
+  });
+}
+
+// ═══════════════════════════════
+// CHECKOUT
+// ═══════════════════════════════
+function doCheckout(){
+  if(!currentStay){typing(()=>{botMsg('No active stay to check out from.',mainMenu());});return;}
+  userMsg('Check out');
+  const nights=Math.max(1,Math.round((new Date(currentStay.checkout)-new Date(currentStay.checkin))/(864e5)));
+  const roomRate=selRoom?.price||120000;
+  const baseTotal=nights*roomRate;
+  const roomServiceCharges=4500+18500;
+  const spaCharges=25000;
+  const tax=Math.round((baseTotal+roomServiceCharges+spaCharges)*0.075);
+  const grandTotal=baseTotal+roomServiceCharges+spaCharges+tax;
+  document.getElementById('checkoutBody').innerHTML=`
+    <div class="stay-card" style="margin-top:0;">
+      <div class="stay-head"><div class="stay-title">${currentStay.hotel}</div><div class="stay-badge">Active Stay</div></div>
+      <div class="stay-row"><span>Guest</span><strong>${currentStay.name}</strong></div>
+      <div class="stay-row"><span>Room</span><strong>#${currentStay.room}</strong></div>
+      <div class="stay-row"><span>Check-out</span><strong>${currentStay.checkout}</strong></div>
+    </div>
+    <div class="invoice-card">
+      <div class="inv-header">
+        <div><div class="inv-hotel">${currentStay.hotel}</div><div class="inv-id">INVOICE · ${currentStay.ref}</div></div>
+        <span class="inv-pending">Pending</span>
+      </div>
+      <div class="inv-row"><span>Room (${nights} nights)</span><span>${fmt(baseTotal)}</span></div>
+      <div class="inv-row"><span>Room Service Charges</span><span>${fmt(roomServiceCharges)}</span></div>
+      <div class="inv-row"><span>Spa & Wellness</span><span>${fmt(spaCharges)}</span></div>
+      <div class="inv-row"><span>VAT (7.5%)</span><span>${fmt(tax)}</span></div>
+      <div class="inv-total"><span>Total Due</span><span class="inv-total-val">${fmt(grandTotal)}</span></div>
+    </div>
+    <div class="sec-div">Select Payment Method</div>
+    <div class="pay-methods">
+      <div class="pay-card sel" onclick="selPay(this,'card')"><div class="pay-icon">💳</div><div class="pay-name">Card</div></div>
+      <div class="pay-card" onclick="selPay(this,'transfer')"><div class="pay-icon">🏦</div><div class="pay-name">Transfer</div></div>
+      <div class="pay-card" onclick="selPay(this,'cash')"><div class="pay-icon">💵</div><div class="pay-name">Cash</div></div>
+    </div>`;
+  document.getElementById('checkoutFooter').innerHTML=`
+    <button class="menu-btn gold-btn" onclick="confirmCheckout(${grandTotal})">💳 Pay ${fmt(grandTotal)} & Check Out</button>
+    <button class="menu-btn ghost-btn" style="margin-top:6px;" onclick="closeOverlay('overlayCheckout')">Stay Longer</button>`;
+  openOverlay('overlayCheckout');
+}
+function confirmCheckout(total){
+  const name=currentStay?.name;const ref=currentStay?.ref;
+  // Update loyalty
+  const gp=guestProfiles.find(g=>g.name===name);
+  if(gp){gp.totalSpend+=total;gp.points+=Math.floor(total/1000);if(gp.totalSpend>2000000)gp.tier='Platinum';else if(gp.totalSpend>500000)gp.tier='Gold';}
+  const r=reservations.find(x=>x.id===ref);if(r){r.status='cancelled';r.total=total;}
+  currentStay=null;saveAll();
+  closeOverlay('overlayCheckout');
+  typing(()=>{botMsg(`Thank you for staying with us, <strong>${name||'valued guest'}</strong>! 🌟`,
+    `<div class="promo-card"><div style="font-size:18px;">🎁</div><div class="promo-text">15% off your next stay! Use code:</div><div class="promo-code">COMEBACK15</div></div>
+    <div class="chips"><div class="chip gold" onclick="doFindHotel()">🏨 Book Again</div><div class="chip" onclick="mainMenuChat()">🏠 Menu</div></div>`);
+  });
+}
+
+// ═══════════════════════════════
+// EXTEND STAY
+// ═══════════════════════════════
+function doExtend(){
+  if(!currentStay){typing(()=>{botMsg('You need an active stay to extend.',mainMenu());});return;}
+  userMsg('Extend my stay');
+  document.getElementById('extendInfo').innerHTML=`
+    <div class="stay-card" style="margin-top:0;">
+      <div class="stay-head"><div class="stay-title">${currentStay.hotel}</div><div class="stay-badge">Active</div></div>
+      <div class="stay-row"><span>Room</span><strong>#${currentStay.room}</strong></div>
+      <div class="stay-row"><span>Current Checkout</span><strong>${currentStay.checkout}</strong></div>
+    </div>`;
+  document.getElementById('ext_date').value=currentStay.checkout;
+  openOverlay('overlayExtend');
+}
+function submitExtend(){
+  const nd=document.getElementById('ext_date').value;
+  if(!nd||nd<=currentStay.checkout){alert('Please select a date after your current checkout.');return;}
+  const old=currentStay.checkout;
+  currentStay.checkout=nd;
+  const r=reservations.find(x=>x.id===currentStay.ref);if(r)r.checkout=nd;
+  saveAll();
+  closeOverlay('overlayExtend');
+  typing(()=>{botMsg('✅ Stay <strong>extended</strong>!',
+    `<div class="bk-card"><div class="bk-head"><span>📅</span><span class="bk-title">Extension Confirmed</span></div>
+    <div class="bk-row"><span class="bk-label">Previous Checkout</span><span class="bk-val">${old}</span></div>
+    <div class="bk-row"><span class="bk-label">New Checkout</span><span class="bk-val" style="color:var(--gold-deep);">${nd}</span></div>
+    <div class="bk-row"><span class="bk-label">Room</span><span class="bk-val">#${currentStay.room}</span></div></div>${guestMenu()}`);
+  });
+}
+
+// ═══════════════════════════════
+// ROOM SERVICE
+// ═══════════════════════════════
+function doRoomService(){
+  if(!currentStay){typing(()=>{botMsg('Room service is for checked-in guests. Check in first!',mainMenu());});return;}
+  userMsg('Room service');
+  foodOrder=[];renderRS('mains');openOverlay('overlayRS');
+}
+function renderRS(cat){
+  const tabs=['breakfast','mains','drinks'];const labels={breakfast:'🌅 Breakfast',mains:'🍖 Mains',drinks:'🍷 Drinks'};
+  document.getElementById('rsBody').innerHTML=`
+    <div class="chips" style="margin-bottom:11px;">${tabs.map(t=>`<div class="chip ${t===cat?'gold':''}" onclick="renderRS('${t}')">${labels[t]}</div>`).join('')}</div>
+    <div class="food-list">${food[cat].map((item,i)=>`
+      <div class="food-card ${foodOrder.find(x=>x.name===item.name)?'in-order':''}">
+        <div class="fc-em">${item.em}</div>
+        <div class="fc-info"><div class="fc-name">${item.name}</div><div class="fc-desc">${item.desc}</div><div class="fc-price">${fmt(item.price)}</div></div>
+        <button class="fc-add" onclick="addFood('${cat}',${i})">+</button>
+      </div>`).join('')}</div>`;
+  updateRSFooter();
+}
+function addFood(cat,i){
+  const item=food[cat][i];const ex=foodOrder.find(x=>x.name===item.name);
+  if(ex)ex.qty++;else foodOrder.push({...item,qty:1});renderRS(cat);
+}
+function updateRSFooter(){
+  const total=foodOrder.reduce((s,x)=>s+x.price*x.qty,0);
+  const count=foodOrder.reduce((s,x)=>s+x.qty,0);
+  document.getElementById('rsFooter').innerHTML=count>0?
+    `<div style="display:flex;justify-content:space-between;margin-bottom:9px;font-size:12.5px;"><span style="font-weight:600;color:var(--text-muted);">${count} item(s)</span><span style="font-weight:800;color:var(--gold-deep);">${fmt(total)}</span></div>
+    <button class="menu-btn gold-btn" onclick="placeRSOrder()">🛎️ Order to Room #${currentStay.room}</button>`:
+    `<button class="menu-btn ghost-btn" style="cursor:default;">Select items to order</button>`;
+}
+function placeRSOrder(){
+  const total=foodOrder.reduce((s,x)=>s+x.price*x.qty,0);
+  const items=foodOrder.map(x=>`${x.em} ${x.name} ×${x.qty}`).join(', ');
+  closeOverlay('overlayRS');
+  typing(()=>{botMsg('🛎️ Order placed!',
+    `<div class="bk-card"><div class="bk-head"><span>🍽️</span><span class="bk-title">Room Service Confirmed</span></div>
+    <div class="bk-row"><span class="bk-label">Room</span><span class="bk-val">#${currentStay.room}</span></div>
+    <div class="bk-row"><span class="bk-label">Items</span><span class="bk-val" style="font-size:11px;">${items}</span></div>
+    <div class="bk-row"><span class="bk-label">ETA</span><span class="bk-val">25–35 minutes</span></div>
+    <div class="bk-total"><span style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;">Total</span><span class="bk-total-val">${fmt(total)}</span></div></div>${guestMenu()}`);
+  });
+  foodOrder=[];
+}
+
+// ═══════════════════════════════
+// HOUSEKEEPING MANAGEMENT
+// ═══════════════════════════════
+function doHousekeepingBoard(){
+  renderHKBoard();openOverlay('overlayHK');
+}
+function renderHKBoard(){
+  const statusMap={clean:'hk-clean',dirty:'hk-dirty',inservice:'hk-inservice',checkout:'hk-checkout'};
+  const statusLabel={clean:'✓ Clean',dirty:'✗ Needs Cleaning',inservice:'⟳ In Service',checkout:'⬛ Checkout'};
+  const counts={clean:0,dirty:0,inservice:0,checkout:0};
+  hkRooms.forEach(r=>counts[r.status]++);
+  document.getElementById('hkBody').innerHTML=`
+    <div class="analytics-grid" style="margin-bottom:12px;">
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val" style="color:var(--emerald);">${counts.clean}</div><div class="stat-label">Clean Rooms</div></div>
+      <div class="stat-card"><div class="stat-icon">🧹</div><div class="stat-val" style="color:var(--rose);">${counts.dirty}</div><div class="stat-label">Need Cleaning</div></div>
+      <div class="stat-card"><div class="stat-icon">⟳</div><div class="stat-val" style="color:var(--amber);">${counts.inservice}</div><div class="stat-label">In Service</div></div>
+      <div class="stat-card"><div class="stat-icon">🚪</div><div class="stat-val" style="color:var(--sky);">${counts.checkout}</div><div class="stat-label">Checkout</div></div>
+    </div>
+    <div class="sec-div">Room Status Board — tap to update</div>
+    <div class="hk-board">${hkRooms.map((r,i)=>`
+      <div class="hk-room ${statusMap[r.status]}" onclick="cycleHKStatus(${i})">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="hk-num">${r.num}</div>
+          <div class="hk-status"><span class="hk-dot"></span>${statusLabel[r.status]}</div>
+        </div>
+        <div class="hk-type" style="margin-top:3px;">${r.type}</div>
+      </div>`).join('')}</div>`;
+  document.getElementById('hkFooter').innerHTML=`<button class="menu-btn em-btn" onclick="markAllClean()">✅ Mark All Clean</button>`;
+}
+function cycleHKStatus(i){
+  const cycle=['clean','dirty','inservice','checkout'];
+  const cur=cycle.indexOf(hkRooms[i].status);
+  hkRooms[i].status=cycle[(cur+1)%cycle.length];
+  saveAll();renderHKBoard();
+}
+function markAllClean(){
+  hkRooms.forEach(r=>{if(r.status==='dirty')r.status='clean';});
+  saveAll();renderHKBoard();
+}
+function doServices(){
+  if(!currentStay){typing(()=>{botMsg('Hotel services are for checked-in guests.',mainMenu());});return;}
+  userMsg('Hotel services');
+  typing(()=>{botMsg('How can we make your stay exceptional? 🌟',
+    `<div class="svc-grid">
+      <div class="svc-card" onclick="doHousekeepingBoard()"><div class="svc-icon">🧹</div><div class="svc-name">Housekeeping</div><div class="svc-sub">Request cleaning</div></div>
+      <div class="svc-card" onclick="openOverlay('overlaySpa')"><div class="svc-icon">💆</div><div class="svc-name">Spa & Wellness</div><div class="svc-sub">Book treatment</div></div>
+      <div class="svc-card" onclick="openOverlay('overlayTransport')"><div class="svc-icon">🚗</div><div class="svc-name">Transport</div><div class="svc-sub">Taxis & transfers</div></div>
+      <div class="svc-card" onclick="doWakeUp()"><div class="svc-icon">⏰</div><div class="svc-name">Wake-Up Call</div><div class="svc-sub">Set alarm</div></div>
+      <div class="svc-card" onclick="doLaundry()"><div class="svc-icon">👔</div><div class="svc-name">Laundry</div><div class="svc-sub">Pickup & delivery</div></div>
+      <div class="svc-card" onclick="doGym()"><div class="svc-icon">🏋️</div><div class="svc-name">Fitness Centre</div><div class="svc-sub">Reserve a slot</div></div>
+    </div>
+    <div class="chips"><div class="chip gold" onclick="doRoomService()">🍽️ Room Service</div><div class="chip" onclick="doFaq()">❓ FAQs</div></div>`);
+  });
+}
+function submitSpa(){
+  const type=document.getElementById('spa_type');const date=document.getElementById('spa_date').value;const time=document.getElementById('spa_time').value;
+  closeOverlay('overlaySpa');userMsg('Book spa');
+  typing(()=>{botMsg('💆 <strong>Spa booking confirmed!</strong>',
+    `<div class="confirm-card"><div class="cc-title">Spa Reservation</div><div class="cc-id">Serenity Spa — Level B1</div>
+    <div class="cc-row"><span class="cc-rl">Treatment</span><span class="cc-rv">${type.options[type.selectedIndex].text.split('—')[0].trim()}</span></div>
+    <div class="cc-row"><span class="cc-rl">Date</span><span class="cc-rv">${date||'Today'}</span></div>
+    <div class="cc-row"><span class="cc-rl">Time</span><span class="cc-rv">${time}</span></div></div>${guestMenu()}`);
+  });
+}
+function submitTransport(){
+  const type=document.getElementById('tr_type');const from=document.getElementById('tr_from').value||'Hotel Lobby';const to=document.getElementById('tr_to').value||'Destination';const date=document.getElementById('tr_date').value;const time=document.getElementById('tr_time').value;
+  closeOverlay('overlayTransport');userMsg('Book transport');
+  typing(()=>{botMsg('🚗 <strong>Transport arranged!</strong>',
+    `<div class="info-card"><div class="ic-row"><div class="ic-icon">🚗</div><div class="ic-text"><div class="ic-label">Type</div>${type.options[type.selectedIndex].text}</div></div>
+    <div class="ic-row"><div class="ic-icon">📍</div><div class="ic-text"><div class="ic-label">Route</div>${from} → ${to}</div></div>
+    <div class="ic-row"><div class="ic-icon">🕐</div><div class="ic-text"><div class="ic-label">Pickup</div>${date||'Today'} at ${time||'Confirmed'}</div></div></div>${guestMenu()}`);
+  });
+}
+function doWakeUp(){const t=prompt('Wake-up call time (e.g. 7:00 AM):','6:30 AM');if(!t)return;userMsg(`Wake-up call at ${t}`);typing(()=>{botMsg(`⏰ Wake-up call set for <strong>${t}</strong>. Sleep well! 🌙`,guestMenu());});}
+function doLaundry(){userMsg('Laundry pickup');typing(()=>{botMsg('👔 <strong>Laundry Service</strong><br><br>Hang the laundry tag on your door. Collected within 30 min, returned by 5:00 PM.',`<div class="info-card"><div class="ic-row"><div class="ic-icon">👕</div><div class="ic-text"><div class="ic-label">Shirt / Blouse</div>₦2,500 each</div></div><div class="ic-row"><div class="ic-icon">👖</div><div class="ic-text"><div class="ic-label">Trousers / Jeans</div>₦3,000 each</div></div><div class="ic-row"><div class="ic-icon">👗</div><div class="ic-text"><div class="ic-label">Dress / Suit</div>₦5,000 each</div></div></div>${guestMenu()}`);});}
+function doGym(){userMsg('Gym reservation');typing(()=>{botMsg('🏋️ Fitness Centre open <strong>5:00 AM – 11:00 PM</strong>. Complimentary for all guests! Pick a slot:',`<div class="chips"><div class="chip gold" onclick="confirmGym('6AM–7AM')">🌅 6–7 AM</div><div class="chip" onclick="confirmGym('7AM–8AM')">7–8 AM</div><div class="chip" onclick="confirmGym('5PM–6PM')">5–6 PM</div><div class="chip" onclick="confirmGym('7PM–8PM')">7–8 PM</div></div>`);});}
+function confirmGym(slot){userMsg(`Gym: ${slot}`);typing(()=>{botMsg(`✅ Fitness Centre reserved: <strong>${slot}</strong>. Level 3. Towels & water provided. 💪`,guestMenu());});}
+
+// ═══════════════════════════════
+// BILLING
+// ═══════════════════════════════
+function doBilling(){
+  if(!currentStay){typing(()=>{botMsg('Billing is available for checked-in guests.',mainMenu());});return;}
+  userMsg('View my bill');
+  const nights=Math.max(1,Math.round((new Date(currentStay.checkout)-new Date(currentStay.checkin))/(864e5)));
+  const roomRate=selRoom?.price||120000;
+  const baseTotal=nights*roomRate;
+  const extras=4500+18500;const tax=Math.round((baseTotal+extras)*0.075);const grand=baseTotal+extras+tax;
+  renderBilling(nights,roomRate,baseTotal,extras,tax,grand);
+  openOverlay('overlayBilling');
+}
+function renderBilling(nights,rate,base,extras,tax,grand){
+  document.getElementById('billingBody').innerHTML=`
+    <div class="invoice-card">
+      <div class="inv-header">
+        <div><div class="inv-hotel">${currentStay?.hotel||'Grand Hotel'}</div><div class="inv-id">FOLIO · ${currentStay?.ref||'REF'} · Room #${currentStay?.room}</div></div>
+        <span class="inv-pending">Open Folio</span>
+      </div>
+      <div class="sec-div" style="margin-top:0;">Room Charges</div>
+      <div class="inv-row"><span>Room Rate (${nights} nights @ ${fmt(rate)})</span><span>${fmt(base)}</span></div>
+      <div class="sec-div">Additional Charges</div>
+      <div class="inv-row"><span>🍽️ Room Service</span><span>${fmt(4500)}</span></div>
+      <div class="inv-row"><span>🍖 Dinner (25-Mar)</span><span>${fmt(18500)}</span></div>
+      <div class="sec-div">Taxes & Fees</div>
+      <div class="inv-row"><span>VAT (7.5%)</span><span>${fmt(tax)}</span></div>
+      <div class="inv-total"><span>Balance Due</span><span class="inv-total-val">${fmt(grand)}</span></div>
+    </div>
+    <div class="sec-div">Payment Method</div>
+    <div class="pay-methods">
+      <div class="pay-card sel" onclick="selPay(this,'card')"><div class="pay-icon">💳</div><div class="pay-name">Card</div></div>
+      <div class="pay-card" onclick="selPay(this,'transfer')"><div class="pay-icon">🏦</div><div class="pay-name">Transfer</div></div>
+      <div class="pay-card" onclick="selPay(this,'cash')"><div class="pay-icon">💵</div><div class="pay-name">Cash</div></div>
+    </div>`;
+  document.getElementById('billingFooter').innerHTML=`
+    <button class="menu-btn gold-btn" onclick="processPayment(${grand})">💳 Pay ${fmt(grand)} Now</button>
+    <button class="menu-btn ghost-btn" style="margin-top:6px;" onclick="closeOverlay('overlayBilling')">Pay at Checkout</button>`;
+}
+function processPayment(amount){
+  closeOverlay('overlayBilling');
+  typing(()=>{botMsg(`✅ Payment of <strong>${fmt(amount)}</strong> processed successfully!`,
+    `<div class="confirm-card">
+      <div class="cc-title">Payment Receipt</div><div class="cc-id">TXN-${Date.now().toString().slice(-8)}</div>
+      <div class="cc-row"><span class="cc-rl">Amount Paid</span><span class="cc-rv" style="color:var(--gold-light)">${fmt(amount)}</span></div>
+      <div class="cc-row"><span class="cc-rl">Method</span><span class="cc-rv">${selPayMethod==='card'?'💳 Credit Card':selPayMethod==='transfer'?'🏦 Bank Transfer':'💵 Cash'}</span></div>
+      <div class="cc-row"><span class="cc-rl">Status</span><span class="cc-rv">✅ Approved</span></div>
+      <div class="cc-row"><span class="cc-rl">Time</span><span class="cc-rv">${nowT()}</span></div>
+    </div>${guestMenu()}`);
+  });
+}
+
+// ═══════════════════════════════
+// ANALYTICS & REPORTING
+// ═══════════════════════════════
+function doAnalytics(){
+  userMsg('View reports & analytics');
+  renderAnalytics();
+  openOverlay('overlayAnalytics');
+}
+function renderAnalytics(){
+  const totalRevenue=reservations.filter(r=>r.status!=='cancelled').reduce((s,r)=>s+r.total,0);
+  const occupiedRooms=hkRooms.filter(r=>r.status==='clean'||r.status==='inservice').length;
+  const occupancyRate=Math.round((occupiedRooms/hkRooms.length)*100);
+  const totalGuests=reservations.filter(r=>r.status==='checkedin').length;
+  const adr=totalRevenue>0&&reservations.filter(r=>r.status!=='cancelled').length>0?Math.round(totalRevenue/reservations.filter(r=>r.status!=='cancelled').reduce((s,r)=>s+r.nights,0)):0;
+  const sourceMap={};reservations.forEach(r=>{sourceMap[r.source]=(sourceMap[r.source]||0)+1;});
+  document.getElementById('analyticsBody').innerHTML=`
+    <div class="tab-bar"><div class="tab active" onclick="switchAnalyticsTab('overview',this)">Overview</div><div class="tab" onclick="switchAnalyticsTab('revenue',this)">Revenue</div><div class="tab" onclick="switchAnalyticsTab('occupancy',this)">Occupancy</div><div class="tab" onclick="switchAnalyticsTab('sources',this)">Sources</div></div>
+    <div id="analyticsContent">
+      <div class="analytics-grid">
+        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val" style="font-size:15px;">${fmt(totalRevenue)}</div><div class="stat-label">Total Revenue</div><div class="stat-trend trend-up">↑ 12.4% vs last month</div></div>
+        <div class="stat-card"><div class="stat-icon">🏨</div><div class="stat-val">${occupancyRate}%</div><div class="stat-label">Occupancy Rate</div><div class="stat-trend trend-up">↑ 3.2% vs last week</div></div>
+        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val">${totalGuests}</div><div class="stat-label">Guests In-House</div><div class="stat-trend trend-dn">↓ 1 since yesterday</div></div>
+        <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-val" style="font-size:15px;">${fmt(adr)}</div><div class="stat-label">Avg Daily Rate</div><div class="stat-trend trend-up">↑ 8.1% vs last month</div></div>
+      </div>
+      <div class="sec-div">Key Performance Indicators</div>
+      <div class="info-card">
+        ${[
+          {label:'RevPAR',val:fmt(Math.round(adr*(occupancyRate/100))),icon:'📈'},
+          {label:'Total Reservations',val:reservations.length,icon:'📋'},
+          {label:'Cancellation Rate',val:Math.round((reservations.filter(r=>r.status==='cancelled').length/reservations.length)*100)+'%',icon:'❌'},
+          {label:'Avg Length of Stay',val:(reservations.reduce((s,r)=>s+r.nights,0)/reservations.length).toFixed(1)+' nights',icon:'🌙'},
+        ].map(k=>`<div class="ic-row"><div class="ic-icon">${k.icon}</div><div class="ic-text"><div class="ic-label">${k.label}</div>${k.val}</div></div>`).join('')}
+      </div>
+      <div class="sec-div">Bookings by Source</div>
+      ${Object.entries(sourceMap).sort((a,b)=>b[1]-a[1]).map(([src,cnt])=>`
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:600;margin-bottom:3px;"><span>${src}</span><span>${cnt} booking(s)</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:${Math.round((cnt/reservations.length)*100)}%"></div></div>
+        </div>`).join('')}
+    </div>`;
+}
+function switchAnalyticsTab(tab,el){
+  document.querySelectorAll('#overlayAnalytics .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+}
+
+// ═══════════════════════════════
+// GUEST PROFILE & CRM
+// ═══════════════════════════════
+function doGuestProfile(){
+  const name=currentStay?.name;
+  const gp=guestProfiles.find(g=>g.name===name)||{name:name||'Guest',stays:1,totalSpend:0,tier:'Silver',points:0,preferences:[]};
+  renderGuestProfile(gp);openOverlay('overlayGuestProfile');
+}
+function renderGuestProfile(gp){
+  const tierClass={Silver:'tier-silver',Gold:'tier-gold',Platinum:'tier-platinum'};
+  const nextTierSpend=gp.tier==='Platinum'?null:gp.tier==='Gold'?2000000:500000;
+  const progress=nextTierSpend?Math.min(100,Math.round((gp.totalSpend/nextTierSpend)*100)):100;
+  document.getElementById('guestProfileBody').innerHTML=`
+    <div class="guest-profile">
+      <div class="gp-header">
+        <div class="gp-av">👤</div>
+        <div><div class="gp-name">${gp.name}</div><span class="gp-tier ${tierClass[gp.tier]||'tier-silver'}">${gp.tier} Member</span></div>
+      </div>
+      <div class="gp-row"><span class="gp-label">Total Stays</span><span class="gp-val">${gp.stays} visit(s)</span></div>
+      <div class="gp-row"><span class="gp-label">Total Spend</span><span class="gp-val">${fmt(gp.totalSpend)}</span></div>
+      <div class="gp-row"><span class="gp-label">Loyalty Points</span><span class="gp-val">⭐ ${gp.points.toLocaleString()} pts</span></div>
+      ${gp.preferences.length?`<div class="gp-row"><span class="gp-label">Preferences</span><span class="gp-val" style="font-size:11px;text-align:right;">${gp.preferences.join(', ')}</span></div>`:''}
+    </div>
+    <div class="loyalty-card">
+      <div class="lc-title">Loyalty Points Balance</div>
+      <div class="lc-points">${gp.points.toLocaleString()}</div>
+      <div class="lc-tier">${gp.tier} Member${gp.tier!=='Platinum'?` · ${(nextTierSpend-gp.totalSpend).toLocaleString()} to ${gp.tier==='Silver'?'Gold':'Platinum'}`:' · Highest Tier 🌟'}</div>
+      ${nextTierSpend?`<div class="lc-progress"><div class="lc-prog-label"><span>${gp.tier}</span><span>${gp.tier==='Silver'?'Gold':'Platinum'}</span></div><div class="prog-bar" style="background:rgba(255,255,255,0.15);"><div class="prog-fill" style="width:${progress}%;background:linear-gradient(90deg,var(--gold-light),#fff)"></div></div></div>`:''}
+    </div>
+    <div class="sec-div">Recent Stay History</div>
+    ${reservations.filter(r=>r.guest===gp.name).slice(0,3).map(r=>`
+      <div class="res-item" style="cursor:default;">
+        <div class="res-room">${r.room}</div>
+        <div class="res-info"><div class="res-guest">${r.type}</div><div class="res-dates">📅 ${r.checkin} → ${r.checkout} · ${fmt(r.total)}</div></div>
+        <span class="res-badge rb-confirmed">${r.nights}N</span>
+      </div>`).join('') || '<div style="color:var(--text-dim);font-size:12px;padding:8px 0;">No stay history found.</div>'}`;
+  document.getElementById('guestProfileFooter').innerHTML=`<button class="menu-btn ghost-btn" onclick="closeOverlay('overlayGuestProfile')">Close Profile</button>`;
+}
+
+// ═══════════════════════════════
+// CHANNEL MANAGER
+// ═══════════════════════════════
+function doChannels(){
+  userMsg('Channel manager');
+  renderChannels();openOverlay('overlayChannels');
+}
+function renderChannels(){
+  document.getElementById('channelBody').innerHTML=`
+    <div class="analytics-grid" style="margin-bottom:12px;">
+      <div class="stat-card"><div class="stat-icon">🌐</div><div class="stat-val">${channels.filter(c=>c.enabled).length}</div><div class="stat-label">Active Channels</div></div>
+      <div class="stat-card"><div class="stat-icon">🛏️</div><div class="stat-val">${channels.reduce((s,c)=>s+c.rooms,0)}</div><div class="stat-label">Rooms Allocated</div></div>
+    </div>
+    <div class="sec-div">Connected Distribution Channels</div>
+    <div class="channel-grid">${channels.map((c,i)=>`
+      <div class="channel-card ${c.enabled?'active':''}" onclick="toggleChannel(${i})">
+        <div class="ch-logo">${c.icon}</div>
+        <div class="ch-name">${c.name}</div>
+        <div class="ch-status ${c.enabled?'ch-on':'ch-off'}">${c.enabled?'● Live':'○ Off'}</div>
+        <div style="font-size:9px;color:var(--text-dim);margin-top:2px;">${c.rooms} rooms · ${c.rate}</div>
+      </div>`).join('')}</div>
+    <div class="sec-div">Rate Parity Settings</div>
+    <div class="info-card">
+      <div class="ic-row"><div class="ic-icon">💡</div><div class="ic-text"><div class="ic-label">Rate Strategy</div>Dynamic Pricing — rates auto-adjust based on occupancy</div></div>
+      <div class="ic-row"><div class="ic-icon">🔄</div><div class="ic-text"><div class="ic-label">Last Sync</div>Today at ${nowT()} — All channels up to date</div></div>
+      <div class="ic-row"><div class="ic-icon">📊</div><div class="ic-text"><div class="ic-label">Revenue Contribution</div>Direct 42% · OTAs 48% · Agents 10%</div></div>
+    </div>`;
+  document.getElementById('channelFooter').innerHTML=`<button class="menu-btn em-btn" onclick="syncChannels()">🔄 Sync All Channels</button>`;
+}
+function toggleChannel(i){channels[i].enabled=!channels[i].enabled;renderChannels();}
+function syncChannels(){
+  const btn=document.querySelector('#overlayChannels .sheet-footer button');
+  btn.textContent='⟳ Syncing…';btn.disabled=true;
+  setTimeout(()=>{btn.textContent='🔄 Sync All Channels';btn.disabled=false;
+    typing(()=>{botMsg(`✅ All <strong>${channels.filter(c=>c.enabled).length} channels</strong> synced successfully. Room availability updated in real-time across all platforms.`);});
+  },2000);
+}
+
+// ═══════════════════════════════
+// CURRENT BOOKING
+// ═══════════════════════════════
+function showCurrentBooking(){
+  if(!currentStay){typing(()=>{botMsg('No active stay. Would you like to find a hotel or check in?',mainMenu());});return;}
+  userMsg('My current stay');
+  typing(()=>{botMsg('Your current stay:',
+    `<div class="stay-card"><div class="stay-head"><div class="stay-title">${currentStay.hotel}</div><div class="stay-badge">Active</div></div>
+    <div class="stay-row"><span>Guest</span><strong>${currentStay.name}</strong></div>
+    <div class="stay-row"><span>Room</span><strong>#${currentStay.room}</strong></div>
+    <div class="stay-row"><span>Check-in</span><strong>${currentStay.checkin}</strong></div>
+    <div class="stay-row"><span>Check-out</span><strong>${currentStay.checkout}</strong></div>
+    <div class="stay-row"><span>Guests</span><strong>${currentStay.guests}</strong></div></div>${guestMenu()}`);
+  });
+}
+
+// ═══════════════════════════════
+// FAQs
+// ═══════════════════════════════
+function doFaq(){
+  typing(()=>{botMsg('📖 <strong>Frequently Asked Questions</strong>',
+    `<div class="chips"><div class="chip" onclick="showFaq('wifi')">📶 WiFi</div><div class="chip" onclick="showFaq('pool')">🏊 Pool</div><div class="chip" onclick="showFaq('breakfast')">🥞 Breakfast</div><div class="chip" onclick="showFaq('parking')">🅿️ Parking</div><div class="chip" onclick="showFaq('late')">🕐 Late Checkout</div><div class="chip" onclick="callFrontDesk()">📞 Front Desk</div></div>`);
+  });
+}
+function showFaq(key){
+  const f=faqs[key];if(!f)return;
+  userMsg(f.q);
+  typing(()=>{botMsg(f.a,`<div class="chips"><div class="chip" onclick="doFaq()">← More FAQs</div><div class="chip" onclick="callFrontDesk()">📞 Front Desk</div></div>`);});
+}
+function callFrontDesk(){
+  userMsg('Contact front desk');
+  typing(()=>{botMsg('Our <strong>Front Desk</strong> team is available 24/7.',
+    `<div class="info-card"><div class="ic-row"><div class="ic-icon">📞</div><div class="ic-text"><div class="ic-label">Front Desk (24/7)</div>+234 (0) 800 HOTEL 01</div></div><div class="ic-row"><div class="ic-icon">📧</div><div class="ic-text"><div class="ic-label">Email</div>concierge@ariahotel.ng</div></div><div class="ic-row"><div class="ic-icon">🏨</div><div class="ic-text"><div class="ic-label">In-Room</div>Dial <strong>0</strong> from room phone</div></div></div>
+    <div class="chips"><div class="chip gold" onclick="mainMenuChat()">🏠 Main Menu</div></div>`);
+  });
+}
+
+// ═══════════════════════════════
+// MAIN MENU CHAT
+// ═══════════════════════════════
+function mainMenuChat(){
+  userMsg('Main menu');
+  if(currentStay){typing(()=>{botMsg(`Welcome back, <strong>${currentStay.name}</strong>! 🌟 Room <strong>#${currentStay.room}</strong>`,guestMenu());});}
+  else{typing(()=>{botMsg('How can I help you today?',mainMenu());});}
+}
+
+// ═══════════════════════════════
+// FREE TEXT PARSER
+// ═══════════════════════════════
+function sendUserMsg(){
+  const inp=document.getElementById('chatInput');const t=inp.value.trim();if(!t)return;
+  inp.value='';inp.style.height='auto';userMsg(t);const l=t.toLowerCase();
+  if(/^(hi|hello|hey|good\s*(morning|afternoon|evening|day)|welcome)/i.test(l)){typing(()=>{botMsg(currentStay?`Welcome back, <strong>${currentStay.name}</strong>! 🌟`:'Hello! 👋 Welcome to <strong>Aria Concierge</strong>.',currentStay?guestMenu():mainMenu());});}
+  else if(/find|search|hotel|property/i.test(l)&&!currentStay){doFindHotel();}
+  else if(/check.?in|checkin|arrival/i.test(l)){openOverlay('overlayCheckin');}
+  else if(/check.?out|checkout|leaving|departure/i.test(l)){doCheckout();}
+  else if(/extend|longer|more night/i.test(l)){doExtend();}
+  else if(/room service|food|eat|dinner|lunch|hungry|order/i.test(l)){doRoomService();}
+  else if(/housekeep|cleaning|maid|room status/i.test(l)){doHousekeepingBoard();}
+  else if(/service|spa|massage|gym|transport|laundry|clean|wake/i.test(l)){doServices();}
+  else if(/reserv|booking list|all booking/i.test(l)){doReservations();}
+  else if(/channel|ota|booking\.com|expedia|airbnb|distribution/i.test(l)){doChannels();}
+  else if(/report|analytic|revenue|occupancy|kpi|dashboard/i.test(l)){doAnalytics();}
+  else if(/bill|invoice|folio|payment|pay/i.test(l)){doBilling();}
+  else if(/profile|loyalty|points|crm|guest profile/i.test(l)){doGuestProfile();}
+  else if(/wifi|password|internet/i.test(l)){showFaq('wifi');}
+  else if(/pool|swim/i.test(l)){showFaq('pool');}
+  else if(/parking|car/i.test(l)){showFaq('parking');}
+  else if(/late checkout/i.test(l)){showFaq('late');}
+  else if(/breakfast/i.test(l)){showFaq('breakfast');}
+  else if(/faq|question|help/i.test(l)){doFaq();}
+  else if(/front desk|concierge|call|phone/i.test(l)){callFrontDesk();}
+  else if(/menu|options|main menu/i.test(l)){mainMenuChat();}
+  else if(/my stay|my room|my booking/i.test(l)){showCurrentBooking();}
+  else if(/staff|admin|manage/i.test(l)){typing(()=>{botMsg('Here are the staff management tools:',staffMenu());});}
+  else{typing(()=>{botMsg('I\'m here to help! What would you like to do?',currentStay?guestMenu():mainMenu());});}
+}
+
+document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendUserMsg();}});
+document.getElementById('chatInput').addEventListener('input',function(){this.style.height='auto';this.style.height=this.scrollHeight+'px';});
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+window.onload=()=>{
+  const t=today(),out=new Date();out.setDate(out.getDate()+2);
+  document.getElementById('ci_in').value=t;
+  document.getElementById('ci_out').value=out.toISOString().split('T')[0];
+  updateBanner();
+  const h=new Date().getHours();
+  const g=h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙';
+  setTimeout(()=>{botMsg(`${g}! 👋 I'm <strong>Aria</strong>, your full-suite hotel management concierge.<br><br>I power a complete <strong>Property Management System (PMS)</strong> including reservations, front desk, housekeeping, billing, analytics, guest CRM, and channel management.`);},500);
+  setTimeout(()=>{
+    typing(()=>{
+      if(currentStay){botMsg(`Welcome back, <strong>${currentStay.name}</strong>! 🌟 You're at <strong>${currentStay.hotel}</strong>, Room <strong>#${currentStay.room}</strong>.`,guestMenu());}
+      else{botMsg('What would you like to do today?',mainMenu());}
+    },1400);
+  },1400);
+};
+</script>
+</body>
+</html>
