@@ -2,13 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="eCampus">
-<meta name="theme-color" content="#05070E">
-<title>EduNexus Pro — Ultimate School Management</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>goCBT eCampus — Ultimate Online School</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,800;1,9..144,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -525,229 +520,6 @@ textarea.inp::placeholder{color:var(--muted);}
 .activity-name{font-size:12px;font-weight:700;}
 .activity-meta{font-size:9.5px;color:var(--muted);}
 .activity-cost{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:800;color:var(--amber);}
-
-/* ══════════════════════════════════════
-   MOBILE RESPONSIVE — full overhaul
-   ══════════════════════════════════════ */
-
-/* Safe-area inset variables (notch / home-bar devices) */
-:root{
-  --sat: env(safe-area-inset-top, 0px);
-  --sab: env(safe-area-inset-bottom, 0px);
-  --sal: env(safe-area-inset-left, 0px);
-  --sar: env(safe-area-inset-right, 0px);
-}
-
-/* Use dynamic viewport height to prevent iOS Safari address-bar clipping */
-html,body{ height:100dvh; }
-
-/* ── Shell: true full-screen on real phones ── */
-.shell{
-  height:100dvh;
-  max-height:100dvh;
-  border-radius:0;
-  border-left:none;
-  border-right:none;
-  padding-top: var(--sat);
-  padding-bottom: var(--sab);
-}
-
-/* ── Login screen: fills viewport with insets ── */
-.login-screen{
-  padding: var(--sat) var(--sar) var(--sab) var(--sal);
-}
-.login-box{
-  width:100%;
-  max-width:100%;
-  height:100%;
-  max-height:100dvh;
-  border-radius:0;
-  border:none;
-  box-shadow:none;
-  padding: max(18px, calc(var(--sat) + 14px)) 16px max(16px, calc(var(--sab) + 8px));
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-}
-
-/* Input area sits above the home-bar indicator */
-.inp-area{
-  padding-bottom: max(11px, calc(var(--sab) + 6px));
-  padding-left: max(9px, calc(var(--sal) + 6px));
-  padding-right: max(9px, calc(var(--sar) + 6px));
-}
-
-/* Bottom sheets respect home bar */
-.sheet{
-  max-height: calc(94dvh - var(--sab));
-  padding-bottom: var(--sab);
-}
-.sh-foot{
-  padding-bottom: max(13px, calc(var(--sab) + 6px));
-}
-
-/* ── Touch targets: minimum 44 × 44 px (Apple HIG / Google Material) ── */
-.sc{ min-height:64px; padding:12px 8px; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-.btn-em,.btn-sap,.btn-ghost,.btn-wa,.btn-rose{ min-height:48px; font-size:14px; touch-action:manipulation; }
-.chip{ min-height:34px; padding:7px 12px; font-size:12px; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-.demo-chip{ min-height:32px; padding:6px 10px; font-size:10.5px; touch-action:manipulation; }
-.hbtn,.sh-close,.user-av{ min-width:36px; min-height:36px; }
-.lb-tab{ min-height:40px; padding:9px 6px; font-size:12px; }
-.att-btn{ width:36px; height:36px; border-radius:8px; }
-.pk{ height:50px; font-size:18px; border-radius:12px; }
-.wc-btn{ min-height:38px; font-size:11px; }
-.gw-card{ min-height:56px; padding:10px 8px; }
-.sc-icon{ font-size:22px; }
-.sc-name{ font-size:11px; font-weight:700; }
-
-/* ── Inputs: 16px prevents iOS auto-zoom on focus ── */
-.fi,.fs{
-  min-height:48px;
-  font-size:16px !important;
-  padding:11px 13px;
-  -webkit-appearance:none;
-  border-radius:11px;
-}
-/* Blanket rule: any input/select/textarea gets ≥16px to prevent zoom */
-input,select,textarea{
-  font-size:max(16px,1em) !important;
-}
-
-/* ── Smooth momentum scrolling everywhere ── */
-.msgs,.sh-body,.login-box,.overlay{
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;
-  scroll-behavior:smooth;
-}
-
-/* ── Readable bubble text on mobile ── */
-.bbl{ font-size:13px; line-height:1.7; padding:10px 14px; }
-.ir-txt{ font-size:12px; line-height:1.6; }
-textarea.inp{ font-size:14px; }
-.snd{ width:40px; height:40px; font-size:15px; }
-
-/* ── Tables: horizontal scroll instead of layout-break ── */
-.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-.tbl-hdr span,.tbl-row span{ font-size:10px; padding:8px 7px; white-space:nowrap; }
-.tt-grid{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-
-/* ── Per-module WA bottom sheet home-bar padding ── */
-#ovModuleWA > div{
-  padding-bottom: max(20px, calc(var(--sab) + 8px));
-}
-
-/* ── Active / pressed states (touch feedback) ── */
-.sc:active{ transform:scale(0.96); border-color:var(--emerald); background:var(--em-g); }
-.btn-em:active,.btn-wa:active{ opacity:0.85; transform:scale(0.98); }
-.btn-ghost:active{ background:var(--s3); }
-.chip:active{ transform:scale(0.95); }
-.pk:active{ transform:scale(0.87); background:var(--em-g); }
-.demo-chip:active{ background:var(--em-g); border-color:var(--emerald); color:var(--emerald); }
-
-/* ── Focus rings for accessibility ── */
-.fi:focus,.fs:focus{
-  border-color:var(--emerald);
-  box-shadow:0 0 0 3px rgba(0,229,160,0.15);
-  outline:none;
-}
-
-/* ── Text selection ── */
-::selection{ background:rgba(0,229,160,0.28); color:var(--text); }
-
-/* ── Scrollbars: hidden on touch, thin on desktop ── */
-@media(hover:none){
-  ::-webkit-scrollbar{ display:none; }
-  *{ scrollbar-width:none; }
-}
-@media(hover:hover){
-  ::-webkit-scrollbar{ width:3px; }
-  ::-webkit-scrollbar-thumb{ background:rgba(0,229,160,0.18); border-radius:3px; }
-}
-
-/* ════════════════════════════════════════
-   BREAKPOINTS
-   ════════════════════════════════════════ */
-
-/* ── Narrow phones < 390px (iPhone SE 3rd gen, Galaxy A14 etc.) ── */
-@media(max-width:389px){
-  .lb-logo-icon{ width:50px; height:50px; font-size:22px; }
-  .lb-school{ font-size:17px; }
-  .lb-tagline{ font-size:9px; }
-  .login-box{ padding:12px; padding-top: max(12px, var(--sat)); }
-
-  .hdr{ padding:9px 10px 8px; }
-  .hdr-title{ font-size:14px; }
-  .hdr-sub{ font-size:8px; }
-  .live-pill{ display:none; }   /* save horizontal space */
-
-  /* Stack fi-row fields vertically */
-  .fi-row{ flex-direction:column; gap:0; }
-  .fi-row .fg{ margin-bottom:10px; }
-
-  .sg2{ gap:5px; }
-  .sc{ min-height:58px; padding:10px 6px; }
-  .sc-icon{ font-size:20px; }
-  .sc-name{ font-size:10px; }
-
-  .bbl{ font-size:12.5px; }
-  .btn-em,.btn-sap,.btn-ghost,.btn-wa{ font-size:13px; min-height:46px; }
-  .chip{ font-size:11px; padding:6px 10px; }
-
-  .sh-hdr{ padding:9px 11px 8px; }
-  .sh-body{ padding:10px 11px; }
-  .sh-title{ font-size:13px; }
-
-  .stat-val{ font-size:16px; }
-  .wc-val{ font-size:15px; }
-  .rc-score{ font-size:32px; }
-  .pin-grid{ max-width:220px; }
-}
-
-/* ── Standard phones 390–430px (iPhone 14/15/16, Pixel 7/8, Galaxy S series) ── */
-@media(min-width:390px) and (max-width:430px){
-  .shell{ border-radius:0; }
-  .login-box{ border-radius:0; border:none; max-width:100%; }
-  .sg2{ gap:7px; }
-  .sc{ min-height:66px; }
-}
-
-/* ── Large phones / small tablets > 430px ── */
-@media(min-width:431px){
-  .shell{
-    height:calc(100dvh - 28px);
-    max-height:920px;
-    border-radius:26px;
-    border:1px solid rgba(0,229,160,0.08);
-    padding-top:0;
-    padding-bottom:0;
-  }
-  .login-box{
-    max-width:400px;
-    max-height:900px;
-    height:auto;
-    border-radius:26px;
-    border:1px solid var(--border);
-    box-shadow:var(--sh-lg);
-    padding:26px 20px;
-  }
-  .login-screen{ align-items:center; }
-  .inp-area{ padding-bottom:11px; }
-  .sh-foot{ padding-bottom:13px; }
-}
-
-/* ── Landscape mode on phones: compact layout ── */
-@media(max-height:600px) and (orientation:landscape){
-  .login-box{ padding:10px 18px; }
-  .lb-logo{ margin-bottom:8px; }
-  .lb-logo-icon{ width:42px; height:42px; font-size:17px; }
-  .lb-school{ font-size:15px; }
-  .lb-tagline,.hdr-sub{ display:none; }
-  .lb-tabs{ margin-bottom:9px; }
-  .fg{ margin-bottom:7px; }
-  .fi,.fs{ min-height:40px; padding:7px 11px; }
-  .btn-em,.btn-sap,.btn-wa,.btn-ghost{ min-height:42px; padding:8px; }
-  .sh-body{ padding:8px 12px; }
-  .msgs{ padding:8px 9px; }
-}
 </style>
 </head>
 <body>
@@ -769,8 +541,8 @@ textarea.inp{ font-size:14px; }
   <div class="login-box">
     <div class="lb-logo">
       <div class="lb-logo-icon">🎓</div>
-      <div class="lb-school">EduNexus Pro</div>
-      <div class="lb-tagline">ULTIMATE SCHOOL MANAGEMENT SYSTEM</div>
+      <div class="lb-school">goCBT eCampus</div>
+      <div class="lb-tagline">ULTIMATE ONLINE LEARNING SYSTEM</div>
     </div>
     <div class="lb-tabs" id="loginTabs">
       <div class="lb-tab active" onclick="setLoginTab('signin')">Sign In</div>
@@ -780,7 +552,7 @@ textarea.inp{ font-size:14px; }
     <!-- SIGN IN -->
     <div id="tab-signin">
       <div class="login-err" id="loginErr"></div>
-      <div class="fg"><label class="fl">School ID / Username</label>
+      <div class="fg"><label class="fl">YOUR USSID</label>
         <input class="fi" id="loginId" placeholder="e.g. STU-ENX-2024-0012 or admin"></div>
       <div class="fg"><label class="fl">Password</label>
         <input class="fi" id="loginPw" type="password" placeholder="Enter your password"
@@ -840,7 +612,7 @@ textarea.inp{ font-size:14px; }
           <select class="fs" id="adActivity"><option>None</option><option>Football</option><option>Swimming</option><option>Chess</option><option>Drama</option></select></div>
       </div>
       <button class="btn-em" onclick="submitAdmission()">🎓 Submit Application</button>
-      <button class="btn-wa" style="margin-top:7px;" onclick="window.open('https://wa.me/2348000000000?text='+encodeURIComponent('Admission enquiry for EduNexus Academy 2024/2025 session'),'_blank')">📲 WhatsApp Enquiry</button>
+      <button class="btn-wa" style="margin-top:7px;" onclick="window.open('https://wa.me/2348000000000?text='+encodeURIComponent('Admission enquiry for goCBT eCampus 2024/2025 session'),'_blank')">📲 WhatsApp Enquiry</button>
     </div>
   </div>
 </div>
@@ -851,8 +623,8 @@ textarea.inp{ font-size:14px; }
     <div class="hdr-top">
       <div class="hdr-logo">🎓</div>
       <div class="hdr-info">
-        <div class="hdr-title">EduNexus Pro</div>
-        <div class="hdr-sub" id="hdrSub">SCHOOL MANAGEMENT SYSTEM</div>
+        <div class="hdr-title">goCBT eCampus</div>
+        <div class="hdr-sub" id="hdrSub">Online Learning Center</div>
       </div>
       <div class="hdr-right">
         <div class="live-pill"><div class="ldot"></div>LIVE</div>
@@ -1085,7 +857,7 @@ textarea.inp{ font-size:14px; }
       </div>
       <!-- Step 1: enter phone -->
       <div id="mwaStep1">
-        <div class="fg"><label class="fl">Your WhatsApp Number</label>
+        <div class="fg"><label class="fl">Your Student ID</label>
           <input class="fi" id="mwaPhone" type="tel" placeholder="+234 800 000 0000" style="font-size:14px;"></div>
         <button onclick="sendMWACode()" style="width:100%;margin-top:8px;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#128C7E,#25D366);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:.18s;">
           <span style="font-size:16px;">📲</span> Send OTP via WhatsApp
@@ -1474,11 +1246,11 @@ const EXPENSES = [
 ];
 
 const FEE_TYPES = [
-  {name:'Tuition Fee',amount:80000,term:'Per Term',required:true},
-  {name:'Development Levy',amount:15000,term:'Per Annum',required:true},
-  {name:'PTA Levy',amount:5000,term:'Per Term',required:true},
-  {name:'Boarding Fee',amount:120000,term:'Per Session',required:false},
-  {name:'Activity Fee',amount:3000,term:'Per Activity',required:false},
+  {name:'Tuition Fee',amount:10000,term:'Per Session',required:true},
+  {name:'Technology Levy',amount:4000,term:'Per Annum',required:true},
+  {name:'Lab Levy',amount:1000,term:'Per Term',required:true},
+  {name:'Task Token',amount:1000,term:'Per Session',required:false},
+  {name:'Certificate',amount:4000,term:'Per Activity',required:false},
 ];
 
 const ROLES_PERMS = [
@@ -1566,14 +1338,14 @@ function submitAdmission(){
   const appId='APP-ENX-2024-'+String(Math.floor(Math.random()*9000)+1000);
   showToast('Application submitted! ID: '+appId,'success');
   haptic('success'); playSuccess();
-  const msg=encodeURIComponent(`EduNexus Pro: Application received for ${name}. Application ID: ${appId}. Our admissions team will contact you within 48 hours. Thank you!`);
+  const msg=encodeURIComponent(`goCBT eCampus: Application received for ${name}. Application ID: ${appId}. Our admissions team will contact you within 48 hours. Thank you!`);
   setTimeout(()=>window.open(`https://wa.me/${phone.replace(/\D/g,'')}?text=${msg}`,'_blank'),1500);
 }
 
 function waPassReset(){
   const ph=prompt('Enter your registered WhatsApp number:');
   if(ph){
-    const msg=encodeURIComponent('EduNexus Pro: I need to reset my password. Registered number: '+ph);
+    const msg=encodeURIComponent('goCBT eCampus: I need to reset my password. Registered number: '+ph);
     window.open(`https://wa.me/2348000000000?text=${msg}`,'_blank');
   }
 }
@@ -1596,7 +1368,7 @@ function launchApp(){
   const greets={
     superadmin:`${gr}, <strong>${currentUser.name}</strong>! ⭐<br><br>You're logged in as <strong>Super Admin</strong>. Manage all schools from here.`,
     admin:`${gr}, <strong>${currentUser.name}</strong>! 👑<br><br>Welcome to your <strong>Admin Dashboard</strong>. All school modules are at your fingertips.`,
-    student:`${gr}, <strong>${currentUser.name}</strong>! 🎒<br><br>Your study ID: <strong style="color:var(--emerald);">${currentUser.id}</strong><br>Section: <strong>${currentUser.section||'Section A'}</strong>`,
+    student:`${gr}, <strong>${currentUser.name}</strong>! 🎒<br><br>Your USSID: <strong style="color:var(--emerald);">${currentUser.id}</strong><br>Section: <strong>${currentUser.section||'Section A'}</strong>`,
     teacher:`${gr}, <strong>${currentUser.name}</strong>! 📚<br><br>Welcome back, teacher. Manage your classes, attendance & assignments.`,
     accountant:`${gr}, <strong>${currentUser.name}</strong>! 💰<br><br>Welcome to the <strong>Accounts Portal</strong>. Manage invoices, fees, and financial reports.`,
     parent:`${gr}, <strong>${currentUser.name}</strong>! 👪<br><br>Monitor your child's progress, pay fees, and stay informed.`,
@@ -1811,13 +1583,13 @@ function doAdmitCard(){
       <div class="admit-header">
         <div class="admit-logo">🎓</div>
         <div>
-          <div class="admit-school">EduNexus Academy</div>
+          <div class="admit-school">goCBT eCampus</div>
           <div class="admit-session">First Term Examinations · 2024/2025</div>
         </div>
       </div>
       <div class="admit-grid">
         <div class="admit-item"><div class="admit-lbl">STUDENT NAME</div><div class="admit-val">${u?.name||'Chisom Obi'}</div></div>
-        <div class="admit-item"><div class="admit-lbl">STUDENT ID</div><div class="admit-val">${u?.id||'STU-ENX-2024-0012'}</div></div>
+        <div class="admit-item"><div class="admit-lbl">STUDENT ID</div><div class="admit-val">${u?.id||'USSID-ENX-2024-0012'}</div></div>
         <div class="admit-item"><div class="admit-lbl">CLASS</div><div class="admit-val">${u?.class||'SS2A'}</div></div>
         <div class="admit-item"><div class="admit-lbl">EXAM PERIOD</div><div class="admit-val">Dec 2–13, 2024</div></div>
         <div class="admit-item"><div class="admit-lbl">EXAM CENTRE</div><div class="admit-val">Main Hall A</div></div>
@@ -2119,7 +1891,7 @@ function verifyCert(){
     if(cert?.valid){
       botMsg('✅ <strong>Certificate Verified</strong>',
         `<div class="cert-card">
-          <div class="cert-school">EduNexus Academy · Certificate Verification</div>
+          <div class="cert-school">goCBT eCampus · Certificate Verification</div>
           <div class="cert-title">${cert.cert}</div>
           <div class="cert-name">${cert.name}</div>
           <div class="cert-detail">Year: ${cert.year} · Grade: ${cert.grade}</div>
@@ -2138,7 +1910,7 @@ function doMyCerts(){
       <div class="cert-card" style="margin-bottom:7px;text-align:left;">
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div>
-            <div class="cert-school">EduNexus Academy</div>
+            <div class="cert-school">goCBT eCampus</div>
             <div style="font-family:'Fraunces',serif;font-size:12.5px;font-weight:700;color:var(--gold);">${c.cert}</div>
             <div style="font-size:10px;color:var(--muted);margin-top:2px;">${c.name} · ${c.year} · ${c.grade}</div>
           </div>
@@ -2248,11 +2020,11 @@ function renderAS3(){
 function genSchoolToken(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let t='';for(let i=0;i<4;i++){if(i)t+='-';for(let j=0;j<5;j++)t+=c[Math.floor(Math.random()*c.length)];}return t;}
 function regenTok(){const t=genSchoolToken();addSchoolData.token=t;const el=document.getElementById('as-token');if(el)el.value=t;showToast('New token generated','success');haptic('light');}
 function renderAS4(){
-  const msg=`🎉 Welcome to EduNexusPro!\n\nHello ${addSchoolData.name},\n\nYour school has been registered.\n\n📦 Plan: ${PLAN_NAMES[addSchoolData.plan]}\n🎟️ Token: ${addSchoolData.token}\n⏱️ Valid: ${PLAN_VALIDITY[addSchoolData.plan]}\n🔗 Login: https://edunexuspro.app/login\n\nActivation steps:\n1. Visit login portal\n2. Email: ${addSchoolData.adminEmail}\n3. Token: ${addSchoolData.token}\n\n📞 Support: +2348157505037\n– EduNexusPro Team`;
+  const msg=`🎉 Welcome to goCBT eCampus!\n\nHello ${addSchoolData.name},\n\nYour school has been registered.\n\n📦 Plan: ${PLAN_NAMES[addSchoolData.plan]}\n🎟️ Token: ${addSchoolData.token}\n⏱️ Valid: ${PLAN_VALIDITY[addSchoolData.plan]}\n🔗 Login: https://edunexuspro.app/login\n\nActivation steps:\n1. Visit login portal\n2. Email: ${addSchoolData.adminEmail}\n3. Token: ${addSchoolData.token}\n\n📞 Support: +2348157505037\n– goCBT eCampus Team`;
   document.getElementById('addSchoolBody').innerHTML=`<div style="font-size:9px;color:var(--muted);margin-bottom:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">WHATSAPP VERIFICATION & DELIVERY</div><div class="info-card" style="margin-bottom:11px;"><div class="ir"><div class="ir-ico">🏫</div><div class="ir-txt"><b>School:</b> ${addSchoolData.name}</div></div><div class="ir"><div class="ir-ico">📱</div><div class="ir-txt"><b>WhatsApp:</b> ${addSchoolData.phone}</div></div><div class="ir"><div class="ir-ico">🎟️</div><div class="ir-txt"><b>Token:</b> <span style="color:var(--emerald);font-family:'JetBrains Mono',monospace;font-weight:700;">${addSchoolData.token}</span></div></div></div><div class="fg"><label class="fl">Message Preview</label><textarea class="fi" rows="7" readonly style="font-size:10px;line-height:1.55;resize:none;">${msg}</textarea></div><div class="fg"><label class="fl">Sender (Operator)</label><input class="fi" value="+2348157505037" readonly style="color:var(--emerald);font-family:'JetBrains Mono',monospace;"></div><div style="background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.2);border-radius:9px;padding:9px 11px;margin-top:9px;font-size:11px;color:#4cdf88;">🟢 Token delivered to school admin via WhatsApp on registration.</div>`;
   document.getElementById('addSchoolFoot').innerHTML=`<div style="display:flex;gap:7px;flex-wrap:wrap;"><button class="btn-ghost" style="flex:0 0 70px;" onclick="addSchoolStep(3)">← Back</button><button class="btn-ghost" style="flex:1;" onclick="prevSchoolWA()">👁 Preview</button><button class="btn-em" style="flex:1;" onclick="finalRegSch()">✅ Register & Send</button></div>`;
 }
-function prevSchoolWA(){const ph=(addSchoolData.phone||'').replace(/\D/g,'');const msg=`🎉 Welcome to EduNexusPro!\n\nHello ${addSchoolData.name},\n\nPlan: ${PLAN_NAMES[addSchoolData.plan]}\nToken: ${addSchoolData.token}\nLogin: https://edunexuspro.app/login\n\nSupport: +2348157505037`;window.open('https://wa.me/'+(ph||'2348157505037')+'?text='+encodeURIComponent(msg),'_blank');haptic('medium');}
+function prevSchoolWA(){const ph=(addSchoolData.phone||'').replace(/\D/g,'');const msg=`🎉 Welcome to goCBT eCampus!\n\nHello ${addSchoolData.name},\n\nPlan: ${PLAN_NAMES[addSchoolData.plan]}\nToken: ${addSchoolData.token}\nLogin: https://edunexuspro.app/login\n\nSupport: +2348157505037`;window.open('https://wa.me/'+(ph||'2348157505037')+'?text='+encodeURIComponent(msg),'_blank');haptic('medium');}
 function finalRegSch(){if(!addSchoolData.name||!addSchoolData.phone){showToast('Missing info','error');haptic('error');return;}SCHOOLS.push({name:addSchoolData.name,students:0,staff:0,plan:addSchoolData.plan.charAt(0).toUpperCase()+addSchoolData.plan.slice(1),status:'active',token:addSchoolData.token});prevSchoolWA();setTimeout(()=>{closeOv('ovAddSchool');haptic('success');playSuccess();showToast('🏫 '+addSchoolData.name+' registered! Token sent via WhatsApp ✅','success');addSchoolData={};addSchoolSelectedPlan='';typing(()=>doSuperDashboard());},400);}
 
 // ── CLASSES & SECTIONS ──
@@ -2260,7 +2032,7 @@ let classesData=[{id:'c1',name:'JSS 1',school:'Lagos',sections:['A','B','C'],stu
 let sectionsData=[{id:'s1',name:'Section A',class:'JSS 1',teacher:'Mr. Ibrahim',capacity:35},{id:'s2',name:'Section B',class:'JSS 1',teacher:'Mrs. Adaeze',capacity:35},{id:'s3',name:'Science',class:'SSS 1',teacher:'Mr. Okonkwo',capacity:40},{id:'s4',name:'Arts',class:'SSS 1',teacher:'Ms. Funke',capacity:38}];
 function doClassesSections(){openOv('ovClassesSections');renderCS();haptic('medium');}
 function renderCS(){const b=document.getElementById('ovCSBody');b.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:11px;"><button class="btn-em" style="flex:1;font-size:11px;" onclick="showAddClassForm()">＋ Add Class</button><button class="btn-ghost" style="flex:1;font-size:11px;" onclick="showAddSectionForm()">＋ Add Section</button></div><div style="font-size:9px;color:var(--muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:.4px;">CLASSES (${classesData.length})</div><div class="tbl-wrap" style="margin-bottom:11px;"><div class="tbl-hdr"><span>Class</span><span>School</span><span>Sections</span><span>Students</span><span></span></div>${classesData.map(c=>`<div class="tbl-row"><span><b>${c.name}</b></span><span>${c.school}</span><span class="em">${c.sections.join(', ')||'—'}</span><span>${c.students}</span><span><button class="btn-ghost" style="padding:2px 7px;font-size:9px;" onclick="delClass('${c.id}')">🗑</button></span></div>`).join('')}</div><div style="font-size:9px;color:var(--muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:.4px;">SECTIONS (${sectionsData.length})</div><div class="tbl-wrap"><div class="tbl-hdr"><span>Section</span><span>Class</span><span>Teacher</span><span>Cap</span><span></span></div>${sectionsData.map(s=>`<div class="tbl-row"><span><b>${s.name}</b></span><span>${s.class}</span><span>${s.teacher}</span><span>${s.capacity}</span><span><button class="btn-ghost" style="padding:2px 7px;font-size:9px;" onclick="delSection('${s.id}')">🗑</button></span></div>`).join('')}</div>`;}
-function showAddClassForm(){const b=document.getElementById('ovCSBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderCS()">← Back</button><div class="fg"><label class="fl">Class Name *</label><input class="fi" id="nc-name" placeholder="e.g. JSS 1, SSS 2"></div><div class="fi-row"><div class="fg"><label class="fl">School *</label><select class="fs" id="nc-school">${SCHOOLS.map(s=>`<option>${s.name.replace('EduNexus Academy ','').replace('EduNexus ','')}</option>`).join('')}</select></div><div class="fg"><label class="fl">Max/Section</label><input class="fi" id="nc-cap" type="number" value="40"></div></div><button class="btn-em" onclick="saveNewClass()">💾 Save Class</button>`;}
+function showAddClassForm(){const b=document.getElementById('ovCSBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderCS()">← Back</button><div class="fg"><label class="fl">Class Name *</label><input class="fi" id="nc-name" placeholder="e.g. JSS 1, SSS 2"></div><div class="fi-row"><div class="fg"><label class="fl">School *</label><select class="fs" id="nc-school">${SCHOOLS.map(s=>`<option>${s.name.replace('goCBT eCampus ','').replace('goCBT eCampus ','')}</option>`).join('')}</select></div><div class="fg"><label class="fl">Max/Section</label><input class="fi" id="nc-cap" type="number" value="40"></div></div><button class="btn-em" onclick="saveNewClass()">💾 Save Class</button>`;}
 function saveNewClass(){const n=document.getElementById('nc-name').value.trim(),sc=document.getElementById('nc-school').value;if(!n){showToast('Enter class name','error');haptic('error');return;}classesData.push({id:'c'+Date.now(),name:n,school:sc,sections:[],students:0});showToast(n+' added!','success');haptic('success');playSuccess();renderCS();}
 function delClass(id){classesData=classesData.filter(c=>c.id!==id);renderCS();showToast('Class removed','info');}
 function showAddSectionForm(){const b=document.getElementById('ovCSBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderCS()">← Back</button><div class="fg"><label class="fl">Section Name *</label><input class="fi" id="ns-name" placeholder="e.g. Section A, Science"></div><div class="fi-row"><div class="fg"><label class="fl">Class *</label><select class="fs" id="ns-class">${classesData.map(c=>`<option>${c.name}</option>`).join('')}</select></div><div class="fg"><label class="fl">Capacity</label><input class="fi" id="ns-cap" type="number" value="35"></div></div><div class="fg"><label class="fl">Class Teacher</label><input class="fi" id="ns-teacher" placeholder="Teacher name"></div><button class="btn-em" onclick="saveNewSection()">💾 Save Section</button>`;}
@@ -2281,7 +2053,7 @@ function doStudentAdmission(){openOv('ovAdmission');renderAdms();haptic('medium'
 function renderAdms(){const b=document.getElementById('ovAdmBody');b.innerHTML=`<button class="btn-em" style="width:100%;font-size:11px;margin-bottom:10px;" onclick="showNewAdmForm()">＋ New Admission</button><div class="tbl-wrap"><div class="tbl-hdr"><span>Adm. No.</span><span>Name</span><span>Class</span><span>Status</span><span></span></div>${admissionsData.map(a=>`<div class="tbl-row"><span class="em" style="font-size:10px;"><b>${a.id}</b></span><span>${a.name}</span><span>${a.class}/${a.section}</span><span><span class="pill ${a.status==='active'?'pill-em':a.status==='pending'?'pill-am':'pill-ro'}">${a.status.toUpperCase()}</span></span><span>${a.status==='pending'?`<button class="btn-ghost" style="padding:2px 7px;font-size:9px;" onclick="appAdm('${a.id}')">✅</button>`:''}</span></div>`).join('')}</div>`;}
 function appAdm(id){const a=admissionsData.find(x=>x.id===id);if(a)a.status='active';renderAdms();showToast('Admission approved!','success');haptic('success');playSuccess();}
 function showNewAdmForm(){const b=document.getElementById('ovAdmBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderAdms()">← Back</button><div style="font-size:9px;color:var(--muted);margin-bottom:7px;font-family:'JetBrains Mono',monospace;letter-spacing:.4px;">PERSONAL DETAILS</div><div class="fi-row"><div class="fg"><label class="fl">First Name *</label><input class="fi" id="na-fname" placeholder="First name"></div><div class="fg"><label class="fl">Last Name *</label><input class="fi" id="na-lname" placeholder="Last name"></div></div><div class="fi-row"><div class="fg"><label class="fl">Date of Birth</label><input class="fi" id="na-dob" type="date"></div><div class="fg"><label class="fl">Gender</label><select class="fs" id="na-gender"><option>Male</option><option>Female</option></select></div></div><div style="font-size:9px;color:var(--muted);margin:9px 0 7px;font-family:'JetBrains Mono',monospace;letter-spacing:.4px;">ADMISSION DETAILS</div><div class="fi-row"><div class="fg"><label class="fl">Class *</label><select class="fs" id="na-class">${classesData.map(c=>`<option>${c.name}</option>`).join('')}</select></div><div class="fg"><label class="fl">Section</label><input class="fi" id="na-section" placeholder="A / Science"></div></div><div style="font-size:9px;color:var(--muted);margin:9px 0 7px;font-family:'JetBrains Mono',monospace;letter-spacing:.4px;">GUARDIAN / PARENT</div><div class="fi-row"><div class="fg"><label class="fl">Guardian Name *</label><input class="fi" id="na-guardian" placeholder="Full name"></div><div class="fg"><label class="fl">WhatsApp *</label><input class="fi" id="na-gphone" type="tel" placeholder="+234..."></div></div><button class="btn-em" onclick="saveNewAdm()">✅ Complete Admission</button>`;}
-function saveNewAdm(){const fn=document.getElementById('na-fname').value.trim(),ln=document.getElementById('na-lname').value.trim(),cls=document.getElementById('na-class').value,sec=document.getElementById('na-section').value.trim(),grd=document.getElementById('na-guardian').value.trim(),ph=document.getElementById('na-gphone').value.trim();if(!fn||!ln||!grd||!ph){showToast('Fill all required fields','error');haptic('error');return;}const id='ADM-'+String(Date.now()).slice(-4);admissionsData.push({id,name:fn+' '+ln,class:cls,section:sec||'A',gender:document.getElementById('na-gender').value==='Male'?'M':'F',guardian:grd,phone:ph,status:'pending'});const msg=encodeURIComponent(`EduNexus Pro: Admission received for ${fn} ${ln}. Application ID: ${id}. Our team contacts you within 48hrs.`);setTimeout(()=>window.open(`https://wa.me/${ph.replace(/\D/g,'')}?text=${msg}`,'_blank'),800);showToast('Admission submitted! WA notification sent','success');haptic('success');playSuccess();renderAdms();}
+function saveNewAdm(){const fn=document.getElementById('na-fname').value.trim(),ln=document.getElementById('na-lname').value.trim(),cls=document.getElementById('na-class').value,sec=document.getElementById('na-section').value.trim(),grd=document.getElementById('na-guardian').value.trim(),ph=document.getElementById('na-gphone').value.trim();if(!fn||!ln||!grd||!ph){showToast('Fill all required fields','error');haptic('error');return;}const id='ADM-'+String(Date.now()).slice(-4);admissionsData.push({id,name:fn+' '+ln,class:cls,section:sec||'A',gender:document.getElementById('na-gender').value==='Male'?'M':'F',guardian:grd,phone:ph,status:'pending'});const msg=encodeURIComponent(`goCBT eCampus: Admission received for ${fn} ${ln}. Application ID: ${id}. Our team contacts you within 48hrs.`);setTimeout(()=>window.open(`https://wa.me/${ph.replace(/\D/g,'')}?text=${msg}`,'_blank'),800);showToast('Admission submitted! WA notification sent','success');haptic('success');playSuccess();renderAdms();}
 
 // ── ROLES & PERMISSIONS ──
 let customRoles=[...ROLES_PERMS];
@@ -2298,16 +2070,16 @@ function saveEditPerms(idx){const perms=Array.from(document.querySelectorAll('#e
 let staffData=[{id:'ADM-ENX-001',name:'Dr. Adeyemi Okafor',role:'School Admin',school:'Lagos',email:'adeyemi@edunexus.ng',phone:'+2348012345678',status:'active'},{id:'STF-ENX-099',name:'Musa Bello',role:'Staff',school:'Abuja',email:'musa@edunexus.ng',phone:'+2349087654321',status:'active'}];
 function doStaffManagement(){openOv('ovStaffMgmt');renderStaffList();haptic('medium');}
 function renderStaffList(){const b=document.getElementById('ovStaffBody');b.innerHTML=`<button class="btn-em" style="width:100%;font-size:11px;margin-bottom:10px;" onclick="showAddStaffForm()">＋ Add Admin / Staff</button><div class="tbl-wrap"><div class="tbl-hdr"><span>Name</span><span>Role</span><span>School</span><span>Status</span><span></span></div>${staffData.map(s=>`<div class="tbl-row"><span><b style="font-size:11px;">${s.name}</b></span><span><span class="pill ${s.role==='School Admin'?'pill-sap':'pill-em'}">${s.role}</span></span><span style="font-size:10px;">${s.school}</span><span><span class="pill ${s.status==='active'?'pill-em':'pill-ro'}">${s.status}</span></span><span><button class="btn-ghost" style="padding:2px 7px;font-size:9px;" onclick="removeStaff('${s.id}')">🗑</button></span></div>`).join('')}</div>`;}
-function showAddStaffForm(){const b=document.getElementById('ovStaffBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderStaffList()">← Back</button><div class="fi-row"><div class="fg"><label class="fl">Full Name *</label><input class="fi" id="ns-n2" placeholder="Full name"></div><div class="fg"><label class="fl">Staff Type</label><select class="fs" id="ns-t2"><option>School Admin</option><option>Support Staff</option><option>IT Admin</option></select></div></div><div class="fi-row"><div class="fg"><label class="fl">Email *</label><input class="fi" id="ns-e2" type="email" placeholder="staff@school.ng"></div><div class="fg"><label class="fl">WhatsApp</label><input class="fi" id="ns-p2" type="tel" placeholder="+234..."></div></div><div class="fi-row"><div class="fg"><label class="fl">School</label><select class="fs" id="ns-sc2">${SCHOOLS.map(s=>`<option>${s.name.replace('EduNexus Academy ','').replace('EduNexus ','')}</option>`).join('')}</select></div><div class="fg"><label class="fl">Role</label><select class="fs" id="ns-r2">${customRoles.map(r=>`<option>${r.role}</option>`).join('')}</select></div></div><div class="fi-row"><div class="fg"><label class="fl">Password</label><input class="fi" id="ns-pw2" type="password" placeholder="Set password"></div><div class="fg"><label class="fl">Confirm</label><input class="fi" id="ns-cpw" type="password" placeholder="Repeat"></div></div><button class="btn-em" onclick="saveNewStaff()">✅ Add Staff</button>`;}
-function saveNewStaff(){const n=document.getElementById('ns-n2').value.trim(),e=document.getElementById('ns-e2').value.trim(),ph=document.getElementById('ns-p2').value.trim(),sc=document.getElementById('ns-sc2').value,r=document.getElementById('ns-r2').value;if(!n||!e){showToast('Fill required fields','error');haptic('error');return;}const id='STF-'+String(Date.now()).slice(-5);staffData.push({id,name:n,role:r,school:sc,email:e,phone:ph,status:'active'});if(ph){const msg=encodeURIComponent(`EduNexus Pro: Welcome ${n}! Your ${r} account ID: ${id}. Login: https://edunexuspro.app`);setTimeout(()=>window.open(`https://wa.me/${ph.replace(/\D/g,'')}?text=${msg}`,'_blank'),800);}showToast(n+' added! Credentials sent via WhatsApp','success');haptic('success');playSuccess();renderStaffList();}
+function showAddStaffForm(){const b=document.getElementById('ovStaffBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderStaffList()">← Back</button><div class="fi-row"><div class="fg"><label class="fl">Full Name *</label><input class="fi" id="ns-n2" placeholder="Full name"></div><div class="fg"><label class="fl">Staff Type</label><select class="fs" id="ns-t2"><option>School Admin</option><option>Support Staff</option><option>IT Admin</option></select></div></div><div class="fi-row"><div class="fg"><label class="fl">Email *</label><input class="fi" id="ns-e2" type="email" placeholder="staff@school.ng"></div><div class="fg"><label class="fl">WhatsApp</label><input class="fi" id="ns-p2" type="tel" placeholder="+234..."></div></div><div class="fi-row"><div class="fg"><label class="fl">School</label><select class="fs" id="ns-sc2">${SCHOOLS.map(s=>`<option>${s.name.replace('goCBT eCampus ','').replace('goCBT eCampus ','')}</option>`).join('')}</select></div><div class="fg"><label class="fl">Role</label><select class="fs" id="ns-r2">${customRoles.map(r=>`<option>${r.role}</option>`).join('')}</select></div></div><div class="fi-row"><div class="fg"><label class="fl">Password</label><input class="fi" id="ns-pw2" type="password" placeholder="Set password"></div><div class="fg"><label class="fl">Confirm</label><input class="fi" id="ns-cpw" type="password" placeholder="Repeat"></div></div><button class="btn-em" onclick="saveNewStaff()">✅ Add Staff</button>`;}
+function saveNewStaff(){const n=document.getElementById('ns-n2').value.trim(),e=document.getElementById('ns-e2').value.trim(),ph=document.getElementById('ns-p2').value.trim(),sc=document.getElementById('ns-sc2').value,r=document.getElementById('ns-r2').value;if(!n||!e){showToast('Fill required fields','error');haptic('error');return;}const id='STF-'+String(Date.now()).slice(-5);staffData.push({id,name:n,role:r,school:sc,email:e,phone:ph,status:'active'});if(ph){const msg=encodeURIComponent(`goCBT eCampus: Welcome ${n}! Your ${r} account ID: ${id}. Login: https://edunexuspro.app`);setTimeout(()=>window.open(`https://wa.me/${ph.replace(/\D/g,'')}?text=${msg}`,'_blank'),800);}showToast(n+' added! Credentials sent via WhatsApp','success');haptic('success');playSuccess();renderStaffList();}
 function removeStaff(id){staffData=staffData.filter(s=>s.id!==id);renderStaffList();showToast('Staff removed','info');}
 
 // ── TEACHERS & ACCOUNTANTS ──
 let teacherData=[{id:'STF-ENX-001',name:'Mr. Emeka Nwosu',role:'Teacher',subjects:'Mathematics',classes:'SS2',school:'Lagos',qual:'B.Sc, PGDE',status:'active'},{id:'STF-ENX-002',name:'Mrs. Ngozi Chukwu',role:'Teacher',subjects:'English',classes:'All',school:'Lagos',qual:'B.A, M.Ed',status:'active'},{id:'ACC-ENX-001',name:'Mrs. Titi Balogun',role:'Accountant',subjects:'—',classes:'—',school:'Lagos',qual:'ACA',status:'active'}];
 function doTeachersMgmt(){openOv('ovTeachers');renderTeachList('all');haptic('medium');}
 function renderTeachList(filter){const b=document.getElementById('ovTeachBody');const filtered=filter==='accountant'?teacherData.filter(t=>t.role==='Accountant'):filter==='teacher'?teacherData.filter(t=>t.role==='Teacher'):teacherData;b.innerHTML=`<div style="display:flex;gap:5px;margin-bottom:9px;">${[['all','All'],['teacher','Teachers'],['accountant','Accountants']].map(([k,l])=>`<button class="btn-ghost" style="flex:1;font-size:10px;padding:5px;${filter===k?'border-color:var(--emerald);color:var(--emerald);':''}" onclick="renderTeachList('${k}')">${l}</button>`).join('')}</div><button class="btn-em" style="width:100%;font-size:11px;margin-bottom:10px;" onclick="showAddTeachForm()">＋ Add Teacher / Accountant</button><div class="tbl-wrap"><div class="tbl-hdr"><span>Name</span><span>Role</span><span>Subjects</span><span>Status</span><span></span></div>${filtered.map(t=>`<div class="tbl-row"><span><b style="font-size:11px;">${t.name}</b></span><span><span class="pill ${t.role==='Teacher'?'pill-em':'pill-am'}">${t.role}</span></span><span style="font-size:10px;">${t.subjects}</span><span><span class="pill pill-em">${t.status}</span></span><span><button class="btn-ghost" style="padding:2px 7px;font-size:9px;" onclick="removeTeach('${t.id}')">🗑</button></span></div>`).join('')}</div>`;}
-function showAddTeachForm(){const b=document.getElementById('ovTeachBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderTeachList('all')">← Back</button><div class="fi-row"><div class="fg"><label class="fl">Full Name *</label><input class="fi" id="nt-n" placeholder="Full name"></div><div class="fg"><label class="fl">Role *</label><select class="fs" id="nt-r"><option>Teacher</option><option>Accountant</option><option>Teacher + Accountant</option></select></div></div><div class="fi-row"><div class="fg"><label class="fl">Email *</label><input class="fi" id="nt-e" type="email" placeholder="teacher@school.ng"></div><div class="fg"><label class="fl">WhatsApp</label><input class="fi" id="nt-ph" type="tel" placeholder="+234..."></div></div><div class="fi-row"><div class="fg"><label class="fl">Qualification</label><input class="fi" id="nt-q" placeholder="B.Sc, PGDE…"></div><div class="fg"><label class="fl">School</label><select class="fs" id="nt-sc">${SCHOOLS.map(s=>`<option>${s.name.replace('EduNexus Academy ','').replace('EduNexus ','')}</option>`).join('')}</select></div></div><div class="fg"><label class="fl">Subjects</label><input class="fi" id="nt-subj" placeholder="Mathematics, Physics…"></div><div class="fi-row"><div class="fg"><label class="fl">Password</label><input class="fi" id="nt-pw" type="password" placeholder="Set password"></div><div class="fg"><label class="fl">Confirm</label><input class="fi" id="nt-cpw" type="password" placeholder="Repeat"></div></div><button class="btn-em" onclick="saveNewTeach()">✅ Add Teacher</button>`;}
-function saveNewTeach(){const n=document.getElementById('nt-n').value.trim(),r=document.getElementById('nt-r').value,ph=document.getElementById('nt-ph').value.trim(),subj=document.getElementById('nt-subj').value.trim(),sc=document.getElementById('nt-sc').value,q=document.getElementById('nt-q').value.trim();if(!n){showToast('Enter name','error');haptic('error');return;}const id=(r.includes('Acc')?'ACC':'STF')+'-'+String(Date.now()).slice(-5);teacherData.push({id,name:n,role:r.includes('+')?'Teacher':r,subjects:subj||'—',classes:'TBA',school:sc,qual:q||'—',status:'active'});if(ph){const msg=encodeURIComponent(`EduNexus Pro: Welcome ${n}! Your ${r} account ID: ${id}. Login: https://edunexuspro.app`);setTimeout(()=>window.open(`https://wa.me/${ph.replace(/\D/g,'')}?text=${msg}`,'_blank'),800);}showToast(n+' added! Login sent via WhatsApp','success');haptic('success');playSuccess();renderTeachList('all');}
+function showAddTeachForm(){const b=document.getElementById('ovTeachBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderTeachList('all')">← Back</button><div class="fi-row"><div class="fg"><label class="fl">Full Name *</label><input class="fi" id="nt-n" placeholder="Full name"></div><div class="fg"><label class="fl">Role *</label><select class="fs" id="nt-r"><option>Teacher</option><option>Accountant</option><option>Teacher + Accountant</option></select></div></div><div class="fi-row"><div class="fg"><label class="fl">Email *</label><input class="fi" id="nt-e" type="email" placeholder="teacher@school.ng"></div><div class="fg"><label class="fl">WhatsApp</label><input class="fi" id="nt-ph" type="tel" placeholder="+234..."></div></div><div class="fi-row"><div class="fg"><label class="fl">Qualification</label><input class="fi" id="nt-q" placeholder="B.Sc, PGDE…"></div><div class="fg"><label class="fl">School</label><select class="fs" id="nt-sc">${SCHOOLS.map(s=>`<option>${s.name.replace('goCBT eCampus ','').replace('goCBT eCampus ','')}</option>`).join('')}</select></div></div><div class="fg"><label class="fl">Subjects</label><input class="fi" id="nt-subj" placeholder="Mathematics, Physics…"></div><div class="fi-row"><div class="fg"><label class="fl">Password</label><input class="fi" id="nt-pw" type="password" placeholder="Set password"></div><div class="fg"><label class="fl">Confirm</label><input class="fi" id="nt-cpw" type="password" placeholder="Repeat"></div></div><button class="btn-em" onclick="saveNewTeach()">✅ Add Teacher</button>`;}
+function saveNewTeach(){const n=document.getElementById('nt-n').value.trim(),r=document.getElementById('nt-r').value,ph=document.getElementById('nt-ph').value.trim(),subj=document.getElementById('nt-subj').value.trim(),sc=document.getElementById('nt-sc').value,q=document.getElementById('nt-q').value.trim();if(!n){showToast('Enter name','error');haptic('error');return;}const id=(r.includes('Acc')?'ACC':'STF')+'-'+String(Date.now()).slice(-5);teacherData.push({id,name:n,role:r.includes('+')?'Teacher':r,subjects:subj||'—',classes:'TBA',school:sc,qual:q||'—',status:'active'});if(ph){const msg=encodeURIComponent(`goCBT eCampus: Welcome ${n}! Your ${r} account ID: ${id}. Login: https://edunexuspro.app`);setTimeout(()=>window.open(`https://wa.me/${ph.replace(/\D/g,'')}?text=${msg}`,'_blank'),800);}showToast(n+' added! Login sent via WhatsApp','success');haptic('success');playSuccess();renderTeachList('all');}
 function removeTeach(id){teacherData=teacherData.filter(t=>t.id!==id);renderTeachList('all');showToast('Removed','info');}
 
 // ── ACCOUNTING — FEE INVOICES & PAYMENTS ──
@@ -2322,7 +2094,7 @@ function savePay(){const invId=document.getElementById('rp-inv').value,amt=parse
 
 // ── WIDGETS ──
 function doWidgets(){openOv('ovWidgets');renderWidgMain();haptic('medium');}
-function renderWidgMain(){const b=document.getElementById('ovWidgBody');b.innerHTML=`<div style="display:flex;flex-direction:column;gap:11px;"><div style="background:var(--s2);border:1px solid var(--border2);border-radius:13px;padding:12px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div><div style="font-size:12.5px;font-weight:700;">📌 Noticeboard Widget</div><div style="font-size:9.5px;color:var(--muted);">Embeddable announcement board</div></div><button class="btn-em" style="padding:5px 10px;font-size:10px;" onclick="showPostNoticeForm()">＋ Notice</button></div><div style="background:var(--s3);border-radius:9px;padding:9px;margin-bottom:9px;"><div style="font-size:10px;font-weight:700;color:var(--emerald);margin-bottom:7px;">📌 School Noticeboard</div>${NOTICES.slice(0,3).map(n=>`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border2);"><div style="width:7px;height:7px;border-radius:50%;background:${n.type==='urgent'?'var(--rose)':n.type==='info'?'var(--sapphire)':'var(--emerald)'};flex-shrink:0;margin-top:5px;"></div><div><div style="font-size:10px;font-weight:600;">${n.title}</div><div style="font-size:8.5px;color:var(--muted);">${n.date}</div></div></div>`).join('')}</div><div style="font-size:8.5px;color:var(--muted);margin-bottom:5px;font-family:'JetBrains Mono',monospace;font-weight:700;">EMBED CODE</div><div style="background:var(--s3);border-radius:7px;padding:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--emerald);word-break:break-all;">&lt;iframe src="https://edunexuspro.app/widget/noticeboard?school=ENX-001&theme=dark" width="100%" height="320" frameborder="0"&gt;&lt;/iframe&gt;</div><button class="btn-ghost" style="margin-top:7px;width:100%;font-size:10px;" onclick="copyWidgCode('noticeboard')">📋 Copy Embed Code</button></div><div style="background:var(--s2);border:1px solid var(--border2);border-radius:13px;padding:12px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div><div style="font-size:12.5px;font-weight:700;">🔐 Student Login Widget</div><div style="font-size:9.5px;color:var(--muted);">Embed student portal login</div></div><button class="btn-ghost" style="padding:5px 10px;font-size:10px;">⚙️ Config</button></div><div style="background:linear-gradient(135deg,#0d1525,#0a1020);border:1px solid rgba(0,229,160,0.15);border-radius:11px;padding:16px;text-align:center;margin-bottom:9px;"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;background:linear-gradient(90deg,var(--emerald),var(--sapphire));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;">🎓 Student Portal</div><div style="font-size:9px;color:var(--muted);margin-bottom:11px;">Sign in to access your results</div><input class="fi" placeholder="Admission Number" style="margin-bottom:8px;font-size:11px;"><input class="fi" type="password" placeholder="Password" style="font-size:11px;"><button style="width:100%;padding:9px;background:linear-gradient(135deg,var(--emerald2),var(--emerald));border:none;border-radius:8px;color:#000;font-weight:700;font-size:11px;margin-top:8px;cursor:pointer;font-family:'Outfit',sans-serif;">Sign In →</button><div style="font-size:8px;color:var(--muted);margin-top:8px;">Powered by EduNexusPro</div></div><div style="font-size:8.5px;color:var(--muted);margin-bottom:5px;font-family:'JetBrains Mono',monospace;font-weight:700;">EMBED CODE</div><div style="background:var(--s3);border-radius:7px;padding:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--emerald);word-break:break-all;">&lt;iframe src="https://edunexuspro.app/widget/student-login?school=ENX-001&theme=dark&color=00E5A0" width="100%" height="380" frameborder="0"&gt;&lt;/iframe&gt;</div><button class="btn-ghost" style="margin-top:7px;width:100%;font-size:10px;" onclick="copyWidgCode('student-login')">📋 Copy Embed Code</button></div></div>`;}
+function renderWidgMain(){const b=document.getElementById('ovWidgBody');b.innerHTML=`<div style="display:flex;flex-direction:column;gap:11px;"><div style="background:var(--s2);border:1px solid var(--border2);border-radius:13px;padding:12px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div><div style="font-size:12.5px;font-weight:700;">📌 Noticeboard Widget</div><div style="font-size:9.5px;color:var(--muted);">Embeddable announcement board</div></div><button class="btn-em" style="padding:5px 10px;font-size:10px;" onclick="showPostNoticeForm()">＋ Notice</button></div><div style="background:var(--s3);border-radius:9px;padding:9px;margin-bottom:9px;"><div style="font-size:10px;font-weight:700;color:var(--emerald);margin-bottom:7px;">📌 School Noticeboard</div>${NOTICES.slice(0,3).map(n=>`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border2);"><div style="width:7px;height:7px;border-radius:50%;background:${n.type==='urgent'?'var(--rose)':n.type==='info'?'var(--sapphire)':'var(--emerald)'};flex-shrink:0;margin-top:5px;"></div><div><div style="font-size:10px;font-weight:600;">${n.title}</div><div style="font-size:8.5px;color:var(--muted);">${n.date}</div></div></div>`).join('')}</div><div style="font-size:8.5px;color:var(--muted);margin-bottom:5px;font-family:'JetBrains Mono',monospace;font-weight:700;">EMBED CODE</div><div style="background:var(--s3);border-radius:7px;padding:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--emerald);word-break:break-all;">&lt;iframe src="https://edunexuspro.app/widget/noticeboard?school=ENX-001&theme=dark" width="100%" height="320" frameborder="0"&gt;&lt;/iframe&gt;</div><button class="btn-ghost" style="margin-top:7px;width:100%;font-size:10px;" onclick="copyWidgCode('noticeboard')">📋 Copy Embed Code</button></div><div style="background:var(--s2);border:1px solid var(--border2);border-radius:13px;padding:12px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div><div style="font-size:12.5px;font-weight:700;">🔐 Student Login Widget</div><div style="font-size:9.5px;color:var(--muted);">Embed student portal login</div></div><button class="btn-ghost" style="padding:5px 10px;font-size:10px;">⚙️ Config</button></div><div style="background:linear-gradient(135deg,#0d1525,#0a1020);border:1px solid rgba(0,229,160,0.15);border-radius:11px;padding:16px;text-align:center;margin-bottom:9px;"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;background:linear-gradient(90deg,var(--emerald),var(--sapphire));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;">🎓 Student Portal</div><div style="font-size:9px;color:var(--muted);margin-bottom:11px;">Sign in to access your results</div><input class="fi" placeholder="Admission Number" style="margin-bottom:8px;font-size:11px;"><input class="fi" type="password" placeholder="Password" style="font-size:11px;"><button style="width:100%;padding:9px;background:linear-gradient(135deg,var(--emerald2),var(--emerald));border:none;border-radius:8px;color:#000;font-weight:700;font-size:11px;margin-top:8px;cursor:pointer;font-family:'Outfit',sans-serif;">Sign In →</button><div style="font-size:8px;color:var(--muted);margin-top:8px;">Powered by goCBT eCampus</div></div><div style="font-size:8.5px;color:var(--muted);margin-bottom:5px;font-family:'JetBrains Mono',monospace;font-weight:700;">EMBED CODE</div><div style="background:var(--s3);border-radius:7px;padding:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--emerald);word-break:break-all;">&lt;iframe src="https://edunexuspro.app/widget/student-login?school=ENX-001&theme=dark&color=00E5A0" width="100%" height="380" frameborder="0"&gt;&lt;/iframe&gt;</div><button class="btn-ghost" style="margin-top:7px;width:100%;font-size:10px;" onclick="copyWidgCode('student-login')">📋 Copy Embed Code</button></div></div>`;}
 function showPostNoticeForm(){const b=document.getElementById('ovWidgBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderWidgMain()">← Back</button><div class="fi-row"><div class="fg"><label class="fl">Title *</label><input class="fi" id="pn-title" placeholder="Notice headline"></div><div class="fg"><label class="fl">Priority</label><select class="fs" id="pn-type"><option value="normal">Normal</option><option value="info">Info</option><option value="urgent">Urgent</option></select></div></div><div class="fg"><label class="fl">Message *</label><textarea class="fi" id="pn-body" rows="4" placeholder="Full notice text…" style="resize:none;"></textarea></div><div class="fi-row"><div class="fg"><label class="fl">Audience</label><select class="fs" id="pn-aud"><option>All</option><option>Students</option><option>Staff</option><option>Parents</option></select></div><div class="fg"><label class="fl">Expiry Date</label><input class="fi" id="pn-exp" type="date"></div></div><button class="btn-em" onclick="saveNotice()">📌 Post Notice</button>`;}
 function saveNotice(){const t=document.getElementById('pn-title').value.trim(),b2=document.getElementById('pn-body').value.trim(),type=document.getElementById('pn-type').value;if(!t||!b2){showToast('Fill title and message','error');haptic('error');return;}NOTICES.unshift({type,title:t,body:b2,date:'Just now'});showToast('Notice posted!','success');haptic('success');playSuccess();renderWidgMain();}
 function copyWidgCode(type){const codes={'noticeboard':'<iframe src="https://edunexuspro.app/widget/noticeboard?school=ENX-001&theme=dark" width="100%" height="320" frameborder="0"></iframe>','student-login':'<iframe src="https://edunexuspro.app/widget/student-login?school=ENX-001&theme=dark&color=00E5A0" width="100%" height="380" frameborder="0"></iframe>'};navigator.clipboard.writeText(codes[type]||'').then(()=>showToast('Embed code copied! ✅','success')).catch(()=>showToast('Copied!','success'));haptic('medium');}
@@ -2459,7 +2231,7 @@ function processPin(ctx){
 }
 
 function buyPinWA(){
-  window.open(`https://wa.me/2348000000000?text=${encodeURIComponent('EduNexus Pro: I would like to purchase a wallet top-up voucher PIN. Please guide me.')}`, '_blank');
+  window.open(`https://wa.me/2348000000000?text=${encodeURIComponent('goCBT eCampus: I would like to purchase a wallet top-up voucher PIN. Please guide me.')}`, '_blank');
 }
 
 function processGatewayPay(gw){
@@ -2512,7 +2284,7 @@ function sendWACode(){
   const phone=document.getElementById('waPhone').value.trim();
   if(!phone){ showToast('Enter your WhatsApp number','error'); haptic('error'); return; }
   pendingWACode=String(Math.floor(100000+Math.random()*900000));
-  const msg=encodeURIComponent(`EduNexus Pro Verification Code: ${pendingWACode}. Valid for 10 minutes. Do not share this code.`);
+  const msg=encodeURIComponent(`goCBT eCampus Verification Code: ${pendingWACode}. Valid for 10 minutes. Do not share this code.`);
   window.open(`https://wa.me/${phone.replace(/\D/g,'')}?text=${msg}`,'_blank');
   document.getElementById('waCodeSection').style.display='block';
   showToast('Code sent to WhatsApp ✅','success'); haptic('medium'); playNotif();
@@ -2637,7 +2409,7 @@ function updateCtx(){
   document.getElementById('ctxWallet').textContent=`🪙 ₦${fmtN(u.wallet||0)}`;
   document.getElementById('ctxClass').textContent=`📚 ${u.class||''}`;
   document.getElementById('ctxTokens').textContent=`🎫 ${u.tokens||0}`;
-  document.getElementById('hdrSub').textContent=`${(u.id||'').toUpperCase()} · ${u.class||'EduNexus'}`;
+  document.getElementById('hdrSub').textContent=`${(u.id||'').toUpperCase()} · ${u.class||'goCBT eCampus'}`;
   document.getElementById('userAv').textContent=u.avatar;
 }
 
@@ -2747,7 +2519,7 @@ function sendMWACode() {
   if (!ph) { showToast('Enter your WhatsApp number','error'); haptic('error'); return; }
   _mwaOTP = String(Math.floor(100000 + Math.random() * 900000));
   const mod = document.getElementById('mwaModuleTitle').textContent;
-  const msg = encodeURIComponent(`🔐 EduNexusPro\n\nHello ${currentUser?.name||'User'},\n\nOTP to access *${mod}*:\n\n*${_mwaOTP}*\n\nValid 5 mins. Do not share.\n– EduNexusPro Security`);
+  const msg = encodeURIComponent(`🔐 goCBT eCampus\n\nHello ${currentUser?.name||'User'},\n\nOTP to access *${mod}*:\n\n*${_mwaOTP}*\n\nValid 5 mins. Do not share.\n– DigitalSolution Security`);
   window.open(`https://wa.me/${ph.replace(/\D/g,'')}?text=${msg}`, '_blank');
   document.getElementById('mwaStep1').style.display = 'none';
   document.getElementById('mwaStep2').style.display = 'block';
