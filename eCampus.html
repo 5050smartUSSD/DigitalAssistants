@@ -542,7 +542,7 @@ textarea.inp::placeholder{color:var(--muted);}
     <div class="lb-logo">
       <div class="lb-logo-icon">🎓</div>
       <div class="lb-school">goCBT eCampus</div>
-      <div class="lb-tagline">ULTIMATE ONLINE LEARNING SYSTEM</div>
+      <div class="lb-tagline">ULTIMATE ONLINE SCHOOL</div>
     </div>
     <div class="lb-tabs" id="loginTabs">
       <div class="lb-tab active" onclick="setLoginTab('signin')">Sign In</div>
@@ -592,7 +592,7 @@ textarea.inp::placeholder{color:var(--muted);}
     <!-- ADMISSION -->
     <div id="tab-admission" style="display:none;">
       <div style="background:var(--em-g);border:1px solid rgba(0,229,160,0.18);border-radius:10px;padding:9px 11px;margin-bottom:11px;">
-        <div style="font-size:11px;font-weight:700;color:var(--emerald);margin-bottom:2px;">📋 Admission Application 2024/2025</div>
+        <div style="font-size:11px;font-weight:700;color:var(--emerald);margin-bottom:2px;">📋 Admission Application 2026/2027</div>
         <div style="font-size:10px;color:var(--muted);">Fill the form. You'll receive your Application ID via WhatsApp.</div>
       </div>
       <div class="fg"><label class="fl">Applicant Full Name</label><input class="fi" id="adName" placeholder="Full legal name"></div>
@@ -612,7 +612,7 @@ textarea.inp::placeholder{color:var(--muted);}
           <select class="fs" id="adActivity"><option>None</option><option>Football</option><option>Swimming</option><option>Chess</option><option>Drama</option></select></div>
       </div>
       <button class="btn-em" onclick="submitAdmission()">🎓 Submit Application</button>
-      <button class="btn-wa" style="margin-top:7px;" onclick="window.open('https://wa.me/2348000000000?text='+encodeURIComponent('Admission enquiry for goCBT eCampus 2024/2025 session'),'_blank')">📲 WhatsApp Enquiry</button>
+      <button class="btn-wa" style="margin-top:7px;" onclick="window.open('https://wa.me/2348157505037?text='+encodeURIComponent('Admission enquiry for goCBT eCampus 2026/2027 session'),'_blank')">📲 WhatsApp Enquiry</button>
     </div>
   </div>
 </div>
@@ -789,7 +789,7 @@ textarea.inp::placeholder{color:var(--muted);}
       <button class="btn-wa" onclick="sendWACode()">📲 Send Verification Code</button>
       <div id="waCodeSection" style="display:none;margin-top:12px;">
         <div style="background:var(--sap-g);border:1px solid rgba(59,126,255,0.18);border-radius:9px;padding:8px 11px;margin-bottom:10px;font-size:10.5px;color:var(--sapphire);">
-          📲 Code sent! Check your WhatsApp. <strong>Demo code: 123456</strong>
+          📲 Code sent! Check your WhatsApp. <strong>Demo code: ******</strong>
         </div>
         <div class="fg"><label class="fl">Enter 6-Digit Code</label>
           <input class="fi" id="waCode" placeholder="123456" maxlength="6"
@@ -857,14 +857,14 @@ textarea.inp::placeholder{color:var(--muted);}
       </div>
       <!-- Step 1: enter phone -->
       <div id="mwaStep1">
-        <div class="fg"><label class="fl">Your Student ID</label>
-          <input class="fi" id="mwaPhone" type="tel" placeholder="+234 800 000 0000" style="font-size:14px;"></div>
+        <div class="fg"><label class="fl">ENTER WHATSAPP NUMBER START WITH +234_YOUR_NUMBER</label>
+          <input class="fi" id="mwaPhone" type="tel" placeholder="e.g +234 800 000 0000" style="font-size:14px;"></div>
         <button onclick="sendMWACode()" style="width:100%;margin-top:8px;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#128C7E,#25D366);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:.18s;">
           <span style="font-size:16px;">📲</span> Send OTP via WhatsApp
         </button>
         <div style="text-align:center;margin-top:11px;padding-bottom:4px;">
           <span style="font-size:10.5px;color:var(--muted);">Demo shortcut — OTP is </span>
-          <span onclick="useDemoMWA()" style="font-size:11px;color:var(--emerald);font-family:'JetBrains Mono',monospace;font-weight:800;cursor:pointer;letter-spacing:1px;text-decoration:underline;text-underline-offset:2px;">123456 →</span>
+          <span onclick="useDemoMWA()" style="font-size:11px;color:var(--emerald);font-family:'JetBra123456ins Mono',monospace;font-weight:800;cursor:pointer;letter-spacing:1px;text-decoration:underline;text-underline-offset:2px;"> →</span>
         </div>
       </div>
       <!-- Step 2: enter code -->
@@ -873,7 +873,7 @@ textarea.inp::placeholder{color:var(--muted);}
           <span style="font-size:22px;">✅</span>
           <div>
             <div style="font-size:11.5px;font-weight:700;color:var(--emerald);">OTP sent to WhatsApp!</div>
-            <div style="font-size:9.5px;color:var(--muted);margin-top:1px;">Demo code: <strong style="font-family:'JetBrains Mono',monospace;color:var(--emerald);letter-spacing:1px;">123456</strong></div>
+            <div style="font-size:9.5px;color:var(--muted);margin-top:1px;">Demo code: <strong style="font-family:'JetBrains Mono',monospace;color:var(--emerald);letter-spacing:1px;">******</strong></div>
           </div>
         </div>
         <input id="mwaCode" type="tel" maxlength="6" placeholder="· · · · · ·" autocomplete="one-time-code"
@@ -882,10 +882,10 @@ textarea.inp::placeholder{color:var(--muted);}
         <button onclick="verifyMWACode()" style="width:100%;margin-top:10px;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--emerald2),var(--emerald));color:#000;font-weight:800;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif;">
           ✅ Verify & Open
         </button>
-        <div id="mwaErr" style="display:none;margin-top:9px;background:var(--rose-g);border:1px solid rgba(255,77,109,0.25);border-radius:9px;padding:8px 12px;font-size:11px;color:var(--rose);">❌ Incorrect OTP. Try again or tap <strong>123456 →</strong> below.</div>
+        <div id="mwaErr" style="display:none;margin-top:9px;background:var(--rose-g);border:1px solid rgba(255,77,109,0.25);border-radius:9px;padding:8px 12px;font-size:11px;color:var(--rose);">❌ Incorrect OTP. Try again or tap <strong>****** →</strong> below.</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:11px;padding-bottom:4px;">
           <span onclick="mwaBackToPhone()" style="font-size:10px;color:var(--muted);cursor:pointer;">← Change number</span>
-          <span onclick="useDemoMWA()" style="font-size:10.5px;color:var(--emerald);font-family:'JetBrains Mono',monospace;font-weight:700;cursor:pointer;">Use 123456 →</span>
+          <span onclick="useDemoMWA()" style="font-size:10.5px;color:var(--emerald);font-family:'JetBrains Mono',monospace;font-weight:700;cursor:pointer;">Use ****** →</span>
         </div>
       </div>
     </div>
@@ -1068,11 +1068,11 @@ const TOKEN_PACKS = [
 ];
 
 const NOTICES = [
-  { type:'urgent', title:'First Term Exams — Dec 2–13', body:'All students: CBT slots open Nov 28. Timetables posted on portal.', date:'Nov 20, 2024' },
-  { type:'info', title:'New Library Resources Added', body:'25 new textbooks and 12 past question PDFs now in eLibrary.', date:'Nov 18, 2024' },
-  { type:'normal', title:'Boarding: Room Allocation', body:'JSS1 students: new room assignments effective Dec 1.', date:'Nov 15, 2024' },
-  { type:'info', title:'Virtual Excursion: British Museum', body:'Scheduled Thursday Nov 28. SS2 students register by Friday.', date:'Nov 13, 2024' },
-  { type:'normal', title:'PTA Meeting — Saturday Nov 30', body:'All parents invited. 10am in the main hall.', date:'Nov 10, 2024' },
+  { type:'urgent', title:'First Term Exams — Dec 2–13', body:'All students: CBT slots open Nov 28. Timetables posted on portal.', date:'Mar. 20, 2026' },
+  { type:'info', title:'New Library Resources Added', body:'25 new textbooks and 12 past question PDFs now in eLibrary.', date:'Apr. 18, 2026' },
+  { type:'normal', title:'Boarding: Room Allocation', body:'JSS1 students: new room assignments effective Dec 1.', date:'Aug. 15, 2026' },
+  { type:'info', title:'Virtual Excursion: British Museum', body:'Scheduled Thursday Nov 28. SS2 students register by Friday.', date:'Apr. 13, 2026' },
+  { type:'normal', title:'PTA Meeting — Saturday Nov 30', body:'All parents invited. 10am in the main hall.', date:'Sept. 10, 2026' },
 ];
 
 const NOTIFICATIONS = [
@@ -1081,7 +1081,7 @@ const NOTIFICATIONS = [
   { icon:'📅', title:'Timetable Update', body:'Physics practical moved to Monday 2pm.', time:'2d ago', unread:true },
   { icon:'🎫', title:'Token Deducted', body:'1 token used for Mathematics Exam.', time:'3d ago', unread:false },
   { icon:'🎓', title:'Certificate Ready', body:'Your JSS3 completion certificate is ready.', time:'1w ago', unread:false },
-  { icon:'📲', title:'New Admission Received', body:'Application APP-2024-0105 received.', time:'2d ago', unread:true },
+  { icon:'📲', title:'New Admission Received', body:'Application APP-2026-0105 received.', time:'2d ago', unread:true },
 ];
 
 const EXAM_SUBJECTS = [
@@ -1211,10 +1211,10 @@ const ONLINE_CLASSES = [
 ];
 
 const HOMEWORKS = [
-  {subj:'Mathematics',title:'Quadratic Equations Practice',due:'Nov 25, 2024',status:'pending',teacher:'Mr. Nwosu'},
-  {subj:'English Language',title:'Essay: The Role of Technology in Education',due:'Nov 22, 2024',status:'submitted',teacher:'Mrs. Chukwu'},
-  {subj:'Biology',title:'Label the Digestive System Diagram',due:'Nov 28, 2024',status:'pending',teacher:'Mrs. Eze'},
-  {subj:'Physics',title:'Newton\'s Laws — Worked Examples',due:'Nov 26, 2024',status:'pending',teacher:'Dr. Adeyemi'},
+  {subj:'Mathematics',title:'Quadratic Equations Practice',due:'Mar. 29, 2026',status:'pending',teacher:'Mr. Nwosu'},
+  {subj:'English Language',title:'Essay: The Role of Technology in Education',due:'Apr. 1, 2026',status:'submitted',teacher:'Mrs. Chukwu'},
+  {subj:'Biology',title:'Label the Digestive System Diagram',due:'Mar. 30, 2026',status:'pending',teacher:'Mrs. Eze'},
+  {subj:'Physics',title:'Newton\'s Laws — Worked Examples',due:'Mar. 26, 2026',status:'pending',teacher:'Dr. Adeyemi'},
 ];
 
 const STUDY_MATERIALS = [
@@ -1321,7 +1321,7 @@ function doRegister(){
   const cls=document.getElementById('regClass').value.trim();
   const pw=document.getElementById('regPw').value;
   if(!name||!pw){ showToast('Please fill all required fields','error'); haptic('error'); return; }
-  const prefix=role==='student'?'STU-ENX-2024-':role==='teacher'?'STF-ENX-':'PAR-ENX-';
+  const prefix=role==='student'?'STU-ENX-2026-':role==='teacher'?'STF-ENX-':'PAR-ENX-';
   const newId=prefix+String(Math.floor(Math.random()*9000)+1000);
   currentUser={name,role,class:cls,id:newId,avatar:role==='student'?'🎒':role==='teacher'?'📚':'👪',waVerified:false,wallet:0,tokens:0,loginId:newId,pw};
   DEMO_USERS[newId]=currentUser;
@@ -1335,7 +1335,7 @@ function submitAdmission(){
   const name=document.getElementById('adName').value.trim();
   const phone=document.getElementById('adPhone').value.trim();
   if(!name||!phone){ showToast('Fill required fields','error'); haptic('error'); return; }
-  const appId='APP-ENX-2024-'+String(Math.floor(Math.random()*9000)+1000);
+  const appId='APP-ENX-2026-'+String(Math.floor(Math.random()*9000)+1000);
   showToast('Application submitted! ID: '+appId,'success');
   haptic('success'); playSuccess();
   const msg=encodeURIComponent(`goCBT eCampus: Application received for ${name}. Application ID: ${appId}. Our admissions team will contact you within 48 hours. Thank you!`);
@@ -1435,7 +1435,7 @@ function doFees(){
       <div class="ir"><div class="ir-ico">💰</div><div class="ir-txt"><b>Total Fees:</b> ₦${fmtN(u.feesTotal||0)}</div></div>
       <div class="ir"><div class="ir-ico">✅</div><div class="ir-txt"><b>Amount Paid:</b> ₦${fmtN(u.feesPaid||0)}</div></div>
       <div class="ir"><div class="ir-ico">⚠️</div><div class="ir-txt"><b>Outstanding:</b> <span style="color:var(--rose);">₦${fmtN(u.feesOwed||0)}</span></div></div>
-      <div class="ir"><div class="ir-ico">📅</div><div class="ir-txt"><b>Due Date:</b> December 6, 2024</div></div>
+      <div class="ir"><div class="ir-ico">📅</div><div class="ir-txt"><b>Due Date:</b> Apr. 6, 2026</div></div>
     </div>
     ${(u.feesOwed||0)>0?chips(['💳 Pay from Wallet','payFeesFromWallet()',''],['🏦 Other Methods','openOv(\'ovPayGateway\');document.getElementById(\'payAmountLbl\').textContent=\'₦\'+fmtN(currentUser.feesOwed||0)','sap']):chips(['✅ All fees cleared!','','am'])}`);
 }
@@ -1493,14 +1493,14 @@ function doPaymentCollection(){
 }
 
 function doAttendance(){
-  botMsg('📅 <strong>Attendance — November 2024</strong>',
+  botMsg('📅 <strong>Attendance — March 2026</strong>',
     `<div class="prog-card">
       <div class="prog-row"><span class="prog-lbl">✅ Present</span><div class="prog-track"><div class="prog-fill" style="width:85%;"></div></div><span class="prog-pct">85%</span></div>
       <div class="prog-row"><span class="prog-lbl">❌ Absent</span><div class="prog-track"><div class="prog-fill" style="width:8%;background:var(--rose);"></div></div><span class="prog-pct" style="color:var(--rose);">8%</span></div>
       <div class="prog-row"><span class="prog-lbl">🕐 Late</span><div class="prog-track"><div class="prog-fill" style="width:7%;background:var(--amber);"></div></div><span class="prog-pct" style="color:var(--amber);">7%</span></div>
     </div>
     <div class="cal-wrap">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">November 2024</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">April 2026</div>
       <div class="cal-grid">
         ${['M','T','W','T','F','S','S'].map(d=>`<div class="cal-day-lbl">${d}</div>`).join('')}
         ${buildCalendar()}
@@ -1548,7 +1548,7 @@ function saveAttendance(){ showToast('Attendance saved for '+ATTENDANCE_STUDENTS
 function doAssessment(){
   const total=ASSESSMENT_DATA.reduce((s,r)=>s+r.total,0);
   const avg=Math.round(total/ASSESSMENT_DATA.length);
-  botMsg(`📝 <strong>Assessment Results — First Term 2024</strong><br>Average: <strong style="color:var(--emerald);">${avg}%</strong>`,
+  botMsg(`📝 <strong>Assessment Results — Second Term 2026</strong><br>Average: <strong style="color:var(--emerald);">${avg}%</strong>`,
     `<div class="tbl-wrap">
       <div class="tbl-hdr"><span>Subject</span><span>CA</span><span>Exam</span><span>Total</span><span>Grade</span></div>
       ${ASSESSMENT_DATA.map(r=>{
@@ -1565,7 +1565,7 @@ function doReportCard(){
     `<div class="result-card">
       <div class="rc-score">${avg}%</div>
       <div class="rc-status">${avg>=80?'🌟 Excellent':avg>=70?'👏 Good':'📈 Keep Improving'}</div>
-      <div class="rc-grade">Position: ${ASSESSMENT_DATA[0].position} of 38 · First Term 2024</div>
+      <div class="rc-grade">Position: ${ASSESSMENT_DATA[0].position} of 38 · First Term 2026</div>
       <div class="rc-bar"><div class="rc-bar-fill" style="width:${avg}%;"></div></div>
     </div>
     <div class="info-card">
@@ -1584,14 +1584,14 @@ function doAdmitCard(){
         <div class="admit-logo">🎓</div>
         <div>
           <div class="admit-school">goCBT eCampus</div>
-          <div class="admit-session">First Term Examinations · 2024/2025</div>
+          <div class="admit-session">First Term Examinations · 2026/2025</div>
         </div>
       </div>
       <div class="admit-grid">
         <div class="admit-item"><div class="admit-lbl">STUDENT NAME</div><div class="admit-val">${u?.name||'Chisom Obi'}</div></div>
-        <div class="admit-item"><div class="admit-lbl">STUDENT ID</div><div class="admit-val">${u?.id||'USSID-ENX-2024-0012'}</div></div>
+        <div class="admit-item"><div class="admit-lbl">STUDENT ID</div><div class="admit-val">${u?.id||'USSID-ENX-2026-0012'}</div></div>
         <div class="admit-item"><div class="admit-lbl">CLASS</div><div class="admit-val">${u?.class||'SS2A'}</div></div>
-        <div class="admit-item"><div class="admit-lbl">EXAM PERIOD</div><div class="admit-val">Dec 2–13, 2024</div></div>
+        <div class="admit-item"><div class="admit-lbl">EXAM PERIOD</div><div class="admit-val">Apr. 2–13, 2026</div></div>
         <div class="admit-item"><div class="admit-lbl">EXAM CENTRE</div><div class="admit-val">Main Hall A</div></div>
         <div class="admit-item"><div class="admit-lbl">REPORTING TIME</div><div class="admit-val">7:30 AM</div></div>
       </div>
@@ -1602,7 +1602,7 @@ function doAdmitCard(){
 }
 
 function doExamTimetable(){
-  botMsg('📋 <strong>Exam Timetable — First Term 2024</strong>',
+  botMsg('📋 <strong>Exam Timetable — First Term 2026</strong>',
     `<div class="tbl-wrap">
       <div class="tbl-hdr"><span>Subject</span><span>Date</span><span>Time</span><span>Venue</span></div>
       <div class="tbl-row"><span><b>Mathematics</b></span><span>Dec 2</span><span>8:00am</span><span>Hall A</span></div>
@@ -1933,7 +1933,7 @@ function doStudentId(){
         </div>
       </div>
       <div class="id-grid">
-        <div class="id-item"><div class="id-lbl">SESSION</div><div class="id-val">2024/2025</div></div>
+        <div class="id-item"><div class="id-lbl">SESSION</div><div class="id-val">2026/2027</div></div>
         <div class="id-item"><div class="id-lbl">SECTION</div><div class="id-val">${u.section||'Section A'}</div></div>
         <div class="id-item"><div class="id-lbl">TYPE</div><div class="id-val">${u.boardingType||'Day Student'}</div></div>
         <div class="id-item"><div class="id-lbl">WA STATUS</div><div class="id-val" style="color:${u.waVerified?'var(--emerald)':'var(--rose)'};">${u.waVerified?'✅ Verified':'❌ Unverified'}</div></div>
@@ -2014,7 +2014,7 @@ function selPlan(p){addSchoolSelectedPlan=p;['trial','standard','premium'].forEa
 function saveAS2(){if(!addSchoolSelectedPlan){showToast('Please select a plan','error');haptic('error');return;}addSchoolData.plan=addSchoolSelectedPlan;addSchoolStep(3);haptic('light');}
 function renderAS3(){
   const tok=genSchoolToken();addSchoolData.token=tok;
-  document.getElementById('addSchoolBody').innerHTML=`<div style="font-size:9px;color:var(--muted);margin-bottom:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">ACTIVATION TOKEN PURCHASE</div><div class="info-card" style="margin-bottom:11px;"><div class="ir"><div class="ir-ico">📦</div><div class="ir-txt"><b>Plan:</b> ${PLAN_NAMES[addSchoolSelectedPlan]} — ${PLAN_PRICES[addSchoolSelectedPlan]}</div></div><div class="ir"><div class="ir-ico">⏱️</div><div class="ir-txt"><b>Validity:</b> ${PLAN_VALIDITY[addSchoolSelectedPlan]}</div></div><div class="ir"><div class="ir-ico">🏫</div><div class="ir-txt"><b>School:</b> ${addSchoolData.name}</div></div></div><div class="fg"><label class="fl">Payment Method</label><select class="fs" id="as-paymethod"><option>Bank Transfer</option><option>Paystack</option><option>Flutterwave</option><option>USSD (*737#)</option><option>Manual (Admin Override)</option></select></div><div class="fg"><label class="fl">Transaction Reference</label><input class="fi" id="as-txref" placeholder="e.g. TXN-2024-XXXXX"></div><div class="fg"><label class="fl">Activation Token</label><div style="display:flex;gap:6px;"><input class="fi" id="as-token" value="${tok}" readonly style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--emerald);letter-spacing:2px;"><button class="btn-ghost" style="flex-shrink:0;padding:8px 11px;font-size:10px;" onclick="regenTok()">🔄</button></div></div><div style="background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.2);border-radius:9px;padding:9px 11px;margin-top:9px;font-size:11px;color:#4cdf88;">📦 Token delivered via WhatsApp after verification.</div>`;
+  document.getElementById('addSchoolBody').innerHTML=`<div style="font-size:9px;color:var(--muted);margin-bottom:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">ACTIVATION TOKEN PURCHASE</div><div class="info-card" style="margin-bottom:11px;"><div class="ir"><div class="ir-ico">📦</div><div class="ir-txt"><b>Plan:</b> ${PLAN_NAMES[addSchoolSelectedPlan]} — ${PLAN_PRICES[addSchoolSelectedPlan]}</div></div><div class="ir"><div class="ir-ico">⏱️</div><div class="ir-txt"><b>Validity:</b> ${PLAN_VALIDITY[addSchoolSelectedPlan]}</div></div><div class="ir"><div class="ir-ico">🏫</div><div class="ir-txt"><b>School:</b> ${addSchoolData.name}</div></div></div><div class="fg"><label class="fl">Payment Method</label><select class="fs" id="as-paymethod"><option>Bank Transfer</option><option>Paystack</option><option>Flutterwave</option><option>USSD (*737#)</option><option>Manual (Admin Override)</option></select></div><div class="fg"><label class="fl">Transaction Reference</label><input class="fi" id="as-txref" placeholder="e.g. TXN-2026-XXXXX"></div><div class="fg"><label class="fl">Activation Token</label><div style="display:flex;gap:6px;"><input class="fi" id="as-token" value="${tok}" readonly style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--emerald);letter-spacing:2px;"><button class="btn-ghost" style="flex-shrink:0;padding:8px 11px;font-size:10px;" onclick="regenTok()">🔄</button></div></div><div style="background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.2);border-radius:9px;padding:9px 11px;margin-top:9px;font-size:11px;color:#4cdf88;">📦 Token delivered via WhatsApp after verification.</div>`;
   document.getElementById('addSchoolFoot').innerHTML=`<div style="display:flex;gap:7px;"><button class="btn-ghost" style="flex:0 0 75px;" onclick="addSchoolStep(2)">← Back</button><button class="btn-em" style="flex:1;" onclick="addSchoolStep(4)">Next: WhatsApp Verify →</button></div>`;
 }
 function genSchoolToken(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let t='';for(let i=0;i<4;i++){if(i)t+='-';for(let j=0;j<5;j++)t+=c[Math.floor(Math.random()*c.length)];}return t;}
@@ -2086,7 +2086,7 @@ function removeTeach(id){teacherData=teacherData.filter(t=>t.id!==id);renderTeac
 let invoicesData=[{id:'INV-001',student:'Chioma Eze',class:'JSS 1',amount:85000,paid:85000,balance:0,due:'Jan 31',status:'paid'},{id:'INV-002',student:'Emeka Nwachukwu',class:'SSS 1',amount:120000,paid:60000,balance:60000,due:'Jan 31',status:'partial'},{id:'INV-003',student:'Fatima Aliyu',class:'JSS 2',amount:90000,paid:0,balance:90000,due:'Jan 31',status:'unpaid'}];
 function doFeeInvoices(){openOv('ovInvoices');renderInvMain();haptic('medium');}
 function renderInvMain(){const b=document.getElementById('ovInvBody');const col=invoicesData.reduce((s,i)=>s+i.paid,0),out=invoicesData.reduce((s,i)=>s+i.balance,0);b.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:11px;"><div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val" style="color:var(--emerald);font-size:14px;">₦${fmtN(col)}</div><div class="stat-lbl">Collected</div></div><div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-val" style="color:var(--amber);font-size:14px;">₦${fmtN(out)}</div><div class="stat-lbl">Outstanding</div></div></div><div style="display:flex;gap:6px;margin-bottom:10px;"><button class="btn-em" style="flex:1;font-size:11px;" onclick="showGenInvForm()">🧾 Generate Invoice</button><button class="btn-ghost" style="flex:1;font-size:11px;" onclick="showRecPayForm()">💵 Record Payment</button></div><div class="tbl-wrap"><div class="tbl-hdr"><span>Invoice</span><span>Student</span><span>Amount</span><span>Balance</span><span>Status</span></div>${invoicesData.map(inv=>`<div class="tbl-row"><span class="em" style="font-size:10px;"><b>${inv.id}</b></span><span style="font-size:10px;">${inv.student}</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;">₦${fmtN(inv.amount)}</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${inv.balance>0?'var(--rose)':'var(--emerald)'};">₦${fmtN(inv.balance)}</span><span><span class="pill ${inv.status==='paid'?'pill-em':inv.status==='partial'?'pill-am':'pill-ro'}">${inv.status.toUpperCase()}</span></span></div>`).join('')}</div>`;}
-function showGenInvForm(){const b=document.getElementById('ovInvBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderInvMain()">← Back</button><div style="font-size:9px;color:var(--muted);margin-bottom:7px;font-family:'JetBrains Mono',monospace;letter-spacing:.4px;">GENERATE FEE INVOICE</div><div class="fi-row"><div class="fg"><label class="fl">Academic Term</label><select class="fs" id="gi-term"><option>2024/2025 – 2nd Term</option><option>2024/2025 – 1st Term</option></select></div><div class="fg"><label class="fl">Generate For</label><select class="fs" id="gi-for"><option>Individual Student</option><option>Entire Class</option><option>All Students</option></select></div></div><div class="fi-row"><div class="fg"><label class="fl">Student / Class *</label><input class="fi" id="gi-target" placeholder="Student name or class"></div><div class="fg"><label class="fl">Amount (₦) *</label><input class="fi" id="gi-amount" type="number" placeholder="e.g. 85000"></div></div><div class="fi-row"><div class="fg"><label class="fl">Due Date</label><input class="fi" id="gi-due" type="date"></div><div class="fg"><label class="fl">Discount (%)</label><input class="fi" id="gi-disc" type="number" value="0" min="0" max="100"></div></div><div class="fg" style="margin-top:4px;"><label class="fl">Fee Items</label><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;">${['School Fees','PTA Levy','Exam Fees','Uniform Fee','Library Fee','Development Levy','Boarding Fee'].map(f=>`<div onclick="togFeeItem(this)" style="font-size:9px;padding:4px 9px;border-radius:6px;cursor:pointer;border:1.5px solid rgba(255,255,255,0.08);background:var(--s3);color:var(--muted);transition:.15s;">${f}</div>`).join('')}</div></div><button class="btn-em" style="margin-top:11px;" onclick="saveGenInv()">🧾 Generate & Send</button>`;}
+function showGenInvForm(){const b=document.getElementById('ovInvBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderInvMain()">← Back</button><div style="font-size:9px;color:var(--muted);margin-bottom:7px;font-family:'JetBrains Mono',monospace;letter-spacing:.4px;">GENERATE FEE INVOICE</div><div class="fi-row"><div class="fg"><label class="fl">Academic Term</label><select class="fs" id="gi-term"><option>2026/2027 – 2nd Term</option><option>2026/2027 – 1st Term</option></select></div><div class="fg"><label class="fl">Generate For</label><select class="fs" id="gi-for"><option>Individual Student</option><option>Entire Class</option><option>All Students</option></select></div></div><div class="fi-row"><div class="fg"><label class="fl">Student / Class *</label><input class="fi" id="gi-target" placeholder="Student name or class"></div><div class="fg"><label class="fl">Amount (₦) *</label><input class="fi" id="gi-amount" type="number" placeholder="e.g. 85000"></div></div><div class="fi-row"><div class="fg"><label class="fl">Due Date</label><input class="fi" id="gi-due" type="date"></div><div class="fg"><label class="fl">Discount (%)</label><input class="fi" id="gi-disc" type="number" value="0" min="0" max="100"></div></div><div class="fg" style="margin-top:4px;"><label class="fl">Fee Items</label><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;">${['School Fees','PTA Levy','Exam Fees','Uniform Fee','Library Fee','Development Levy','Boarding Fee'].map(f=>`<div onclick="togFeeItem(this)" style="font-size:9px;padding:4px 9px;border-radius:6px;cursor:pointer;border:1.5px solid rgba(255,255,255,0.08);background:var(--s3);color:var(--muted);transition:.15s;">${f}</div>`).join('')}</div></div><button class="btn-em" style="margin-top:11px;" onclick="saveGenInv()">🧾 Generate & Send</button>`;}
 function togFeeItem(el){const on=el.dataset.on==='1';el.dataset.on=on?'':'1';el.style.background=!on?'var(--em-g)':'var(--s3)';el.style.borderColor=!on?'var(--emerald)':'rgba(255,255,255,0.08)';el.style.color=!on?'var(--emerald)':'var(--muted)';}
 function saveGenInv(){const amt=parseInt(document.getElementById('gi-amount').value)||0,tgt=document.getElementById('gi-target').value.trim();if(!amt||!tgt){showToast('Fill amount and target','error');haptic('error');return;}const disc=parseInt(document.getElementById('gi-disc').value)||0,final=Math.round(amt*(1-disc/100)),id='INV-'+String(Date.now()).slice(-3),due=document.getElementById('gi-due').value||'Feb 28';invoicesData.push({id,student:tgt,class:'—',amount:final,paid:0,balance:final,due,status:'unpaid'});showToast('Invoice '+id+' generated! Sent to guardians via WhatsApp ✅','success');haptic('success');playSuccess();renderInvMain();}
 function showRecPayForm(){const b=document.getElementById('ovInvBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderInvMain()">← Back</button><div style="font-size:9px;color:var(--muted);margin-bottom:7px;font-family:'JetBrains Mono',monospace;letter-spacing:.4px;">RECORD FEE PAYMENT</div><div class="fi-row"><div class="fg"><label class="fl">Invoice No.</label><select class="fs" id="rp-inv">${invoicesData.filter(i=>i.status!=='paid').map(i=>`<option value="${i.id}">${i.id} — ${i.student} (₦${fmtN(i.balance)})</option>`).join('')}</select></div><div class="fg"><label class="fl">Amount Paid (₦) *</label><input class="fi" id="rp-amount" type="number" placeholder="0"></div></div><div class="fi-row"><div class="fg"><label class="fl">Payment Method</label><select class="fs" id="rp-method"><option>Cash</option><option>Bank Transfer</option><option>POS</option><option>Online (Paystack)</option></select></div><div class="fg"><label class="fl">Receipt No.</label><input class="fi" id="rp-receipt" placeholder="Auto or manual"></div></div><div class="fg"><label class="fl">Payment Date</label><input class="fi" id="rp-date" type="date"></div><div style="background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.2);border-radius:9px;padding:8px 11px;margin-top:9px;font-size:11px;color:#4cdf88;">📱 Receipt will be sent to guardian's WhatsApp automatically.</div><button class="btn-em" style="margin-top:11px;" onclick="savePay()">✅ Record Payment</button>`;}
@@ -2103,10 +2103,10 @@ function doAllStudents(){
   botMsg('🎒 <strong>Student Directory</strong>',
     `<div class="tbl-wrap">
       <div class="tbl-hdr"><span>ID</span><span>Name</span><span>Class</span><span>Type</span></div>
-      <div class="tbl-row"><span class="em"><b>STU-ENX-2024-0012</b></span><span>Chisom Obi</span><span>SS2A</span><span><span class="pill pill-sap">Boarding</span></span></div>
-      <div class="tbl-row"><span class="em"><b>STU-ENX-2024-0013</b></span><span>Aisha Bello</span><span>SS2A</span><span><span class="pill pill-em">Day</span></span></div>
-      <div class="tbl-row"><span class="em"><b>STU-ENX-2024-0014</b></span><span>Emeka N.</span><span>SS2B</span><span><span class="pill pill-sap">Boarding</span></span></div>
-      <div class="tbl-row"><span class="em"><b>STU-ENX-2024-0015</b></span><span>Fatima Yusuf</span><span>JSS3A</span><span><span class="pill pill-em">Day</span></span></div>
+      <div class="tbl-row"><span class="em"><b>STU-ENX-2026-0012</b></span><span>Chisom Obi</span><span>SS2A</span><span><span class="pill pill-sap">Boarding</span></span></div>
+      <div class="tbl-row"><span class="em"><b>STU-ENX-2026-0013</b></span><span>Aisha Bello</span><span>SS2A</span><span><span class="pill pill-em">Day</span></span></div>
+      <div class="tbl-row"><span class="em"><b>STU-ENX-2026-0014</b></span><span>Emeka N.</span><span>SS2B</span><span><span class="pill pill-sap">Boarding</span></span></div>
+      <div class="tbl-row"><span class="em"><b>STU-ENX-2026-0015</b></span><span>Fatima Yusuf</span><span>JSS3A</span><span><span class="pill pill-em">Day</span></span></div>
       <div class="tbl-row" style="justify-content:center;padding:7px;"><span style="color:var(--muted);font-size:9.5px;">+1,243 more students</span></div>
     </div>` + chips(['📤 Import CSV',"openOv('ovCSV')",''],['⬆️ Promote','doStudentPromotion()','sap'],['🔄 Transfer','doStudentTransfer()','am'],['📥 Export CSV','showToast(\'Exporting student records…\',\'info\')','vio']));
 }
@@ -2126,10 +2126,10 @@ function doAdmissions(){
   botMsg('📋 <strong>Admissions Manager</strong>',
     `<div class="tbl-wrap">
       <div class="tbl-hdr"><span>App ID</span><span>Applicant</span><span>Class</span><span>Status</span></div>
-      <div class="tbl-row"><span class="em">APP-2024-0100</span><span>Tunde Obi</span><span>JSS1</span><span><span class="pill pill-am">Pending</span></span></div>
-      <div class="tbl-row"><span class="em">APP-2024-0101</span><span>Ngozi Eze</span><span>SS1</span><span><span class="pill pill-em">Approved</span></span></div>
-      <div class="tbl-row"><span class="em">APP-2024-0102</span><span>Ahmed Suleiman</span><span>JSS2</span><span><span class="pill pill-ro">Rejected</span></span></div>
-      <div class="tbl-row"><span class="em">APP-2024-0103</span><span>Blessing Okeke</span><span>SS2</span><span><span class="pill pill-vio">Processing</span></span></div>
+      <div class="tbl-row"><span class="em">APP-2026-0100</span><span>Tunde Obi</span><span>JSS1</span><span><span class="pill pill-am">Pending</span></span></div>
+      <div class="tbl-row"><span class="em">APP-2026-0101</span><span>Ngozi Eze</span><span>SS1</span><span><span class="pill pill-em">Approved</span></span></div>
+      <div class="tbl-row"><span class="em">APP-2026-0102</span><span>Ahmed Suleiman</span><span>JSS2</span><span><span class="pill pill-ro">Rejected</span></span></div>
+      <div class="tbl-row"><span class="em">APP-2026-0103</span><span>Blessing Okeke</span><span>SS2</span><span><span class="pill pill-vio">Processing</span></span></div>
     </div>` + chips(['✅ Approve','showToast(\'Admission approved + SMS sent\',\'success\');haptic(\'success\')',''],['❌ Reject','showToast(\'Rejection notification sent\',\'info\')','ro'],['📥 Export CSV','showToast(\'Exporting admissions…\',\'info\')','sap']));
 }
 
@@ -2141,9 +2141,9 @@ function doStudentPromotion(){
       <div class="promo-box"><div class="promo-lbl">TO CLASS</div><div class="promo-val">SS2A</div></div>
     </div>
     <div class="promo-flow">
-      <div class="promo-box"><div class="promo-lbl">FROM SESSION</div><div class="promo-val">2023/2024</div></div>
+      <div class="promo-box"><div class="promo-lbl">FROM SESSION</div><div class="promo-val">2025/2026</div></div>
       <div class="promo-arrow">→</div>
-      <div class="promo-box"><div class="promo-lbl">TO SESSION</div><div class="promo-val">2024/2025</div></div>
+      <div class="promo-box"><div class="promo-lbl">TO SESSION</div><div class="promo-val">2026/2027</div></div>
     </div>` + chips(['⬆️ Promote Selected','showToast(\'42 students promoted to SS2A!\',\'success\');haptic(\'success\');playSuccess()',''],['📋 Preview List','doAllStudents()','sap']));
 }
 
