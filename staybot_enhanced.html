@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayBot – Hotel Digital Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --surface: #121826;
+      --surface2: #1a2235;
+      --accent: #25D366;
+      --accent2: #128C7E;
+      --accent-glow: rgba(37, 211, 102, 0.15);
+      --text: #e8edf5;
+      --text-dim: #7a8599;
+      --border: #1e2a3e;
+      --danger: #ff4757;
+      --warning: #ffa502;
+      --info: #3742fa;
+      --card-radius: 16px;
+      --bot-bubble: #1a2235;
+      --user-bubble: #25D366;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(10, 14, 23, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bot-avatar {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .header-info h1 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .header-info span {
+      font-size: 11px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header-info span::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .header-btn {
+      width: 38px; height: 38px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text-dim);
+      transition: all 0.3s;
+      font-size: 16px;
+    }
+
+    .header-btn:hover {
+      background: var(--surface2);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* ── MAIN CHAT AREA ── */
+    .chat-container {
+      padding: 80px 16px 160px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 12px;
+      animation: msgIn 0.4s ease;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.bot { justify-content: flex-start; }
+    .message.user { justify-content: flex-end; }
+
+    .msg-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-right: 8px;
+      margin-top: 4px;
+    }
+
+    .message.user .msg-avatar { display: none; }
+
+    .msg-bubble {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .message.bot .msg-bubble {
+      background: var(--bot-bubble);
+      border-bottom-left-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .message.user .msg-bubble {
+      background: var(--user-bubble);
+      color: #000;
+      font-weight: 500;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-time {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      padding: 0 8px;
+    }
+
+    .message.user .msg-time { text-align: right; }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 16px 38px;
+      animation: msgIn 0.5s ease;
+    }
+
+    .quick-btn {
+      padding: 8px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .quick-btn:hover {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .quick-btn .icon { font-size: 15px; }
+
+    /* ── INPUT BAR ── */
+    .input-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(10, 14, 23, 0.92);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px 24px;
+    }
+
+    .input-wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .input-field {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 12px 20px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border 0.3s;
+      resize: none;
+      max-height: 100px;
+    }
+
+    .input-field:focus { border-color: var(--accent); }
+    .input-field::placeholder { color: var(--text-dim); }
+
+    .send-btn {
+      width: 46px; height: 46px;
+      background: var(--accent);
+      border: none;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .send-btn svg { fill: #000; width: 20px; height: 20px; }
+
+    /* ── MODAL / FORM OVERLAY ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 520px;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      animation: modalIn 0.4s ease;
+      overflow: hidden;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      padding: 24px;
+      position: relative;
+    }
+
+    .modal-header h2 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 22px;
+      color: #000;
+      font-weight: 700;
+    }
+
+    .modal-header p {
+      font-size: 13px;
+      color: rgba(0,0,0,0.6);
+      margin-top: 4px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 32px; height: 32px;
+      background: rgba(0,0,0,0.2);
+      border: none;
+      border-radius: 50%;
+      color: #000;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.3s;
+    }
+
+    .modal-close:hover { background: rgba(0,0,0,0.4); }
+
+    .modal-body {
+      padding: 24px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .modal-body::-webkit-scrollbar { width: 4px; }
+    .modal-body::-webkit-scrollbar-track { background: transparent; }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ── FORM STYLES ── */
+    .form-section {
+      margin-bottom: 24px;
+    }
+
+    .form-section-title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group label .req { color: var(--danger); }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-control::placeholder { color: var(--text-dim); }
+
+    select.form-control {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a8599' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+    }
+
+    select.form-control option {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 13px;
+    }
+
+    .checkbox-item:hover { border-color: var(--accent); }
+
+    .checkbox-item input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 16px; height: 16px;
+    }
+
+    .checkbox-item.checked {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    /* Rate cards */
+    .rate-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .rate-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .rate-card-title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .remove-rate {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px;
+    }
+
+    .add-rate-btn {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      color: var(--text-dim);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .add-rate-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Image upload */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    .upload-zone .icon { font-size: 32px; margin-bottom: 8px; }
+    .upload-zone p { font-size: 13px; color: var(--text-dim); }
+    .upload-zone .highlight { color: var(--accent); font-weight: 600; }
+
+    .uploaded-images {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .uploaded-img {
+      width: 64px; height: 64px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 2px solid var(--border);
+    }
+
+    /* Steps indicator */
+    .steps-bar {
+      display: flex;
+      gap: 4px;
+      padding: 16px 24px;
+      background: var(--surface2);
+    }
+
+    .step-dot {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      transition: background 0.4s;
+    }
+
+    .step-dot.active { background: var(--accent); }
+    .step-dot.done { background: var(--accent2); }
+
+    /* Modal footer */
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+
+    .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-whatsapp {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .btn-whatsapp:hover {
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 4px 0;
+    }
+
+    .typing-indicator span {
+      width: 8px; height: 8px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-8px); opacity: 1; }
+    }
+
+    /* Hotel card in chat */
+    .hotel-card-chat {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 8px 0;
+      max-width: 320px;
+    }
+
+    .hotel-card-img {
+      width: 100%;
+      height: 140px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    .hotel-card-body {
+      padding: 14px;
+    }
+
+    .hotel-card-body h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .hotel-card-body .location {
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .hotel-card-body .price {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .hotel-card-body .price span {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+
+    .stars { color: var(--warning); letter-spacing: 2px; font-size: 12px; }
+
+    /* Search results */
+    .search-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin: 8px 0;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .search-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .search-card h4 { font-size: 14px; margin-bottom: 4px; }
+    .search-card p { font-size: 12px; color: var(--text-dim); }
+
+    /* WhatsApp float */
+    .wa-float {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      z-index: 90;
+      width: 52px; height: 52px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: all 0.3s;
+      font-size: 24px;
+    }
+
+    .wa-float:hover { transform: scale(1.1); }
+
+    /* Success screen */
+    .success-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .success-icon {
+      width: 80px; height: 80px;
+      background: var(--accent-glow);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 40px;
+      animation: successPop 0.5s ease;
+    }
+
+    @keyframes successPop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .success-screen h3 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .success-screen p {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+    }
+
+    /* Booking form in chat */
+    .inline-form {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin: 8px 0;
+    }
+
+    .inline-form .form-group { margin-bottom: 12px; }
+
+    .inline-form .form-control {
+      background: var(--surface2);
+    }
+
+    .inline-form .btn {
+      width: 100%;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    /* Guest book / search */
+    .search-bar-inline {
+      display: flex;
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    .search-bar-inline input {
+      flex: 1;
+      padding: 10px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+    }
+
+    .search-bar-inline button {
+      padding: 10px 16px;
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .form-row, .checkbox-group { grid-template-columns: 1fr; }
+      .form-row-3 { grid-template-columns: 1fr 1fr; }
+      .modal { margin-top: 10px; border-radius: 16px; }
+      .modal-body { padding: 16px; }
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: var(--surface2);
+      border: 1px solid var(--accent);
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      z-index: 300;
+      opacity: 0;
+      transition: all 0.4s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="bot-avatar">🏨</div>
+      <div class="header-info">
+        <h1>StayBot</h1>
+        <span>Online – Ready to help</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" onclick="openAddHotel()" title="Add Hotel">➕</button>
+      <button class="header-btn" onclick="showMainMenu()" title="Menu">☰</button>
+    </div>
+  </div>
+
+  <!-- CHAT CONTAINER -->
+  <div class="chat-container" id="chatContainer"></div>
+
+  <!-- INPUT BAR -->
+  <div class="input-bar">
+    <div class="input-wrapper">
+      <input type="text" class="input-field" id="userInput" placeholder="Type a message..." autocomplete="off">
+      <button class="send-btn" onclick="handleUserInput()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ADD HOTEL MODAL -->
+  <div class="modal-overlay" id="addHotelModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>🏨 Register Your Hotel</h2>
+        <p>List your property on StayBot</p>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+
+      <div class="steps-bar">
+        <div class="step-dot active" id="step1"></div>
+        <div class="step-dot" id="step2"></div>
+        <div class="step-dot" id="step3"></div>
+        <div class="step-dot" id="step4"></div>
+      </div>
+
+      <div class="modal-body" id="modalBody">
+        <!-- Step 1: Basic Info -->
+        <div class="form-step" id="formStep1">
+          <div class="form-section">
+            <div class="form-section-title">Property Details</div>
+            <div class="form-group">
+              <label>Hotel / Property Name <span class="req">*</span></label>
+              <input type="text" class="form-control" id="hotelName" placeholder="e.g. Sunrise Grand Hotel">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Property Type <span class="req">*</span></label>
+                <select class="form-control" id="propertyType">
+                  <option value="">Select type</option>
+                  <option>Hotel</option>
+                  <option>Guest House</option>
+                  <option>Lodge</option>
+                  <option>Resort</option>
+                  <option>Boutique Hotel</option>
+                  <option>Bed & Breakfast</option>
+                  <option>Hostel</option>
+                  <option>Villa</option>
+                  <option>Apartment</option>
+                  <option>Motel</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Star Rating</label>
+                <select class="form-control" id="starRating">
+                  <option value="">Select</option>
+                  <option>⭐ 1 Star</option>
+                  <option>⭐⭐ 2 Stars</option>
+                  <option>⭐⭐⭐ 3 Stars</option>
+                  <option>⭐⭐⭐⭐ 4 Stars</option>
+                  <option>⭐⭐⭐⭐⭐ 5 Stars</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Total Number of Rooms <span class="req">*</span></label>
+              <input type="number" class="form-control" id="totalRooms" placeholder="e.g. 50">
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Location</div>
+            <div class="form-group">
+              <label>Street Address <span class="req">*</span></label>
+              <input type="text" class="form-control" id="address" placeholder="e.g. 123 Main Street">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>City / Town <span class="req">*</span></label>
+                <input type="text" class="form-control" id="city" placeholder="e.g. Cape Town">
+              </div>
+              <div class="form-group">
+                <label>Province / State</label>
+                <input type="text" class="form-control" id="province" placeholder="e.g. Western Cape">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Country <span class="req">*</span></label>
+                <input type="text" class="form-control" id="country" placeholder="e.g. South Africa">
+              </div>
+              <div class="form-group">
+                <label>Postal / ZIP Code</label>
+                <input type="text" class="form-control" id="postalCode" placeholder="e.g. 8001">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Rates & Rooms -->
+        <div class="form-step" id="formStep2" style="display:none">
+          <div class="form-section">
+            <div class="form-section-title">Booking Rates & Room Types</div>
+            <div class="form-group">
+              <label>Currency <span class="req">*</span></label>
+              <select class="form-control" id="currency">
+                <option value="ZAR">🇿🇦 ZAR – South African Rand</option>
+                <option value="USD">🇺🇸 USD – US Dollar</option>
+                <option value="EUR">🇪🇺 EUR – Euro</option>
+                <option value="GBP">🇬🇧 GBP – British Pound</option>
+                <option value="NGN">🇳🇬 NGN – Nigerian Naira</option>
+                <option value="KES">🇰🇪 KES – Kenyan Shilling</option>
+                <option value="BWP">🇧🇼 BWP – Botswana Pula</option>
+                <option value="GHS">🇬🇭 GHS – Ghanaian Cedi</option>
+              </select>
+            </div>
+            <div id="rateCards">
+              <div class="rate-card" data-index="0">
+                <div class="rate-card-header">
+                  <span class="rate-card-title">Room Type 1</span>
+                </div>
+                <div class="form-group">
+                  <label>Room Type Name <span class="req">*</span></label>
+                  <input type="text" class="form-control rate-name" placeholder="e.g. Standard Double">
+                </div>
+                <div class="form-row-3">
+                  <div class="form-group">
+                    <label>Nightly Rate <span class="req">*</span></label>
+                    <input type="number" class="form-control rate-price" placeholder="e.g. 850">
+                  </div>
+                  <div class="form-group">
+                    <label>Weekend Rate</label>
+                    <input type="number" class="form-control rate-weekend" placeholder="e.g. 1100">
+                  </div>
+                  <div class="form-group">
+                    <label>Max Guests</label>
+                    <input type="number" class="form-control rate-guests" placeholder="e.g. 2">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Room Description</label>
+                  <input type="text" class="form-control rate-desc" placeholder="e.g. Queen bed, en-suite bathroom, TV">
+                </div>
+              </div>
+            </div>
+            <button class="add-rate-btn" onclick="addRateCard()">
+              <span>➕</span> Add Another Room Type
+            </button>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Policies</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Check-in Time</label>
+                <input type="time" class="form-control" id="checkinTime" value="14:00">
+              </div>
+              <div class="form-group">
+                <label>Check-out Time</label>
+                <input type="time" class="form-control" id="checkoutTime" value="10:00">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Cancellation Policy</label>
+              <select class="form-control" id="cancellationPolicy">
+                <option>Free cancellation up to 24 hours</option>
+                <option>Free cancellation up to 48 hours</option>
+                <option>Free cancellation up to 7 days</option>
+                <option>Non-refundable</option>
+                <option>Flexible – Full refund anytime</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Special Offers / Discounts</label>
+              <textarea class="form-control" id="specialOffers" placeholder="e.g. 20% off for stays of 3+ nights, Early bird discount for bookings made 30 days in advance"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Amenities & Photos -->
+        <div class="form-step" id="formStep3" style="display:none">
+          <div class="form-section">
+            <div class="form-section-title">Amenities & Facilities</div>
+            <div class="checkbox-group" id="amenitiesGroup">
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Property Photos</div>
+            <div class="upload-zone" onclick="document.getElementById('photoUpload').click()">
+              <div class="icon">📸</div>
+              <p>Tap to upload photos of your property</p>
+              <p class="highlight">JPG, PNG – Max 5MB each</p>
+              <input type="file" id="photoUpload" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(event)">
+            </div>
+            <div class="uploaded-images" id="uploadedImages"></div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Description</div>
+            <div class="form-group">
+              <label>About Your Property <span class="req">*</span></label>
+              <textarea class="form-control" id="hotelDescription" rows="4" placeholder="Describe your property, what makes it unique, nearby attractions, etc."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Contact & Submit -->
+        <div class="form-step" id="formStep4" style="display:none">
+          <div class="form-section">
+            <div class="form-section-title">Owner / Manager Details</div>
+            <div class="form-group">
+              <label>Full Name <span class="req">*</span></label>
+              <input type="text" class="form-control" id="ownerName" placeholder="e.g. John Doe">
+            </div>
+            <div class="form-group">
+              <label>WhatsApp Number <span class="req">*</span></label>
+              <input type="tel" class="form-control" id="ownerWhatsapp" placeholder="e.g. +27 81 234 5678">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" class="form-control" id="ownerEmail" placeholder="e.g. info@hotel.com">
+              </div>
+              <div class="form-group">
+                <label>Backup Phone</label>
+                <input type="tel" class="form-control" id="ownerPhone" placeholder="e.g. +27 11 123 4567">
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Online Presence</div>
+            <div class="form-group">
+              <label>Website URL</label>
+              <input type="url" class="form-control" id="website" placeholder="e.g. https://www.myhotel.com">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Facebook Page</label>
+                <input type="text" class="form-control" id="facebook" placeholder="@yourhotel">
+              </div>
+              <div class="form-group">
+                <label>Instagram Handle</label>
+                <input type="text" class="form-control" id="instagram" placeholder="@yourhotel">
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Terms</div>
+            <div class="checkbox-item" style="max-width: 100%;">
+              <input type="checkbox" id="agreeTerms">
+              <span style="font-size:12px;">I agree to StayBot's terms of service and confirm all property details are accurate.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success -->
+        <div class="form-step" id="formStepSuccess" style="display:none">
+          <div class="success-screen">
+            <div class="success-icon">✅</div>
+            <h3>Hotel Registered!</h3>
+            <p>Your property details have been submitted via WhatsApp. Our team will review and activate your listing shortly.</p>
+            <button class="btn btn-whatsapp" onclick="closeModal()" style="margin:0 auto;">
+              🎉 Done – Return to Chat
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" id="modalFooter">
+        <button class="btn btn-ghost" id="prevBtn" onclick="prevStep()" style="display:none">← Back</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKING MODAL -->
+  <div class="modal-overlay" id="bookingModal">
+    <div class="modal">
+      <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+        <h2 style="color:#fff;">📋 Book a Stay</h2>
+        <p style="color:rgba(255,255,255,0.6);">Fill in your booking details</p>
+        <button class="modal-close" onclick="closeBookingModal()" style="color:#fff;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-section">
+          <div class="form-section-title">Guest Information</div>
+          <div class="form-group">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" class="form-control" id="guestName" placeholder="e.g. Jane Smith">
+          </div>
+          <div class="form-group">
+            <label>WhatsApp Number <span class="req">*</span></label>
+            <input type="tel" class="form-control" id="guestWhatsapp" placeholder="e.g. +27 82 345 6789">
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" class="form-control" id="guestEmail" placeholder="e.g. jane@email.com">
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Stay Details</div>
+          <div class="form-group">
+            <label>Hotel <span class="req">*</span></label>
+            <select class="form-control" id="bookHotelSelect">
+              <option value="">Select a hotel</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Room Type <span class="req">*</span></label>
+            <select class="form-control" id="bookRoomType">
+              <option value="">Select room type</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Check-in Date <span class="req">*</span></label>
+              <input type="date" class="form-control" id="bookCheckin">
+            </div>
+            <div class="form-group">
+              <label>Check-out Date <span class="req">*</span></label>
+              <input type="date" class="form-control" id="bookCheckout">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Number of Guests</label>
+              <input type="number" class="form-control" id="bookGuests" value="1" min="1">
+            </div>
+            <div class="form-group">
+              <label>Number of Rooms</label>
+              <input type="number" class="form-control" id="bookRooms" value="1" min="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Special Requests</label>
+            <textarea class="form-control" id="bookRequests" placeholder="e.g. Late check-in, extra pillows, airport shuttle"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeBookingModal()">Cancel</button>
+        <button class="btn btn-whatsapp" onclick="submitBooking()">📲 Submit via WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ═══════════════════════════════════════════
+    // CONFIG
+    // ═══════════════════════════════════════════
+    const WHATSAPP_NUMBER = '27612345678'; // Default – hotel owners set their own
+    const BOT_NAME = 'StayBot';
+    let currentStep = 1;
+    let rateCardCount = 1;
+    let uploadedPhotos = [];
+    let registeredHotels = JSON.parse(localStorage.getItem('staybot_hotels') || '[]');
+
+    // Amenities list
+    const amenities = [
+      '🅿️ Parking', '📶 Free WiFi', '🏊 Pool', '🍳 Breakfast',
+      '❄️ Air Conditioning', '🏋️ Gym / Fitness', '🧖 Spa', '🍽️ Restaurant',
+      '🛗 Elevator / Lift', '🧺 Laundry', '🛎️ Room Service', '📺 DSTV / Cable TV',
+      '🔒 Safe / Security', '🚗 Airport Shuttle', '👶 Family Friendly', '🐾 Pet Friendly',
+      '♿ Wheelchair Access', '🔥 Braai / BBQ Area', '🌿 Garden', '💼 Conference Room'
+    ];
+
+    // ═══════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAmenities();
+      showWelcome();
+      setupInputListeners();
+      setupBookingHotelSelect();
+    });
+
+    function setupInputListeners() {
+      const input = document.getElementById('userInput');
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') handleUserInput();
+      });
+    }
+
+    function renderAmenities() {
+      const group = document.getElementById('amenitiesGroup');
+      group.innerHTML = amenities.map((a, i) => `
+        <div class="checkbox-item" onclick="toggleCheckbox(this)">
+          <input type="checkbox" id="amenity_${i}" value="${a}">
+          <span>${a}</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleCheckbox(el) {
+      const cb = el.querySelector('input[type="checkbox"]');
+      cb.checked = !cb.checked;
+      el.classList.toggle('checked', cb.checked);
+    }
+
+    // ═══════════════════════════════════════════
+    // CHAT ENGINE
+    // ═══════════════════════════════════════════
+    function getTime() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function addBotMessage(html, delay = 600) {
+      const container = document.getElementById('chatContainer');
+      // typing indicator
+      const typing = document.createElement('div');
+      typing.className = 'message bot';
+      typing.innerHTML = `
+        <div class="msg-avatar">🏨</div>
+        <div>
+          <div class="msg-bubble">
+            <div class="typing-indicator"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      `;
+      container.appendChild(typing);
+      scrollToBottom();
+
+      setTimeout(() => {
+        typing.remove();
+        const msg = document.createElement('div');
+        msg.className = 'message bot';
+        msg.innerHTML = `
+          <div class="msg-avatar">🏨</div>
+          <div>
+            <div class="msg-bubble">${html}</div>
+            <div class="msg-time">${getTime()}</div>
+          </div>
+        `;
+        container.appendChild(msg);
+        scrollToBottom();
+      }, delay);
+    }
+
+    function addUserMessage(text) {
+      const container = document.getElementById('chatContainer');
+      const msg = document.createElement('div');
+      msg.className = 'message user';
+      msg.innerHTML = `
+        <div>
+          <div class="msg-bubble">${text}</div>
+          <div class="msg-time">${getTime()}</div>
+        </div>
+      `;
+      container.appendChild(msg);
+      scrollToBottom();
+    }
+
+    function addQuickActions(actions) {
+      const container = document.getElementById('chatContainer');
+      const wrap = document.createElement('div');
+      wrap.className = 'quick-actions';
+      wrap.innerHTML = actions.map(a =>
+        `<button class="quick-btn" onclick="handleQuickAction('${a.action}')">
+          <span class="icon">${a.icon}</span> ${a.label}
+        </button>`
+      ).join('');
+      container.appendChild(wrap);
+      scrollToBottom();
+    }
+
+    function scrollToBottom() {
+      setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+    }
+
+    // ═══════════════════════════════════════════
+    // WELCOME & MENU
+    // ═══════════════════════════════════════════
+    function showWelcome() {
+      addBotMessage(`
+        <strong>Welcome to StayBot! 👋</strong><br><br>
+        I'm your digital hotel assistant. I help you find, book, and manage hotel stays — all through chat!<br><br>
+        What would you like to do today?
+      `, 300);
+
+      setTimeout(() => {
+        addQuickActions([
+          { icon: '🔍', label: 'Find Hotels', action: 'search' },
+          { icon: '📋', label: 'Book a Stay', action: 'book' },
+          { icon: '🏨', label: 'Add My Hotel', action: 'addhotel' },
+          { icon: '📖', label: 'View Listings', action: 'listings' },
+          { icon: '💬', label: 'Help', action: 'help' }
+        ]);
+      }, 1000);
+    }
+
+    function showMainMenu() {
+      addBotMessage(`What would you like to do? Choose an option below:`);
+      setTimeout(() => {
+        addQuickActions([
+          { icon: '🔍', label: 'Find Hotels', action: 'search' },
+          { icon: '📋', label: 'Book a Stay', action: 'book' },
+          { icon: '🏨', label: 'Add My Hotel', action: 'addhotel' },
+          { icon: '📖', label: 'View Listings', action: 'listings' },
+          { icon: '💬', label: 'Help', action: 'help' }
+        ]);
+      }, 700);
+    }
+
+    // ═══════════════════════════════════════════
+    // QUICK ACTIONS HANDLER
+    // ═══════════════════════════════════════════
+    function handleQuickAction(action) {
+      switch(action) {
+        case 'search':
+          addUserMessage('🔍 Find Hotels');
+          setTimeout(() => {
+            addBotMessage(`Sure! Tell me where you'd like to stay, or type a city name. I'll check available listings.`);
+            setTimeout(() => {
+              if (registeredHotels.length > 0) {
+                showHotelListings();
+              } else {
+                addBotMessage(`No hotels registered yet. Be the first to list your property! Tap <strong>"Add My Hotel"</strong> to get started.`, 800);
+                setTimeout(() => {
+                  addQuickActions([
+                    { icon: '🏨', label: 'Add My Hotel', action: 'addhotel' },
+                    { icon: '🏠', label: 'Main Menu', action: 'menu' }
+                  ]);
+                }, 1500);
+              }
+            }, 800);
+          }, 600);
+          break;
+
+        case 'book':
+          addUserMessage('📋 Book a Stay');
+          if (registeredHotels.length > 0) {
+            setTimeout(() => {
+              addBotMessage(`Great! Let me pull up the booking form for you. 📝`);
+              setTimeout(() => openBookingModal(), 800);
+            }, 600);
+          } else {
+            setTimeout(() => {
+              addBotMessage(`There are no hotels listed yet. Once hotels are registered, you can book directly through chat!`);
+              setTimeout(() => {
+                addQuickActions([
+                  { icon: '🏨', label: 'Add My Hotel', action: 'addhotel' },
+                  { icon: '🏠', label: 'Main Menu', action: 'menu' }
+                ]);
+              }, 800);
+            }, 600);
+          }
+          break;
+
+        case 'addhotel':
+          addUserMessage('🏨 Add My Hotel');
+          setTimeout(() => {
+            addBotMessage(`Excellent! Let's get your property listed. I'll open the registration form for you. 📝`);
+            setTimeout(() => openAddHotel(), 800);
+          }, 600);
+          break;
+
+        case 'listings':
+          addUserMessage('📖 View Listings');
+          setTimeout(() => {
+            if (registeredHotels.length > 0) {
+              showHotelListings();
+            } else {
+              addBotMessage(`No hotels listed yet. Be the first property owner to register! 🏨`);
+              setTimeout(() => {
+                addQuickActions([
+                  { icon: '🏨', label: 'Add My Hotel', action: 'addhotel' },
+                  { icon: '🏠', label: 'Main Menu', action: 'menu' }
+                ]);
+              }, 800);
+            }
+          }, 600);
+          break;
+
+        case 'help':
+          addUserMessage('💬 Help');
+          setTimeout(() => {
+            addBotMessage(`
+              <strong>Here's what I can do:</strong><br><br>
+              🔍 <strong>Find Hotels</strong> – Search available listings<br>
+              📋 <strong>Book a Stay</strong> – Reserve a room instantly<br>
+              🏨 <strong>Add My Hotel</strong> – Register your property<br>
+              📖 <strong>View Listings</strong> – Browse all hotels<br>
+              📲 <strong>WhatsApp</strong> – All bookings & registrations are sent via WhatsApp<br><br>
+              Just type what you need or tap the buttons!
+            `);
+            setTimeout(() => {
+              addQuickActions([{ icon: '🏠', label: 'Main Menu', action: 'menu' }]);
+            }, 800);
+          }, 600);
+          break;
+
+        case 'menu':
+          showMainMenu();
+          break;
+
+        default:
+          if (action.startsWith('viewhotel_')) {
+            const idx = parseInt(action.split('_')[1]);
+            showHotelDetail(idx);
+          } else if (action.startsWith('bookhotel_')) {
+            const idx = parseInt(action.split('_')[1]);
+            openBookingModalForHotel(idx);
+          }
+      }
+    }
+
+    // ═══════════════════════════════════════════
+    // USER INPUT HANDLER
+    // ═══════════════════════════════════════════
+    function handleUserInput() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      addUserMessage(text);
+
+      const lower = text.toLowerCase();
+
+      if (lower.includes('add') && (lower.includes('hotel') || lower.includes('property') || lower.includes('lodge'))) {
+        handleQuickAction('addhotel');
+      } else if (lower.includes('book') || lower.includes('reserve') || lower.includes('reservation')) {
+        handleQuickAction('book');
+      } else if (lower.includes('find') || lower.includes('search') || lower.includes('look')) {
+        handleQuickAction('search');
+      } else if (lower.includes('list') || lower.includes('view') || lower.includes('browse') || lower.includes('show')) {
+        handleQuickAction('listings');
+      } else if (lower.includes('help') || lower.includes('how') || lower.includes('what')) {
+        handleQuickAction('help');
+      } else if (lower.includes('hi') || lower.includes('hello') || lower.includes('hey')) {
+        setTimeout(() => {
+          addBotMessage(`Hey there! 👋 Welcome back to StayBot. How can I help you today?`);
+          setTimeout(() => {
+            addQuickActions([
+              { icon: '🔍', label: 'Find Hotels', action: 'search' },
+              { icon: '📋', label: 'Book a Stay', action: 'book' },
+              { icon: '🏨', label: 'Add My Hotel', action: 'addhotel' }
+            ]);
+          }, 800);
+        }, 600);
+      } else {
+        // Try to match city search
+        const matched = registeredHotels.filter(h =>
+          h.city.toLowerCase().includes(lower) ||
+          h.name.toLowerCase().includes(lower) ||
+          h.country.toLowerCase().includes(lower)
+        );
+        if (matched.length > 0) {
+          setTimeout(() => {
+            addBotMessage(`Found <strong>${matched.length}</strong> listing(s) matching "<em>${text}</em>":`);
+            matched.forEach((h, i) => {
+              const realIdx = registeredHotels.indexOf(h);
+              setTimeout(() => showHotelCardInChat(h, realIdx), (i + 1) * 400);
+            });
+          }, 600);
+        } else {
+          setTimeout(() => {
+            addBotMessage(`I'm not sure I understand. Try using the menu options below, or type a city name to search for hotels!`);
+            setTimeout(() => {
+              addQuickActions([
+                { icon: '🔍', label: 'Find Hotels', action: 'search' },
+                { icon: '📋', label: 'Book a Stay', action: 'book' },
+                { icon: '🏨', label: 'Add My Hotel', action: 'addhotel' },
+                { icon: '💬', label: 'Help', action: 'help' }
+              ]);
+            }, 800);
+          }, 600);
+        }
+      }
+    }
+
+    // ═══════════════════════════════════════════
+    // HOTEL LISTINGS IN CHAT
+    // ═══════════════════════════════════════════
+    function showHotelListings() {
+      addBotMessage(`📍 <strong>${registeredHotels.length} hotel(s)</strong> currently listed:`);
+      registeredHotels.forEach((h, i) => {
+        setTimeout(() => showHotelCardInChat(h, i), (i + 1) * 500);
+      });
+    }
+
+    function showHotelCardInChat(hotel, index) {
+      const container = document.getElementById('chatContainer');
+      const msg = document.createElement('div');
+      msg.className = 'message bot';
+      const lowestRate = hotel.rates && hotel.rates.length > 0
+        ? Math.min(...hotel.rates.map(r => r.price || 0))
+        : 0;
+      msg.innerHTML = `
+        <div class="msg-avatar">🏨</div>
+        <div>
+          <div class="hotel-card-chat">
+            <div class="hotel-card-img">${hotel.type === 'Resort' ? '🏖️' : hotel.type === 'Villa' ? '🏡' : hotel.type === 'Hostel' ? '🛏️' : '🏨'}</div>
+            <div class="hotel-card-body">
+              <h4>${hotel.name}</h4>
+              <div class="stars">${hotel.stars || ''}</div>
+              <div class="location">📍 ${hotel.city}, ${hotel.country}</div>
+              <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">${hotel.type} · ${hotel.totalRooms} rooms</div>
+              ${lowestRate > 0 ? `<div class="price">${hotel.currency} ${lowestRate} <span>/ night</span></div>` : ''}
+              <div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="quick-btn" onclick="handleQuickAction('viewhotel_${index}')" style="flex:1;justify-content:center;font-size:12px;">👁 View</button>
+                <button class="quick-btn" onclick="handleQuickAction('bookhotel_${index}')" style="flex:1;justify-content:center;font-size:12px;background:var(--accent);color:#000;border-color:var(--accent);">📋 Book</button>
+              </div>
+            </div>
+          </div>
+          <div class="msg-time">${getTime()}</div>
+        </div>
+      `;
+      container.appendChild(msg);
+      scrollToBottom();
+    }
+
+    function showHotelDetail(index) {
+      const h = registeredHotels[index];
+      if (!h) return;
+      const ratesHTML = h.rates.map(r => `
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin:4px 0;">
+          <strong>${r.name}</strong><br>
+          <span style="color:var(--accent);font-weight:700;">${h.currency} ${r.price}</span>/night
+          ${r.weekend ? ` · Weekend: ${h.currency} ${r.weekend}` : ''}
+          ${r.guests ? ` · Max ${r.guests} guests` : ''}<br>
+          ${r.desc ? `<span style="color:var(--text-dim);font-size:12px;">${r.desc}</span>` : ''}
+        </div>
+      `).join('');
+
+      addBotMessage(`
+        <strong>🏨 ${h.name}</strong><br>
+        <span class="stars">${h.stars || ''}</span><br>
+        <span style="color:var(--text-dim);">${h.type} · ${h.totalRooms} rooms</span><br>
+        📍 ${h.address}, ${h.city}, ${h.country}<br><br>
+        <strong>📝 About:</strong><br>${h.description || 'No description provided.'}<br><br>
+        <strong>💰 Rates:</strong><br>${ratesHTML}<br>
+        <strong>⏰ Check-in:</strong> ${h.checkin} · <strong>Check-out:</strong> ${h.checkout}<br>
+        <strong>📜 Cancellation:</strong> ${h.cancellation}<br>
+        ${h.offers ? `<strong>🎁 Offers:</strong> ${h.offers}<br>` : ''}
+        ${h.amenities && h.amenities.length ? `<br><strong>✨ Amenities:</strong><br>${h.amenities.join(' · ')}` : ''}
+        <br><br>
+        <strong>📞 Contact:</strong> ${h.ownerName}<br>
+        📲 WhatsApp: ${h.ownerWhatsapp}
+        ${h.email ? `<br>✉️ ${h.email}` : ''}
+        ${h.website ? `<br>🌐 ${h.website}` : ''}
+      `);
+
+      setTimeout(() => {
+        addQuickActions([
+          { icon: '📋', label: 'Book This Hotel', action: `bookhotel_${index}` },
+          { icon: '📲', label: 'WhatsApp Hotel', action: 'wahotel_' + index },
+          { icon: '🏠', label: 'Main Menu', action: 'menu' }
+        ]);
+      }, 800);
+    }
+
+    // ═══════════════════════════════════════════
+    // ADD HOTEL MODAL
+    // ═══════════════════════════════════════════
+    function openAddHotel() {
+      currentStep = 1;
+      updateSteps();
+      showStep(1);
+      document.getElementById('addHotelModal').classList.add('active');
+      document.getElementById('modalFooter').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('addHotelModal').classList.remove('active');
+      resetForm();
+    }
+
+    function showStep(n) {
+      document.querySelectorAll('.form-step').forEach(s => s.style.display = 'none');
+      const step = document.getElementById('formStep' + n);
+      if (step) step.style.display = 'block';
+
+      document.getElementById('prevBtn').style.display = n > 1 ? 'inline-flex' : 'none';
+
+      if (n === 4) {
+        document.getElementById('nextBtn').innerHTML = '📲 Submit via WhatsApp';
+        document.getElementById('nextBtn').className = 'btn btn-whatsapp';
+      } else {
+        document.getElementById('nextBtn').innerHTML = 'Continue →';
+        document.getElementById('nextBtn').className = 'btn btn-primary';
+      }
+    }
+
+    function updateSteps() {
+      for (let i = 1; i <= 4; i++) {
+        const dot = document.getElementById('step' + i);
+        dot.className = 'step-dot';
+        if (i < currentStep) dot.classList.add('done');
+        if (i === currentStep) dot.classList.add('active');
+      }
+    }
+
+    function nextStep() {
+      if (currentStep === 1 && !validateStep1()) return;
+      if (currentStep === 2 && !validateStep2()) return;
+      if (currentStep === 3 && !validateStep3()) return;
+      if (currentStep === 4) {
+        if (!validateStep4()) return;
+        submitHotelRegistration();
+        return;
+      }
+      currentStep++;
+      updateSteps();
+      showStep(currentStep);
+      document.getElementById('modalBody').scrollTop = 0;
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        updateSteps();
+        showStep(currentStep);
+        document.getElementById('modalBody').scrollTop = 0;
+      }
+    }
+
+    // Validation
+    function validateStep1() {
+      const name = document.getElementById('hotelName').value.trim();
+      const type = document.getElementById('propertyType').value;
+      const rooms = document.getElementById('totalRooms').value;
+      const address = document.getElementById('address').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const country = document.getElementById('country').value.trim();
+
+      if (!name || !type || !rooms || !address || !city || !country) {
+        showToast('⚠️ Please fill in all required fields');
+        return false;
+      }
+      return true;
+    }
+
+    function validateStep2() {
+      const names = document.querySelectorAll('.rate-name');
+      const prices = document.querySelectorAll('.rate-price');
+      for (let i = 0; i < names.length; i++) {
+        if (!names[i].value.trim() || !prices[i].value) {
+          showToast('⚠️ Please fill in room type name and rate');
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function validateStep3() {
+      const desc = document.getElementById('hotelDescription').value.trim();
+      if (!desc) {
+        showToast('⚠️ Please add a property description');
+        return false;
+      }
+      return true;
+    }
+
+    function validateStep4() {
+      const name = document.getElementById('ownerName').value.trim();
+      const wa = document.getElementById('ownerWhatsapp').value.trim();
+      const terms = document.getElementById('agreeTerms').checked;
+      if (!name || !wa) {
+        showToast('⚠️ Name and WhatsApp number are required');
+        return false;
+      }
+      if (!terms) {
+        showToast('⚠️ Please agree to the terms');
+        return false;
+      }
+      return true;
+    }
+
+    // ═══════════════════════════════════════════
+    // RATE CARDS
+    // ═══════════════════════════════════════════
+    function addRateCard() {
+      rateCardCount++;
+      const container = document.getElementById('rateCards');
+      const card = document.createElement('div');
+      card.className = 'rate-card';
+      card.innerHTML = `
+        <div class="rate-card-header">
+          <span class="rate-card-title">Room Type ${rateCardCount}</span>
+          <button class="remove-rate" onclick="this.closest('.rate-card').remove()">✕</button>
+        </div>
+        <div class="form-group">
+          <label>Room Type Name <span class="req">*</span></label>
+          <input type="text" class="form-control rate-name" placeholder="e.g. Deluxe Suite">
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Nightly Rate <span class="req">*</span></label>
+            <input type="number" class="form-control rate-price" placeholder="e.g. 1500">
+          </div>
+          <div class="form-group">
+            <label>Weekend Rate</label>
+            <input type="number" class="form-control rate-weekend" placeholder="e.g. 1900">
+          </div>
+          <div class="form-group">
+            <label>Max Guests</label>
+            <input type="number" class="form-control rate-guests" placeholder="e.g. 3">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Room Description</label>
+          <input type="text" class="form-control rate-desc" placeholder="e.g. King bed, balcony, minibar">
+        </div>
+      `;
+      container.appendChild(card);
+    }
+
+    // ═══════════════════════════════════════════
+    // PHOTO UPLOAD
+    // ═══════════════════════════════════════════
+    function handlePhotoUpload(e) {
+      const files = e.target.files;
+      const container = document.getElementById('uploadedImages');
+      for (const file of files) {
+        if (uploadedPhotos.length >= 8) break;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          uploadedPhotos.push(ev.target.result);
+          const img = document.createElement('img');
+          img.className = 'uploaded-img';
+          img.src = ev.target.result;
+          container.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // ═══════════════════════════════════════════
+    // SUBMIT HOTEL REGISTRATION
+    // ═══════════════════════════════════════════
+    function submitHotelRegistration() {
+      // Gather all data
+      const rates = [];
+      document.querySelectorAll('.rate-card').forEach(card => {
+        rates.push({
+          name: card.querySelector('.rate-name').value.trim(),
+          price: card.querySelector('.rate-price').value,
+          weekend: card.querySelector('.rate-weekend').value,
+          guests: card.querySelector('.rate-guests').value,
+          desc: card.querySelector('.rate-desc').value.trim()
+        });
+      });
+
+      const selectedAmenities = [];
+      document.querySelectorAll('#amenitiesGroup input:checked').forEach(cb => {
+        selectedAmenities.push(cb.value);
+      });
+
+      const hotelData = {
+        name: document.getElementById('hotelName').value.trim(),
+        type: document.getElementById('propertyType').value,
+        stars: document.getElementById('starRating').value,
+        totalRooms: document.getElementById('totalRooms').value,
+        address: document.getElementById('address').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        province: document.getElementById('province').value.trim(),
+        country: document.getElementById('country').value.trim(),
+        postalCode: document.getElementById('postalCode').value.trim(),
+        currency: document.getElementById('currency').value,
+        rates: rates,
+        checkin: document.getElementById('checkinTime').value,
+        checkout: document.getElementById('checkoutTime').value,
+        cancellation: document.getElementById('cancellationPolicy').value,
+        offers: document.getElementById('specialOffers').value.trim(),
+        amenities: selectedAmenities,
+        description: document.getElementById('hotelDescription').value.trim(),
+        ownerName: document.getElementById('ownerName').value.trim(),
+        ownerWhatsapp: document.getElementById('ownerWhatsapp').value.trim(),
+        email: document.getElementById('ownerEmail').value.trim(),
+        phone: document.getElementById('ownerPhone').value.trim(),
+        website: document.getElementById('website').value.trim(),
+        facebook: document.getElementById('facebook').value.trim(),
+        instagram: document.getElementById('instagram').value.trim(),
+        registeredAt: new Date().toISOString()
+      };
+
+      // Save locally
+      registeredHotels.push(hotelData);
+      localStorage.setItem('staybot_hotels', JSON.stringify(registeredHotels));
+      setupBookingHotelSelect();
+
+      // Build WhatsApp message
+      const ratesText = rates.map(r =>
+        `🛏 ${r.name}: ${hotelData.currency} ${r.price}/night${r.weekend ? ` (Weekend: ${hotelData.currency} ${r.weekend})` : ''} ${r.guests ? `· Max ${r.guests} guests` : ''}\n${r.desc ? `   → ${r.desc}` : ''}`
+      ).join('\n');
+
+      const waMessage = `🏨 *NEW HOTEL REGISTRATION – StayBot*\n` +
+        `━━━━━━━━━━━━━━━━━━\n\n` +
+        `*🏢 PROPERTY DETAILS*\n` +
+        `• Name: ${hotelData.name}\n` +
+        `• Type: ${hotelData.type}\n` +
+        `• Rating: ${hotelData.stars || 'N/A'}\n` +
+        `• Rooms: ${hotelData.totalRooms}\n\n` +
+        `*📍 LOCATION*\n` +
+        `• ${hotelData.address}\n` +
+        `• ${hotelData.city}, ${hotelData.province}\n` +
+        `• ${hotelData.country} ${hotelData.postalCode}\n\n` +
+        `*💰 BOOKING RATES*\n${ratesText}\n\n` +
+        `*⏰ POLICIES*\n` +
+        `• Check-in: ${hotelData.checkin}\n` +
+        `• Check-out: ${hotelData.checkout}\n` +
+        `• Cancellation: ${hotelData.cancellation}\n` +
+        `${hotelData.offers ? `• Offers: ${hotelData.offers}\n` : ''}` +
+        `\n*✨ AMENITIES*\n${selectedAmenities.join(' · ') || 'None specified'}\n\n` +
+        `*📝 DESCRIPTION*\n${hotelData.description}\n\n` +
+        `*👤 OWNER/MANAGER*\n` +
+        `• Name: ${hotelData.ownerName}\n` +
+        `• WhatsApp: ${hotelData.ownerWhatsapp}\n` +
+        `${hotelData.email ? `• Email: ${hotelData.email}\n` : ''}` +
+        `${hotelData.phone ? `• Phone: ${hotelData.phone}\n` : ''}` +
+        `${hotelData.website ? `• Web: ${hotelData.website}\n` : ''}` +
+        `${hotelData.facebook ? `• FB: ${hotelData.facebook}\n` : ''}` +
+        `${hotelData.instagram ? `• IG: ${hotelData.instagram}\n` : ''}` +
+        `\n━━━━━━━━━━━━━━━━━━\n` +
+        `Submitted via StayBot 🤖\n` +
+        `${new Date().toLocaleString()}`;
+
+      // Send to WhatsApp
+      const waURL = `https://wa.me/${hotelData.ownerWhatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(waMessage)}`;
+      window.open(waURL, '_blank');
+
+      // Show success
+      document.querySelectorAll('.form-step').forEach(s => s.style.display = 'none');
+      document.getElementById('formStepSuccess').style.display = 'block';
+      document.getElementById('modalFooter').style.display = 'none';
+
+      // Update chat
+      setTimeout(() => {
+        addBotMessage(`
+          ✅ <strong>${hotelData.name}</strong> has been successfully registered!<br><br>
+          📲 Details sent via WhatsApp to <strong>${hotelData.ownerWhatsapp}</strong><br>
+          Your property is now live on StayBot. Guests can find and book your hotel through the chat!
+        `);
+        setTimeout(() => {
+          addQuickActions([
+            { icon: '📖', label: 'View Listings', action: 'listings' },
+            { icon: '🏨', label: 'Add Another Hotel', action: 'addhotel' },
+            { icon: '🏠', label: 'Main Menu', action: 'menu' }
+          ]);
+        }, 800);
+      }, 1500);
+    }
+
+    function resetForm() {
+      currentStep = 1;
+      rateCardCount = 1;
+      uploadedPhotos = [];
+      updateSteps();
+      showStep(1);
+      // Reset all inputs
+      document.querySelectorAll('#addHotelModal .form-control').forEach(el => {
+        if (el.tagName === 'SELECT') el.selectedIndex = 0;
+        else el.value = '';
+      });
+      document.getElementById('checkinTime').value = '14:00';
+      document.getElementById('checkoutTime').value = '10:00';
+      document.getElementById('rateCards').innerHTML = `
+        <div class="rate-card" data-index="0">
+          <div class="rate-card-header"><span class="rate-card-title">Room Type 1</span></div>
+          <div class="form-group">
+            <label>Room Type Name <span class="req">*</span></label>
+            <input type="text" class="form-control rate-name" placeholder="e.g. Standard Double">
+          </div>
+          <div class="form-row-3">
+            <div class="form-group"><label>Nightly Rate <span class="req">*</span></label><input type="number" class="form-control rate-price" placeholder="e.g. 850"></div>
+            <div class="form-group"><label>Weekend Rate</label><input type="number" class="form-control rate-weekend" placeholder="e.g. 1100"></div>
+            <div class="form-group"><label>Max Guests</label><input type="number" class="form-control rate-guests" placeholder="e.g. 2"></div>
+          </div>
+          <div class="form-group"><label>Room Description</label><input type="text" class="form-control rate-desc" placeholder="e.g. Queen bed, en-suite bathroom, TV"></div>
+        </div>
+      `;
+      document.querySelectorAll('.checkbox-item').forEach(el => {
+        el.classList.remove('checked');
+        el.querySelector('input').checked = false;
+      });
+      document.getElementById('uploadedImages').innerHTML = '';
+      document.getElementById('agreeTerms').checked = false;
+      document.getElementById('modalFooter').style.display = 'flex';
+    }
+
+    // ═══════════════════════════════════════════
+    // BOOKING MODAL
+    // ═══════════════════════════════════════════
+    function setupBookingHotelSelect() {
+      const sel = document.getElementById('bookHotelSelect');
+      sel.innerHTML = '<option value="">Select a hotel</option>';
+      registeredHotels.forEach((h, i) => {
+        sel.innerHTML += `<option value="${i}">${h.name} – ${h.city}</option>`;
+      });
+      sel.addEventListener('change', () => {
+        const idx = sel.value;
+        const roomSel = document.getElementById('bookRoomType');
+        roomSel.innerHTML = '<option value="">Select room type</option>';
+        if (idx !== '' && registeredHotels[idx]) {
+          registeredHotels[idx].rates.forEach(r => {
+            roomSel.innerHTML += `<option value="${r.name}">${r.name} – ${registeredHotels[idx].currency} ${r.price}/night</option>`;
+          });
+        }
+      });
+    }
+
+    function openBookingModal() {
+      setupBookingHotelSelect();
+      document.getElementById('bookingModal').classList.add('active');
+      // Set min dates
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('bookCheckin').min = today;
+      document.getElementById('bookCheckout').min = today;
+    }
+
+    function openBookingModalForHotel(index) {
+      openBookingModal();
+      document.getElementById('bookHotelSelect').value = index;
+      document.getElementById('bookHotelSelect').dispatchEvent(new Event('change'));
+    }
+
+    function closeBookingModal() {
+      document.getElementById('bookingModal').classList.remove('active');
+    }
+
+    function submitBooking() {
+      const guestName = document.getElementById('guestName').value.trim();
+      const guestWA = document.getElementById('guestWhatsapp').value.trim();
+      const guestEmail = document.getElementById('guestEmail').value.trim();
+      const hotelIdx = document.getElementById('bookHotelSelect').value;
+      const roomType = document.getElementById('bookRoomType').value;
+      const checkin = document.getElementById('bookCheckin').value;
+      const checkout = document.getElementById('bookCheckout').value;
+      const guests = document.getElementById('bookGuests').value;
+      const rooms = document.getElementById('bookRooms').value;
+      const requests = document.getElementById('bookRequests').value.trim();
+
+      if (!guestName || !guestWA || hotelIdx === '' || !roomType || !checkin || !checkout) {
+        showToast('⚠️ Please fill in all required fields');
+        return;
+      }
+
+      const hotel = registeredHotels[hotelIdx];
+      const rate = hotel.rates.find(r => r.name === roomType);
+      const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
+      const totalEst = rate ? (rate.price * nights * rooms) : 'N/A';
+
+      const waMessage = `📋 *NEW BOOKING REQUEST – StayBot*\n` +
+        `━━━━━━━━━━━━━━━━━━\n\n` +
+        `*🏨 Hotel:* ${hotel.name}\n` +
+        `*📍 Location:* ${hotel.city}, ${hotel.country}\n\n` +
+        `*👤 GUEST DETAILS*\n` +
+        `• Name: ${guestName}\n` +
+        `• WhatsApp: ${guestWA}\n` +
+        `${guestEmail ? `• Email: ${guestEmail}\n` : ''}` +
+        `\n*🛏 BOOKING DETAILS*\n` +
+        `• Room: ${roomType}\n` +
+        `• Check-in: ${checkin}\n` +
+        `• Check-out: ${checkout}\n` +
+        `• Nights: ${nights}\n` +
+        `• Guests: ${guests}\n` +
+        `• Rooms: ${rooms}\n` +
+        `${requests ? `• Requests: ${requests}\n` : ''}` +
+        `\n*💰 ESTIMATED TOTAL*\n` +
+        `${hotel.currency} ${totalEst} (${nights} night${nights > 1 ? 's' : ''} × ${rooms} room${rooms > 1 ? 's' : ''})\n` +
+        `\n━━━━━━━━━━━━━━━━━━\n` +
+        `Submitted via StayBot 🤖\n` +
+        `${new Date().toLocaleString()}`;
+
+      // Send to hotel owner's WhatsApp
+      const targetWA = hotel.ownerWhatsapp.replace(/[^0-9]/g, '');
+      const waURL = `https://wa.me/${targetWA}?text=${encodeURIComponent(waMessage)}`;
+      window.open(waURL, '_blank');
+
+      closeBookingModal();
+      showToast('✅ Booking sent via WhatsApp!');
+
+      addBotMessage(`
+        ✅ <strong>Booking request submitted!</strong><br><br>
+        🏨 <strong>${hotel.name}</strong><br>
+        🛏 ${roomType}<br>
+        📅 ${checkin} → ${checkout} (${nights} nights)<br>
+        💰 Est. Total: <strong>${hotel.currency} ${totalEst}</strong><br><br>
+        📲 Sent to hotel owner via WhatsApp. They'll confirm your booking shortly!
+      `);
+
+      setTimeout(() => {
+        addQuickActions([
+          { icon: '📋', label: 'Book Another', action: 'book' },
+          { icon: '🏠', label: 'Main Menu', action: 'menu' }
+        ]);
+      }, 1000);
+    }
+
+    // ═══════════════════════════════════════════
+    // TOAST
+    // ═══════════════════════════════════════════
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerHTML = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ═══════════════════════════════════════════
+    // DEMO DATA (preload sample hotel)
+    // ═══════════════════════════════════════════
+    if (registeredHotels.length === 0) {
+      registeredHotels.push({
+        name: 'Oceanview Lodge',
+        type: 'Lodge',
+        stars: '⭐⭐⭐⭐ 4 Stars',
+        totalRooms: '24',
+        address: '45 Beach Road',
+        city: 'Durban',
+        province: 'KwaZulu-Natal',
+        country: 'South Africa',
+        postalCode: '4001',
+        currency: 'ZAR',
+        rates: [
+          { name: 'Standard Room', price: '750', weekend: '950', guests: '2', desc: 'Double bed, sea view, en-suite' },
+          { name: 'Deluxe Suite', price: '1400', weekend: '1800', guests: '3', desc: 'King bed, balcony, minibar, lounge' },
+          { name: 'Family Room', price: '1800', weekend: '2200', guests: '5', desc: '2 bedrooms, kitchenette, garden access' }
+        ],
+        checkin: '14:00',
+        checkout: '10:00',
+        cancellation: 'Free cancellation up to 48 hours',
+        offers: '15% off for stays of 3+ nights. Honeymoon package available.',
+        amenities: ['🅿️ Parking', '📶 Free WiFi', '🏊 Pool', '🍳 Breakfast', '🍽️ Restaurant', '🧺 Laundry', '🔒 Safe / Security', '🔥 Braai / BBQ Area', '🌿 Garden'],
+        description: 'A charming beachfront lodge offering stunning ocean views and warm hospitality. Perfect for both business and leisure travellers. Walking distance to uShaka Marine World.',
+        ownerName: 'Sarah Naidoo',
+        ownerWhatsapp: '+27 82 555 1234',
+        email: 'info@oceanviewlodge.co.za',
+        phone: '+27 31 555 6789',
+        website: 'https://www.oceanviewlodge.co.za',
+        facebook: '@oceanviewdbn',
+        instagram: '@oceanviewlodge',
+        registeredAt: new Date().toISOString()
+      });
+      localStorage.setItem('staybot_hotels', JSON.stringify(registeredHotels));
+    }
+  </script>
+</body>
+</html>
