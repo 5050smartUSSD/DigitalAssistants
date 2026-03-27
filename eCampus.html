@@ -575,10 +575,11 @@ textarea.inp::placeholder{color:var(--muted);}
     <div id="tab-register" style="display:none;">
       <div class="fg"><label class="fl">Full Name</label><input class="fi" id="regName" placeholder="Your full name"></div>
       <div class="fi-row">
-        <div class="fg"><label class="fl">Role</label>
+        <div class="fg"><label class="fl">Select Role</label>
           <select class="fs" id="regRole">
             <option value="student">Student</option>
             <option value="teacher">Teacher</option>
+            <option value="teacher">Invigilator</option>
             <option value="parent">Parent</option>
           </select></div>
         <div class="fg"><label class="fl">Class/Dept</label><input class="fi" id="regClass" placeholder="SS2A / Maths"></div>
@@ -601,13 +602,13 @@ textarea.inp::placeholder{color:var(--muted);}
         <div class="fg"><label class="fl">Gender</label><select class="fs" id="adGender"><option>Male</option><option>Female</option></select></div>
       </div>
       <div class="fg"><label class="fl">Class Applying For</label>
-        <select class="fs" id="adClass"><option>JSS1</option><option>JSS2</option><option>JSS3</option><option>SS1</option><option>SS2</option><option>SS3</option></select></div>
-      <div class="fg"><label class="fl">Parent/Guardian Name</label><input class="fi" id="adParent" placeholder="Parent full name"></div>
-      <div class="fg"><label class="fl">Parent WhatsApp</label><input class="fi" id="adPhone" type="tel" placeholder="+234 800 000 0000"></div>
-      <div class="fg"><label class="fl">Previous School</label><input class="fi" id="adPrevSchool" placeholder="Last school attended"></div>
+        <select class="fs" id="adClass"><option>JSS1</option><option>JSS2</option><option>JSS3</option><option>SS1</option><option>SS2</option><option>SS3</option><option>Diploma</option><option>Certificate</option></select></div>
+      <div class="fg"><label class="fl">Parent/Guardian/Self Name</label><input class="fi" id="adParent" placeholder="Parent full name"></div>
+      <div class="fg"><label class="fl">Parent/Guardian/Self WhatsApp Number</label><input class="fi" id="adPhone" type="tel" placeholder="+234 800 000 0000"></div>
+      <div class="fg"><label class="fl">Previous School/Institution (optional)</label><input class="fi" id="adPrevSchool" placeholder="Last school attended"></div>
       <div class="fi-row">
         <div class="fg"><label class="fl">Student Type</label>
-          <select class="fs" id="adType"><option>Day Student</option><option>Boarding Student</option></select></div>
+          <select class="fs" id="adType"><option>In-center</option><option>Online</option></select></div>
         <div class="fg"><label class="fl">Activity Interest</label>
           <select class="fs" id="adActivity"><option>None</option><option>Football</option><option>Swimming</option><option>Chess</option><option>Drama</option></select></div>
       </div>
@@ -1048,10 +1049,10 @@ function haptic(pattern='light'){
 const DEMO_USERS = {
   'superadmin': { pw:'super123', role:'superadmin', name:'Chief E. Okonkwo', class:'Super Administration', id:'SPA-ENX-001', avatar:'⭐', waVerified:true, wallet:0, tokens:0 },
   'admin': { pw:'admin123', role:'admin', name:'Dr. Adeyemi Okafor', class:'Administration', id:'ADM-ENX-001', avatar:'👑', waVerified:true, wallet:50000, tokens:20 },
-  'STU-ENX-2024-0012': { pw:'student123', role:'student', name:'Chisom Obi', class:'SS2A', id:'STU-ENX-2024-0012', avatar:'🎒', waVerified:true, wallet:15000, tokens:5, boardingType:'Boarding', room:'B12', feesOwed:45000, feesPaid:75000, feesTotal:120000, section:'Section A' },
-  'STF-ENX-001': { pw:'teacher123', role:'teacher', name:'Mr. Emeka Nwosu', class:'Mathematics', id:'STF-ENX-001', avatar:'📚', waVerified:true, wallet:0, tokens:0 },
+  'STU-ENX-2024-0012': { pw:'student123', role:'student', name:'Student', class:'SS2A', id:'STU-ENX-2024-0012', avatar:'🎒', waVerified:true, wallet:15000, tokens:5, boardingType:'Boarding', room:'B12', feesOwed:45000, feesPaid:75000, feesTotal:120000, section:'Section A' },
+  'STF-ENX-001': { pw:'teacher123', role:'teacher', name:'Mr. Teacher', class:'Mathematics', id:'STF-ENX-001', avatar:'📚', waVerified:true, wallet:0, tokens:0 },
   'ACC-ENX-001': { pw:'acc123', role:'accountant', name:'Mrs. Titi Balogun', class:'Accounts Dept.', id:'ACC-ENX-001', avatar:'💰', waVerified:false, wallet:0, tokens:0 },
-  'parent1': { pw:'parent123', role:'parent', name:'Mrs. Grace Obi', class:'Parent of Chisom Obi', id:'PAR-ENX-001', avatar:'👪', waVerified:false, wallet:0, tokens:0 },
+  'parent1': { pw:'parent123', role:'parent', name:'Mrs. Parent', class:'Parent of STUDENT', id:'PAR-ENX-001', avatar:'👪', waVerified:false, wallet:0, tokens:0 },
 };
 
 const TOPUP_PINS = {
@@ -1162,7 +1163,7 @@ const TIMETABLE = {
 };
 
 const CLASSES_DATA = [
-  {name:'Mathematics',teacher:'Mr. Emeka Nwosu',next:'Mon 8:00am',students:38,icon:'📐',room:'Room 12'},
+  {name:'Mathematics',teacher:'Mr. Teacher',next:'Mon 8:00am',students:38,icon:'📐',room:'Room 12'},
   {name:'English Language',teacher:'Mrs. Ada Chukwu',next:'Tue 8:00am',students:38,icon:'📖',room:'Room 8'},
   {name:'Physics',teacher:'Dr. Seun Adeyemi',next:'Mon 1:00pm',students:35,icon:'⚛️',room:'Lab 2'},
   {name:'Chemistry',teacher:'Mr. Kola Bello',next:'Mon 9:00am',students:35,icon:'🧪',room:'Lab 1'},
@@ -1204,14 +1205,14 @@ const ACTIVITIES = [
 ];
 
 const ONLINE_CLASSES = [
-  {subj:'Mathematics',teacher:'Mr. Emeka Nwosu',time:'Mon 4pm',platform:'Zoom',status:'live',students:28,link:'https://zoom.us'},
+  {subj:'Mathematics',teacher:'Mr. Teacher',time:'Mon 4pm',platform:'Zoom',status:'live',students:28,link:'https://zoom.us'},
   {subj:'Physics',teacher:'Dr. Seun Adeyemi',time:'Tue 4pm',platform:'Zoom',status:'scheduled',students:25,link:'https://zoom.us'},
   {subj:'Biology',teacher:'Mrs. Ngozi Eze',time:'Wed 4pm',platform:'Google Meet',status:'scheduled',students:30,link:'https://meet.google.com'},
   {subj:'Chemistry',teacher:'Mr. Kola Bello',time:'Thu 4pm',platform:'Zoom',status:'ended',students:32,link:'https://zoom.us'},
 ];
 
 const HOMEWORKS = [
-  {subj:'Mathematics',title:'Quadratic Equations Practice',due:'Mar. 29, 2026',status:'pending',teacher:'Mr. Nwosu'},
+  {subj:'Mathematics',title:'Quadratic Equations Practice',due:'Mar. 29, 2026',status:'pending',teacher:'Mr. Teacher'},
   {subj:'English Language',title:'Essay: The Role of Technology in Education',due:'Apr. 1, 2026',status:'submitted',teacher:'Mrs. Chukwu'},
   {subj:'Biology',title:'Label the Digestive System Diagram',due:'Mar. 30, 2026',status:'pending',teacher:'Mrs. Eze'},
   {subj:'Physics',title:'Newton\'s Laws — Worked Examples',due:'Mar. 26, 2026',status:'pending',teacher:'Dr. Adeyemi'},
@@ -1346,7 +1347,7 @@ function waPassReset(){
   const ph=prompt('Enter your registered WhatsApp number:');
   if(ph){
     const msg=encodeURIComponent('goCBT eCampus: I need to reset my password. Registered number: '+ph);
-    window.open(`https://wa.me/2348000000000?text=${msg}`,'_blank');
+    window.open(`https://wa.me/2348157505037?text=${msg}`,'_blank');
   }
 }
 
@@ -1588,7 +1589,7 @@ function doAdmitCard(){
         </div>
       </div>
       <div class="admit-grid">
-        <div class="admit-item"><div class="admit-lbl">STUDENT NAME</div><div class="admit-val">${u?.name||'Chisom Obi'}</div></div>
+        <div class="admit-item"><div class="admit-lbl">STUDENT NAME</div><div class="admit-val">${u?.name||'Student'}</div></div>
         <div class="admit-item"><div class="admit-lbl">STUDENT ID</div><div class="admit-val">${u?.id||'USSID-ENX-2026-0012'}</div></div>
         <div class="admit-item"><div class="admit-lbl">CLASS</div><div class="admit-val">${u?.class||'SS2A'}</div></div>
         <div class="admit-item"><div class="admit-lbl">EXAM PERIOD</div><div class="admit-val">Apr. 2–13, 2026</div></div>
@@ -2075,7 +2076,7 @@ function saveNewStaff(){const n=document.getElementById('ns-n2').value.trim(),e=
 function removeStaff(id){staffData=staffData.filter(s=>s.id!==id);renderStaffList();showToast('Staff removed','info');}
 
 // ── TEACHERS & ACCOUNTANTS ──
-let teacherData=[{id:'STF-ENX-001',name:'Mr. Emeka Nwosu',role:'Teacher',subjects:'Mathematics',classes:'SS2',school:'Lagos',qual:'B.Sc, PGDE',status:'active'},{id:'STF-ENX-002',name:'Mrs. Ngozi Chukwu',role:'Teacher',subjects:'English',classes:'All',school:'Lagos',qual:'B.A, M.Ed',status:'active'},{id:'ACC-ENX-001',name:'Mrs. Titi Balogun',role:'Accountant',subjects:'—',classes:'—',school:'Lagos',qual:'ACA',status:'active'}];
+let teacherData=[{id:'STF-ENX-001',name:'Mr. Teacher',role:'Teacher',subjects:'Mathematics',classes:'SS2',school:'Lagos',qual:'B.Sc, PGDE',status:'active'},{id:'STF-ENX-002',name:'Mrs. Ngozi Chukwu',role:'Teacher',subjects:'English',classes:'All',school:'Lagos',qual:'B.A, M.Ed',status:'active'},{id:'ACC-ENX-001',name:'Mrs. Titi Balogun',role:'Accountant',subjects:'—',classes:'—',school:'Lagos',qual:'ACA',status:'active'}];
 function doTeachersMgmt(){openOv('ovTeachers');renderTeachList('all');haptic('medium');}
 function renderTeachList(filter){const b=document.getElementById('ovTeachBody');const filtered=filter==='accountant'?teacherData.filter(t=>t.role==='Accountant'):filter==='teacher'?teacherData.filter(t=>t.role==='Teacher'):teacherData;b.innerHTML=`<div style="display:flex;gap:5px;margin-bottom:9px;">${[['all','All'],['teacher','Teachers'],['accountant','Accountants']].map(([k,l])=>`<button class="btn-ghost" style="flex:1;font-size:10px;padding:5px;${filter===k?'border-color:var(--emerald);color:var(--emerald);':''}" onclick="renderTeachList('${k}')">${l}</button>`).join('')}</div><button class="btn-em" style="width:100%;font-size:11px;margin-bottom:10px;" onclick="showAddTeachForm()">＋ Add Teacher / Accountant</button><div class="tbl-wrap"><div class="tbl-hdr"><span>Name</span><span>Role</span><span>Subjects</span><span>Status</span><span></span></div>${filtered.map(t=>`<div class="tbl-row"><span><b style="font-size:11px;">${t.name}</b></span><span><span class="pill ${t.role==='Teacher'?'pill-em':'pill-am'}">${t.role}</span></span><span style="font-size:10px;">${t.subjects}</span><span><span class="pill pill-em">${t.status}</span></span><span><button class="btn-ghost" style="padding:2px 7px;font-size:9px;" onclick="removeTeach('${t.id}')">🗑</button></span></div>`).join('')}</div>`;}
 function showAddTeachForm(){const b=document.getElementById('ovTeachBody');b.innerHTML=`<button class="btn-ghost" style="margin-bottom:10px;font-size:11px;" onclick="renderTeachList('all')">← Back</button><div class="fi-row"><div class="fg"><label class="fl">Full Name *</label><input class="fi" id="nt-n" placeholder="Full name"></div><div class="fg"><label class="fl">Role *</label><select class="fs" id="nt-r"><option>Teacher</option><option>Accountant</option><option>Teacher + Accountant</option></select></div></div><div class="fi-row"><div class="fg"><label class="fl">Email *</label><input class="fi" id="nt-e" type="email" placeholder="teacher@school.ng"></div><div class="fg"><label class="fl">WhatsApp</label><input class="fi" id="nt-ph" type="tel" placeholder="+234..."></div></div><div class="fi-row"><div class="fg"><label class="fl">Qualification</label><input class="fi" id="nt-q" placeholder="B.Sc, PGDE…"></div><div class="fg"><label class="fl">School</label><select class="fs" id="nt-sc">${SCHOOLS.map(s=>`<option>${s.name.replace('goCBT eCampus ','').replace('goCBT eCampus ','')}</option>`).join('')}</select></div></div><div class="fg"><label class="fl">Subjects</label><input class="fi" id="nt-subj" placeholder="Mathematics, Physics…"></div><div class="fi-row"><div class="fg"><label class="fl">Password</label><input class="fi" id="nt-pw" type="password" placeholder="Set password"></div><div class="fg"><label class="fl">Confirm</label><input class="fi" id="nt-cpw" type="password" placeholder="Repeat"></div></div><button class="btn-em" onclick="saveNewTeach()">✅ Add Teacher</button>`;}
@@ -2103,7 +2104,7 @@ function doAllStudents(){
   botMsg('🎒 <strong>Student Directory</strong>',
     `<div class="tbl-wrap">
       <div class="tbl-hdr"><span>ID</span><span>Name</span><span>Class</span><span>Type</span></div>
-      <div class="tbl-row"><span class="em"><b>STU-ENX-2026-0012</b></span><span>Chisom Obi</span><span>SS2A</span><span><span class="pill pill-sap">Boarding</span></span></div>
+      <div class="tbl-row"><span class="em"><b>STU-ENX-2026-0012</b></span><span>Student</span><span>SS2A</span><span><span class="pill pill-sap">Boarding</span></span></div>
       <div class="tbl-row"><span class="em"><b>STU-ENX-2026-0013</b></span><span>Aisha Bello</span><span>SS2A</span><span><span class="pill pill-em">Day</span></span></div>
       <div class="tbl-row"><span class="em"><b>STU-ENX-2026-0014</b></span><span>Emeka N.</span><span>SS2B</span><span><span class="pill pill-sap">Boarding</span></span></div>
       <div class="tbl-row"><span class="em"><b>STU-ENX-2026-0015</b></span><span>Fatima Yusuf</span><span>JSS3A</span><span><span class="pill pill-em">Day</span></span></div>
@@ -2115,7 +2116,7 @@ function doStaff(){
   botMsg('📚 <strong>Staff Directory</strong>',
     `<div class="tbl-wrap">
       <div class="tbl-hdr"><span>ID</span><span>Name</span><span>Dept</span><span>Status</span></div>
-      <div class="tbl-row"><span class="sap"><b>STF-ENX-001</b></span><span>Mr. E. Nwosu</span><span>Maths</span><span><span class="pill pill-em">Active</span></span></div>
+      <div class="tbl-row"><span class="sap"><b>STF-ENX-001</b></span><span>Mr. Teacher</span><span>Maths</span><span><span class="pill pill-em">Active</span></span></div>
       <div class="tbl-row"><span class="sap"><b>STF-ENX-002</b></span><span>Mrs. A. Chukwu</span><span>English</span><span><span class="pill pill-em">Active</span></span></div>
       <div class="tbl-row"><span class="sap"><b>STF-ENX-003</b></span><span>Dr. S. Adeyemi</span><span>Physics</span><span><span class="pill pill-em">Active</span></span></div>
       <div class="tbl-row"><span class="sap"><b>ACC-ENX-001</b></span><span>Mrs. T. Balogun</span><span>Accounts</span><span><span class="pill pill-am">On Leave</span></span></div>
@@ -2159,7 +2160,7 @@ function doStudentTransfer(){
 // doRolesPermissions — now opens ovRoles overlay (defined above)
 
 function doParentDashboard(){
-  botMsg('📊 <strong>Chisom Obi — Progress</strong>',
+  botMsg('📊 <strong>Student_Name — Progress</strong>',
     `<div class="stat-row">
       <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-val" style="color:var(--emerald);">88%</div><div class="stat-lbl">Average</div></div>
       <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-val" style="color:var(--sapphire);">85%</div><div class="stat-lbl">Attendance</div></div>
@@ -2231,7 +2232,7 @@ function processPin(ctx){
 }
 
 function buyPinWA(){
-  window.open(`https://wa.me/2348000000000?text=${encodeURIComponent('goCBT eCampus: I would like to purchase a wallet top-up voucher PIN. Please guide me.')}`, '_blank');
+  window.open(`https://wa.me/2348157505037?text=${encodeURIComponent('goCBT eCampus: I would like to purchase a wallet top-up voucher PIN. Please guide me.')}`, '_blank');
 }
 
 function processGatewayPay(gw){
