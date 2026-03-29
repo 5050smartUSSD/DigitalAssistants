@@ -374,7 +374,7 @@ const state = {
 const flow = {
   welcome: {
     bot: ["Hi there! 👋 Welcome to <strong>CityGas</strong> – your trusted cooking gas refill AI Agent service.\n\nI can help you with a quick <strong>pickup</strong> or <strong>home delivery</strong> for your gas refilled cylinder. 🔥\n\nWhat would you like to do today?"],
-    chips: ["🏪 Request Refill", "🚚 Home Delivery"],
+    chips: ["🏪 Pickup from Store", "🚚 Home Delivery"],
     handler(input) {
       const v = input.toLowerCase();
       if (v.includes("pickup") || v.includes("store")) {
