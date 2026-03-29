@@ -358,7 +358,7 @@ body::after{content:'';position:fixed;top:-100px;right:-80px;width:420px;height:
     <div class="hdr-inner">
       <div class="hdr-av">🏥</div>
       <div>
-        <div class="hdr-title">MediBot</div>
+        <div class="hdr-title">goMEDIC</div>
         <div class="hdr-sub"><div class="live-dot"></div>SMART MEDICAL ASSISTANT · 24/7</div>
       </div>
       <div class="hdr-right">
@@ -828,7 +828,7 @@ const faqs = {
   hmo:{q:'🏥 HMO / Insurance',a:'We accept most major HMOs including <b>NHIA, Hygeia, AXA Mansard, AIICO, Leadway, NNPC Health Scheme</b> and more.<br><br>Present your HMO card at the hospital or mention your HMO when booking with us. We will verify your cover and liaise with your insurer.'},
   cost:{q:'💰 Service Costs',a:'Costs vary by service:<br>• GP Consultation: <b>₦3,500 – ₦8,000</b><br>• Specialist: <b>₦8,000 – ₦25,000</b><br>• Ambulance: <b>₦15,000 – ₦80,000</b><br>• Lab Tests: <b>₦2,000 – ₦45,000</b><br>• Drug Delivery: <b>₦500 delivery fee</b><br><br>HMO and government subsidies available.'},
   delivery:{q:'🚚 Drug Delivery',a:'We deliver medications across Abuja FCT:<br>• <b>Express 2–4 hours</b>: Available for verified pharmacies<br>• <b>Same day</b>: Order before 3pm<br>• <b>Next day</b>: For specialised medications<br><br>Prescription medications require a valid prescription. We verify with licensed pharmacists.'},
-  emergency:{q:'🚨 Emergency Response',a:'Emergency services are available <b>24/7</b>.<br><br>For life-threatening emergencies, <b>call 112 or 199 first</b>. Our MediBot team will dispatch emergency responders and keep you connected via WhatsApp throughout.<br><br>Response time: <b>8–15 minutes</b> in FCT Abuja.'},
+  emergency:{q:'🚨 Emergency Response',a:'Emergency services are available <b>24/7</b>.<br><br>For life-threatening emergencies, <b>call 112 or 199 first</b>. Our goMEDIC team will dispatch emergency responders and keep you connected via WhatsApp throughout.<br><br>Response time: <b>8–15 minutes</b> in FCT Abuja.'},
 };
 
 // ════════════════════════════════
@@ -1213,7 +1213,7 @@ function doVaccine(){
   });
 }
 
-function vaccineWA(){toWA(`💉 *VACCINATION REQUEST — MediBot*\n\nHello! I would like to book a vaccination appointment.\n\nPlease advise on available dates and prices. ⏰ ${ts()}`);}
+function vaccineWA(){toWA(`💉 *VACCINATION REQUEST — goMEDIC*\n\nHello! I would like to book a vaccination appointment.\n\nPlease advise on available dates and prices. ⏰ ${ts()}`);}
 
 // ════════════════════════════════
 // VITALS
@@ -1278,7 +1278,7 @@ function checkoutCart(){
   if(!cart.length)return;
   const items=cart.map(d=>`• ${d.name} (${d.price})`).join('\n');
   const total=cart.reduce((a,b)=>a+b.num,0);
-  toWA(`💊 *MEDICATION ORDER — MediBot*\n\n🛒 *Items:*\n${items}\n\n💰 *Total:* ₦${total.toLocaleString()}\n\nPlease confirm my order and delivery details. ⏰ ${ts()}`);
+  toWA(`💊 *MEDICATION ORDER — goMEDIC*\n\n🛒 *Items:*\n${items}\n\n💰 *Total:* ₦${total.toLocaleString()}\n\nPlease confirm my order and delivery details. ⏰ ${ts()}`);
   cart=[]; updateCartBadge(); closeOv('ovCart');
   typing(()=>{botMsg('💊 <strong>Order sent!</strong> You\'ve been redirected to WhatsApp. Our pharmacist will confirm your order and delivery details within minutes.');});
 }
@@ -1305,7 +1305,7 @@ function submitEmergency(){
   const count=document.getElementById('emCount').value;
   if(!phone||!loc){alert('Please provide your phone number and location.');return;}
   updateCtx(name||'Patient',loc.substring(0,20)+'...','🚨 Emergency Active');
-  toWA(`🚨 *EMERGENCY ALERT — MediBot*\n\n⚠️ URGENT RESPONSE REQUIRED\n\n👤 *Patient:* ${name||'Unknown'}\n📞 *Phone:* ${phone}\n🆘 *Emergency:* ${type}\n📍 *Location:* ${loc}\n👥 *Patients:* ${count}\n\n⏰ REPORTED AT: ${ts()}\n\n🚑 Please dispatch emergency team IMMEDIATELY.`);
+  toWA(`🚨 *EMERGENCY ALERT — goMEDIC*\n\n⚠️ URGENT RESPONSE REQUIRED\n\n👤 *Patient:* ${name||'Unknown'}\n📞 *Phone:* ${phone}\n🆘 *Emergency:* ${type}\n📍 *Location:* ${loc}\n👥 *Patients:* ${count}\n\n⏰ REPORTED AT: ${ts()}\n\n🚑 Please dispatch emergency team IMMEDIATELY.`);
   closeOv('ovEmerg');
   typing(()=>{
     botMsg(`🚨 <strong>Emergency alert sent!</strong> You've been connected to our emergency response team on WhatsApp.<br><br>⏱ <strong>Estimated response: 8–15 minutes</strong><br><br>Stay calm. Keep the patient still and warm. Do NOT move them unless in immediate danger.`,
@@ -1327,7 +1327,7 @@ function submitAmbulance(){
   const condition=document.getElementById('ambCondition').value.trim();
   const notes=document.getElementById('ambNotes').value.trim();
   if(!name||!phone||!pickup){alert('Please fill in name, phone and pickup location.');return;}
-  toWA(`🚑 *AMBULANCE REQUEST — MediBot*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n🚑 *Type:* ${type}\n⏰ *Urgency:* ${urgency}\n\n📍 *Pickup:* ${pickup}\n🏥 *Destination:* ${dest}\n🩺 *Condition:* ${condition||'Not specified'}\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()}`);
+  toWA(`🚑 *AMBULANCE REQUEST — goMEDIC*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n🚑 *Type:* ${type}\n⏰ *Urgency:* ${urgency}\n\n📍 *Pickup:* ${pickup}\n🏥 *Destination:* ${dest}\n🩺 *Condition:* ${condition||'Not specified'}\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()}`);
   closeOv('ovAmbulance');
   typing(()=>{botMsg(`🚑 <strong>Ambulance request sent!</strong> You've been connected to our dispatch team on WhatsApp. Your ambulance will be confirmed within 2 minutes.`);});
 }
@@ -1343,7 +1343,7 @@ function submitAppt(){
   const hmo=document.getElementById('apHMO').value;
   const age=document.getElementById('apAge').value;
   if(!name||!phone){alert('Please fill in name and phone number.');return;}
-  toWA(`📅 *APPOINTMENT BOOKING — MediBot*\n\n👤 *Patient:* ${name} (Age: ${age||'N/A'})\n📞 *Phone:* ${phone}\n🏥 *Hospital:* ${hosp}\n🩺 *Specialty:* ${spec}\n📅 *Date:* ${date||'Flexible'} at ${time}\n🏥 *HMO:* ${hmo}\n💬 *Reason:* ${reason||'Not specified'}\n\n⏰ ${ts()}`);
+  toWA(`📅 *APPOINTMENT BOOKING — goMEDIC*\n\n👤 *Patient:* ${name} (Age: ${age||'N/A'})\n📞 *Phone:* ${phone}\n🏥 *Hospital:* ${hosp}\n🩺 *Specialty:* ${spec}\n📅 *Date:* ${date||'Flexible'} at ${time}\n🏥 *HMO:* ${hmo}\n💬 *Reason:* ${reason||'Not specified'}\n\n⏰ ${ts()}`);
   closeOv('ovAppt');
   typing(()=>{botMsg(`📅 <strong>Appointment request sent!</strong> Our team will confirm your <strong>${spec}</strong> appointment at <strong>${hosp}</strong> via WhatsApp. Please bring your HMO card and ID.`);});
 }
@@ -1357,7 +1357,7 @@ function submitDrugs(){
   const dtime=document.getElementById('drTime').value;
   const pay=document.getElementById('drPay').value;
   if(!name||!phone||!meds){alert('Please fill in name, phone and medications.');return;}
-  toWA(`💊 *MEDICATION ORDER — MediBot*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${addr||'N/A'}\n\n💊 *Medications:*\n${meds}\n\n📋 *Prescription:* ${rx}\n🚚 *Delivery:* ${dtime}\n💳 *Payment:* ${pay}\n\n⏰ ${ts()}`);
+  toWA(`💊 *MEDICATION ORDER — goMEDIC*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${addr||'N/A'}\n\n💊 *Medications:*\n${meds}\n\n📋 *Prescription:* ${rx}\n🚚 *Delivery:* ${dtime}\n💳 *Payment:* ${pay}\n\n⏰ ${ts()}`);
   closeOv('ovDrugs');
   typing(()=>{botMsg('💊 <strong>Order submitted!</strong> Our pharmacist will verify your medications and confirm delivery details via WhatsApp.');});
 }
@@ -1371,7 +1371,7 @@ function submitPayment(){
   const invoice=document.getElementById('pyInvoice').value.trim();
   const method=document.getElementById('pyMethod').value;
   if(!name||!phone){alert('Please fill in name and phone number.');return;}
-  toWA(`💳 *MEDICAL PAYMENT — MediBot*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n🏥 *Hospital:* ${hosp}\n🩺 *Service:* ${service}\n💰 *Amount:* ₦${amount?Number(amount).toLocaleString():'TBD'}\n📋 *Invoice:* ${invoice||'N/A'}\n💳 *Method:* ${method}\n\n⏰ ${ts()}`);
+  toWA(`💳 *MEDICAL PAYMENT — goMEDIC*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n🏥 *Hospital:* ${hosp}\n🩺 *Service:* ${service}\n💰 *Amount:* ₦${amount?Number(amount).toLocaleString():'TBD'}\n📋 *Invoice:* ${invoice||'N/A'}\n💳 *Method:* ${method}\n\n⏰ ${ts()}`);
   closeOv('ovPay');
   typing(()=>{botMsg(`💳 <strong>Payment request sent!</strong> Our billing team will process your <strong>${service}</strong> payment via WhatsApp and send you a receipt.`);});
 }
@@ -1387,7 +1387,7 @@ function submitTele(){
   const time=document.getElementById('tlTime').value;
   const symptoms=document.getElementById('tlSymptoms').value.trim();
   if(!name||!phone){alert('Please fill in name and phone number.');return;}
-  toWA(`📞 *TELECONSULTATION — MediBot*\n\n👤 *Patient:* ${name} (Age: ${age||'N/A'}, ${gender})\n📞 *Phone:* ${phone}\n🩺 *Specialty:* ${spec}\n📹 *Mode:* ${mode}\n📅 *Date:* ${date||'Flexible'} at ${time}\n💬 *Symptoms:*\n${symptoms||'Not specified'}\n\n⏰ ${ts()}`);
+  toWA(`📞 *TELECONSULTATION — goMEDIC*\n\n👤 *Patient:* ${name} (Age: ${age||'N/A'}, ${gender})\n📞 *Phone:* ${phone}\n🩺 *Specialty:* ${spec}\n📹 *Mode:* ${mode}\n📅 *Date:* ${date||'Flexible'} at ${time}\n💬 *Symptoms:*\n${symptoms||'Not specified'}\n\n⏰ ${ts()}`);
   closeOv('ovTele');
   typing(()=>{botMsg(`📞 <strong>Teleconsultation booked!</strong> Your <strong>${spec}</strong> doctor will contact you via ${mode.split('(')[0].trim()} at your scheduled time.`);});
 }
@@ -1400,7 +1400,7 @@ function submitLab(){
   const service=document.getElementById('lbService').value;
   const date=document.getElementById('lbDate').value;
   if(!name||!phone){alert('Please fill in name and phone number.');return;}
-  toWA(`🔬 *LAB TEST REQUEST — MediBot*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n🧪 *Tests:* ${tests}\n${notes?`📝 *Additional:* ${notes}\n`:''}\n🏠 *Service:* ${service}\n📅 *Date:* ${date||'Flexible'}\n\n⏰ ${ts()}`);
+  toWA(`🔬 *LAB TEST REQUEST — goMEDIC*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n🧪 *Tests:* ${tests}\n${notes?`📝 *Additional:* ${notes}\n`:''}\n🏠 *Service:* ${service}\n📅 *Date:* ${date||'Flexible'}\n\n⏰ ${ts()}`);
   closeOv('ovLab');
   typing(()=>{botMsg(`🔬 <strong>Lab test request sent!</strong> Our diagnostics team will confirm your <strong>${tests}</strong> appointment${service.includes('Home')?' and arrange home sample collection':''} via WhatsApp.`);});
 }
@@ -1412,13 +1412,13 @@ function submitMental(){
   const session=document.getElementById('mhSession').value;
   const desc=document.getElementById('mhDesc').value.trim();
   if(!phone){alert('Please provide your phone number.');return;}
-  toWA(`🧠 *MENTAL HEALTH REQUEST — MediBot*\n\n👤 *Name:* ${name||'Anonymous'}\n📞 *Phone:* ${phone}\n💭 *Experiencing:* ${type}\n📹 *Session Type:* ${session}\n${desc?`💬 *Notes:*\n${desc}\n`:''}\n⚠️ All sessions are confidential.\n\n⏰ ${ts()}`);
+  toWA(`🧠 *MENTAL HEALTH REQUEST — goMEDIC*\n\n👤 *Name:* ${name||'Anonymous'}\n📞 *Phone:* ${phone}\n💭 *Experiencing:* ${type}\n📹 *Session Type:* ${session}\n${desc?`💬 *Notes:*\n${desc}\n`:''}\n⚠️ All sessions are confidential.\n\n⏰ ${ts()}`);
   closeOv('ovMental');
   typing(()=>{botMsg('💙 <strong>Request sent!</strong> A licensed therapist will reach out to you via WhatsApp in confidence. You are not alone — help is on its way. 💙');});
 }
 
 function callCrisis(){
-  toWA(`🆘 *MENTAL HEALTH CRISIS — MediBot*\n\nI need immediate mental health support.\n\nPlease connect me with a crisis counsellor right now.\n\n⏰ ${ts()}`);
+  toWA(`🆘 *MENTAL HEALTH CRISIS — goMEDIC*\n\nI need immediate mental health support.\n\nPlease connect me with a crisis counsellor right now.\n\n⏰ ${ts()}`);
   closeOv('ovMental');
   typing(()=>{botMsg('🆘 <strong>Crisis team alerted!</strong> You\'ve been connected on WhatsApp. A counsellor will respond within minutes. Please stay connected. You matter. 💙');});
 }
@@ -1431,7 +1431,7 @@ function submitReport(){
   const date=document.getElementById('rpDate').value;
   const purpose=document.getElementById('rpPurpose').value.trim();
   if(!name||!phone){alert('Please fill in name and phone number.');return;}
-  toWA(`📊 *MEDICAL REPORT REQUEST — MediBot*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n📋 *Request:* ${type}\n🏥 *Hospital:* ${hosp||'N/A'}\n📅 *Date of Service:* ${date||'N/A'}\n📝 *Purpose:* ${purpose||'N/A'}\n\n⏰ ${ts()}`);
+  toWA(`📊 *MEDICAL REPORT REQUEST — goMEDIC*\n\n👤 *Patient:* ${name}\n📞 *Phone:* ${phone}\n📋 *Request:* ${type}\n🏥 *Hospital:* ${hosp||'N/A'}\n📅 *Date of Service:* ${date||'N/A'}\n📝 *Purpose:* ${purpose||'N/A'}\n\n⏰ ${ts()}`);
   closeOv('ovReport');
   typing(()=>{botMsg(`📊 <strong>Report request sent!</strong> Our records team will process your <strong>${type}</strong> request and contact you via WhatsApp within 24 hours.`);});
 }
@@ -1442,7 +1442,7 @@ function submitFeedback(){
   const stars=document.getElementById('fbStars').value;
   const text=document.getElementById('fbText').value.trim();
   if(!text){alert('Please write your feedback.');return;}
-  toWA(`⭐ *FEEDBACK — MediBot*\n\n👤 *Name:* ${name}\n🏥 *Service:* ${service||'General'}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n💬 *Feedback:*\n${text}\n\n⏰ ${ts()}`);
+  toWA(`⭐ *FEEDBACK — goMEDIC*\n\n👤 *Name:* ${name}\n🏥 *Service:* ${service||'General'}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n💬 *Feedback:*\n${text}\n\n⏰ ${ts()}`);
   closeOv('ovFeedback');
   typing(()=>{botMsg('⭐ <strong>Thank you for your feedback!</strong> It helps us improve medical care for everyone. 💙');});
 }
@@ -1499,7 +1499,7 @@ function send(){
   inp.value='';inp.style.height='auto';
   userMsg(t); const l=t.toLowerCase();
   if(/^(hi|hello|hey|good|morn|afternoon|evening)/i.test(l)){
-    typing(()=>{botMsg(`Hello! 👋 Welcome to <strong>MediBot</strong>. I'm here to help with all your medical needs. How can I assist you today?`,mainMenu());});
+    typing(()=>{botMsg(`Hello! 👋 Welcome to <strong>goMEDIC</strong>. I'm here to help with all your medical needs. How can I assist you today?`,mainMenu());});
   }
   else if(/emergency|urgent|help.*now|not breathing|unconscious|dying|heart.?attack/i.test(l)){ doEmergency(); }
   else if(/ambulance|paramedic|stretcher|transport/i.test(l)){ go('ambulance'); }
@@ -1540,7 +1540,7 @@ window.onload=()=>{
   const h=new Date().getHours();
   const gr=h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙';
   setTimeout(()=>{
-    botMsg(`${gr}! I'm <strong>MediBot</strong> — your 24/7 smart medical assistant.<br><br>
+    botMsg(`${gr}! I'm <strong>goMEDIC</strong> — your 24/7 smart medical assistant.<br><br>
 I can help you access <strong>emergency services, order an ambulance, book doctor appointments, order medications, pay for medical bills, request lab tests</strong> and much more — all connected via WhatsApp for instant response. 🏥<br><br>
 ⚠️ <em style="color:var(--red2);">For life-threatening emergencies, please call <strong>112</strong> or <strong>199</strong> immediately.</em>`);
   },400);
