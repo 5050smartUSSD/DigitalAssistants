@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DigitalSolution –Repair Laptop & Phones</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0A0E1A;
+    --surface:  #111827;
+    --card:     #161D2E;
+    --panel:    #1C2540;
+    --border:   rgba(0,212,255,0.12);
+    --border2:  rgba(255,255,255,0.06);
+    --cyan:     #00D4FF;
+    --cyan2:    #00A8CC;
+    --electric: #00FF88;
+    --warn:     #FFB300;
+    --danger:   #FF4D6D;
+    --text:     #E2E8F0;
+    --muted:    #64748B;
+    --green:    #25D366;
+    --radius:   18px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Circuit-board grid background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+  }
+
+  /* Glow orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+  }
+  .orb-1 {
+    width: 400px; height: 400px;
+    background: rgba(0,212,255,0.08);
+    top: -120px; left: -80px;
+    animation: orb-drift 9s ease-in-out infinite alternate;
+  }
+  .orb-2 {
+    width: 350px; height: 350px;
+    background: rgba(0,255,136,0.05);
+    bottom: -80px; right: -60px;
+    animation: orb-drift 11s ease-in-out 2s infinite alternate;
+  }
+  @keyframes orb-drift {
+    from { transform: translate(0,0); }
+    to   { transform: translate(25px,-25px); }
+  }
+
+  /* Scanline effect */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .header {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+    position: relative; z-index: 1;
+  }
+  .logo {
+    width: 50px; height: 50px;
+    background: linear-gradient(135deg, #00D4FF22, #00FF8822);
+    border: 1.5px solid var(--cyan);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(0,212,255,0.3), inset 0 0 20px rgba(0,212,255,0.05);
+    animation: logo-pulse 3s ease-in-out infinite;
+  }
+  @keyframes logo-pulse {
+    0%,100% { box-shadow: 0 0 20px rgba(0,212,255,0.3), inset 0 0 20px rgba(0,212,255,0.05); }
+    50%      { box-shadow: 0 0 35px rgba(0,212,255,0.55), inset 0 0 20px rgba(0,212,255,0.1); }
+  }
+
+  .header-text h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--cyan);
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 20px rgba(0,212,255,0.4);
+  }
+  .header-text h1 span { color: var(--electric); }
+  .header-text p {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(0,255,136,0.08);
+    border: 1px solid rgba(0,255,136,0.25);
+    color: var(--electric);
+    border-radius: 100px;
+    padding: 3px 10px;
+    font-size: 0.68rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    margin-top: 5px;
+    letter-spacing: 0.04em;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    background: var(--electric);
+    border-radius: 50%;
+    animation: blink 1.6s ease-in-out infinite;
+    box-shadow: 0 0 6px var(--electric);
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* Chat window */
+  .chat-window {
+    width: 100%;
+    max-width: 500px;
+    background: var(--surface);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    box-shadow:
+      0 0 0 1px rgba(0,212,255,0.05),
+      0 32px 80px rgba(0,0,0,0.6),
+      0 0 60px rgba(0,212,255,0.04);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 74vh;
+    max-height: 640px;
+    position: relative; z-index: 1;
+  }
+
+  /* Topbar */
+  .chat-topbar {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card);
+    position: relative;
+  }
+  .chat-topbar::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .agent-avatar {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,255,136,0.1));
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .agent-info strong {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--cyan);
+    letter-spacing: 0.02em;
+  }
+  .agent-info span { font-size: 0.68rem; color: var(--muted); }
+
+  .diag-bar { text-align: right; }
+  .diag-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .mini-progress {
+    width: 90px; height: 3px;
+    background: var(--panel);
+    border-radius: 10px;
+    margin-top: 5px;
+    overflow: hidden;
+    border: 1px solid var(--border2);
+  }
+  .mini-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--electric));
+    border-radius: 10px;
+    transition: width 0.6s ease;
+    width: 0%;
+    box-shadow: 0 0 8px rgba(0,212,255,0.5);
+  }
+
+  /* Messages */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    scroll-behavior: smooth;
+  }
+  .messages::-webkit-scrollbar { width: 3px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 4px; }
+
+  .msg { display: flex; align-items: flex-end; gap: 9px; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+  .msg.bot { justify-content: flex-start; }
+  .msg.user { justify-content: flex-end; }
+
+  .bot-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,255,136,0.1));
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(0,212,255,0.15);
+  }
+
+  .bubble {
+    max-width: 80%;
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    border-radius: 18px;
+  }
+  .msg.bot .bubble {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 5px;
+    color: var(--text);
+  }
+  .msg.user .bubble {
+    background: linear-gradient(135deg, #00D4FF22, #00FF8815);
+    border: 1px solid rgba(0,212,255,0.35);
+    border-bottom-right-radius: 5px;
+    color: var(--cyan);
+    font-weight: 600;
+    font-size: 0.84rem;
+  }
+
+  /* Mono code style for bot messages */
+  .bubble code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: rgba(0,212,255,0.08);
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    color: var(--cyan);
+  }
+
+  /* Chips */
+  .chips {
+    display: flex; flex-wrap: wrap; gap: 7px;
+    padding: 0 16px 13px;
+  }
+  .chip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 100px;
+    padding: 7px 14px;
+    font-size: 0.77rem;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .chip:hover {
+    background: rgba(0,212,255,0.1);
+    border-color: var(--cyan);
+    color: var(--cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0,212,255,0.15);
+  }
+
+  /* Input */
+  .input-area {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 15px;
+    border-top: 1px solid var(--border);
+    background: var(--card);
+    position: relative;
+  }
+  .input-area::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent);
+  }
+  #userInput {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 15px;
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #userInput:focus {
+    border-color: rgba(0,212,255,0.5);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.08), 0 0 15px rgba(0,212,255,0.1);
+  }
+  #userInput::placeholder { color: var(--muted); font-size: 0.83rem; }
+
+  .send-btn {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+    border: none;
+    border-radius: 13px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,212,255,0.3);
+  }
+  .send-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,212,255,0.5); }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+
+  /* Typing */
+  .typing { display: flex; align-items: center; gap: 5px; }
+  .dot { width: 7px; height: 7px; background: var(--muted); border-radius: 50%; animation: bounce 1.3s infinite; }
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
+
+  /* Issue grid */
+  .issue-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    margin-top: 10px;
+  }
+  .issue-card {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+  .issue-card:hover {
+    border-color: var(--cyan);
+    background: rgba(0,212,255,0.07);
+    color: var(--cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0,212,255,0.12);
+  }
+  .issue-card .ic-icon { font-size: 1.2rem; flex-shrink: 0; }
+
+  /* Severity pill */
+  .severity {
+    display: inline-flex; align-items: center; gap: 5px;
+    border-radius: 100px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    margin-top: 8px;
+  }
+  .sev-low    { background: rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3); color: var(--electric); }
+  .sev-medium { background: rgba(255,179,0,0.1); border:1px solid rgba(255,179,0,0.3); color: var(--warn); }
+  .sev-high   { background: rgba(255,77,109,0.1); border:1px solid rgba(255,77,109,0.3); color: var(--danger); }
+
+  /* Inline form */
+  .inline-input { display: flex; flex-direction: column; gap: 9px; margin-top: 10px; }
+  .inline-field {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.84rem;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .inline-field:focus {
+    border-color: rgba(0,212,255,0.5);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.08);
+  }
+  .inline-field::placeholder { color: var(--muted); }
+  select.inline-field { cursor: pointer; }
+  select.inline-field option { background: var(--card); }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .submit-inline {
+    background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+    color: var(--bg);
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(0,212,255,0.25);
+  }
+  .submit-inline:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,212,255,0.4); }
+
+  /* Summary card */
+  .order-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    margin-top: 10px;
+    font-size: 0.82rem;
+  }
+  .oc-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: var(--cyan);
+    margin-bottom: 11px;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .oc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border2);
+    gap: 12px;
+  }
+  .oc-row:last-child { border: none; }
+  .oc-row .key { color: var(--muted); font-size: 0.78rem; flex-shrink: 0; }
+  .oc-row .val { color: var(--text); font-weight: 600; text-align: right; }
+
+  .wa-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 13px;
+    padding: 14px 20px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+    width: 100%;
+    justify-content: center;
+    transition: all 0.2s;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(37,211,102,0.3);
+  }
+  .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(37,211,102,0.45); }
+  .wa-btn svg { width: 20px; height: 20px; fill: white; flex-shrink: 0; }
+
+  .badge-strip { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+  .badge {
+    background: rgba(0,212,255,0.07);
+    color: var(--cyan);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 100px;
+    padding: 4px 11px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+
+  .err { color: var(--danger); font-size: 0.76rem; margin-top: 4px; }
+
+  .footer {
+    margin-top: 10px;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-align: center;
+    position: relative; z-index: 1;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.03em;
+  }
+  .footer span { color: var(--cyan); }
+
+  /* Diag tip box */
+  .tip-box {
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.15);
+    border-left: 3px solid var(--cyan);
+    border-radius: 10px;
+    padding: 10px 13px;
+    margin-top: 9px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .tip-box strong { color: var(--cyan); }
+
+  /* ── Payment Card ─────────────────────────────────────────── */
+  .pay-card {
+    background: var(--panel);
+    border: 1px solid rgba(0,255,136,0.2);
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 12px;
+  }
+  .pay-header {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--electric);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pay-amount-box {
+    background: rgba(0,212,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-align: center;
+    padding: 14px 10px 10px;
+    margin-bottom: 14px;
+  }
+  .pay-amount-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .pay-amount-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--cyan);
+    text-shadow: 0 0 20px rgba(0,212,255,0.5);
+    line-height: 1.1;
+  }
+  .pay-amount-sub {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .pay-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .pay-method {
+    background: var(--card);
+    border: 1.5px solid var(--border2);
+    border-radius: 12px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .pay-method:hover, .pay-method.active {
+    border-color: var(--cyan);
+    background: rgba(0,212,255,0.08);
+    color: var(--cyan);
+    box-shadow: 0 0 14px rgba(0,212,255,0.12);
+  }
+  .pay-method .pm-icon { font-size: 1.4rem; display: block; margin-bottom: 5px; }
+  .pay-acct {
+    background: rgba(0,212,255,0.06);
+    border: 1px dashed rgba(0,212,255,0.25);
+    border-radius: 10px;
+    padding: 10px 13px;
+    margin-bottom: 10px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    display: none;
+  }
+  .pay-acct strong { color: var(--cyan); font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; }
+  .pay-ref-wrap { margin-bottom: 10px; display: none; }
+  .pay-ref-wrap .inline-field { width: 100%; }
+  .pay-confirm-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--electric), #00b860);
+    color: var(--bg);
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 18px rgba(0,255,136,0.3);
+    letter-spacing: 0.01em;
+    margin-bottom: 8px;
+  }
+  .pay-confirm-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,255,136,0.45); }
+  .pay-skip-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 10px;
+    color: var(--muted);
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pay-skip-btn:hover { border-color: var(--border); color: var(--text); }
+  .pay-err { color: var(--danger); font-size: 0.74rem; margin-top: 6px; }
+
+  /* ── WhatsApp Redirect Overlay ────────────────────────────── */
+  .wa-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: ovFadeIn 0.3s ease;
+  }
+  @keyframes ovFadeIn { from{opacity:0} to{opacity:1} }
+  .wa-popup {
+    background: var(--card);
+    border: 1px solid rgba(37,211,102,0.4);
+    border-radius: 24px;
+    padding: 34px 28px 28px;
+    max-width: 340px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 0 80px rgba(37,211,102,0.12), 0 40px 80px rgba(0,0,0,0.7);
+    animation: popBounce 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popBounce { from{opacity:0;transform:scale(0.75)} to{opacity:1;transform:scale(1)} }
+  .wa-popup-check {
+    width: 64px; height: 64px;
+    background: rgba(37,211,102,0.12);
+    border: 2px solid rgba(37,211,102,0.4);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 14px;
+    box-shadow: 0 0 30px rgba(37,211,102,0.25);
+  }
+  .wa-popup h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    color: var(--electric);
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .wa-popup p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .wa-countdown {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--electric);
+    text-shadow: 0 0 24px rgba(0,255,136,0.6);
+    margin-bottom: 18px;
+    line-height: 1;
+  }
+  .wa-now-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 15px 20px;
+    width: 100%;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 6px 24px rgba(37,211,102,0.35);
+    margin-bottom: 12px;
+  }
+  .wa-now-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(37,211,102,0.5); }
+  .wa-now-btn svg { width: 22px; height: 22px; fill: white; flex-shrink: 0; }
+  .wa-dismiss-btn {
+    font-size: 0.76rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    font-family: 'Manrope', sans-serif;
+  }
+  .wa-dismiss-btn:hover { color: var(--text); }
+
+  /* ── Rating Widget ────────────────────────────────────────── */
+  .rating-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 16px;
+    margin-top: 12px;
+    text-align: center;
+  }
+  .rating-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--cyan);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .star-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .star-btn {
+    font-size: 2rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+    transition: transform 0.15s ease;
+    filter: grayscale(1) brightness(0.45);
+    user-select: none;
+    padding: 2px;
+  }
+  .star-btn.lit {
+    filter: grayscale(0) brightness(1.1) drop-shadow(0 0 6px rgba(255,200,0,0.6));
+    transform: scale(1.2);
+  }
+  .star-btn:hover { transform: scale(1.3); }
+  .rating-mood {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    min-height: 22px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+  }
+  .rating-comment {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 13px;
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.82rem;
+    outline: none;
+    resize: none;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .rating-comment:focus { border-color: rgba(0,212,255,0.45); }
+  .rating-comment::placeholder { color: var(--muted); }
+  .submit-rating-btn {
+    background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+    color: var(--bg);
+    border: none;
+    border-radius: 11px;
+    padding: 11px 30px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(0,212,255,0.25);
+  }
+  .submit-rating-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,212,255,0.4); }
+  .rating-done-msg {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--electric);
+    letter-spacing: 0.03em;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="header">
+  <div class="logo">💻</div>
+  <div class="header-text">
+    <h1>Digital<span>Solution</span></h1>
+    <p>//laptop & phone repair AI</p>
+    <div class="status-pill"><span class="status-dot"></span> GODWIN is ONLINE</div>
+  </div>
+</div>
+
+<div class="chat-window">
+  <div class="chat-topbar">
+    <div class="topbar-left">
+      <div class="agent-avatar">🔧</div>
+      <div class="agent-info">
+        <strong>DigitalSolution AI</strong>
+        <span>Expert & Certified repair technician</span>
+      </div>
+    </div>
+    <div class="diag-bar">
+      <div class="diag-label" id="progressLabel">SCAN 0/6</div>
+      <div class="mini-progress"><div class="mini-progress-fill" id="progressFill"></div></div>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+  <div class="chips" id="chips"></div>
+
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Describe your issue or type a response…" autocomplete="off" />
+    <button class="send-btn" onclick="handleSend()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="footer">[ <span>DigitalSolution AI</span> ] · Repair requests routed via WhatsApp</div>
+
+<script>
+const WHATSAPP = "2348157505037";
+const STEPS_TOTAL = 6;
+
+const state = {
+  step:         "welcome",
+  serviceType:  "",   // diagnosis | repair | pickup | remote
+  deviceType:   "",   // Laptop | Desktop | MacBook | All-in-One | Gaming PC | Tablet/iPad
+  brand:        "",
+  issue:        "",
+  issueDetail:  "",
+  urgency:      "",
+  name:         "",
+  phone:        "",
+  location:     "",
+  extraNote:    "",
+  payMethod:    "",
+  payRef:       "",
+  ticketId:     "",
+};
+
+const STEPS = ["welcome","service_type","device_type","issue","urgency","contact"];
+
+function stepIndex() { return STEPS.indexOf(state.step); }
+function updateProgress() {
+  const i = Math.max(stepIndex(), 0);
+  document.getElementById("progressFill").style.width = Math.round((i/(STEPS_TOTAL-1))*100)+"%";
+  document.getElementById("progressLabel").textContent = `SCAN ${i}/${STEPS_TOTAL-1}`;
+}
+
+// ── DOM ─────────────────────────────────────────────────────────────────────
+const messagesEl = document.getElementById("messages");
+const chipsEl    = document.getElementById("chips");
+const inputEl    = document.getElementById("userInput");
+
+function scrollBottom() { setTimeout(()=> messagesEl.scrollTop = messagesEl.scrollHeight, 80); }
+
+function addMsg(who, html) {
+  const w = document.createElement("div");
+  w.className = `msg ${who}`;
+  w.innerHTML = who === "bot"
+    ? `<div class="bot-icon">💻</div><div class="bubble">${html}</div>`
+    : `<div class="bubble">${html}</div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+}
+
+function showTyping() {
+  const w = document.createElement("div");
+  w.className = "msg bot"; w.id = "typing";
+  w.innerHTML = `<div class="bot-icon">💻</div><div class="bubble"><div class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+}
+function removeTyping() { document.getElementById("typing")?.remove(); }
+
+function setChips(arr) {
+  chipsEl.innerHTML = "";
+  arr.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = c;
+    b.onclick = () => processInput(c);
+    chipsEl.appendChild(b);
+  });
+}
+
+function botReply(html, chips=[], delay=950) {
+  showTyping();
+  setTimeout(()=>{ removeTyping(); addMsg("bot", html); setChips(chips); updateProgress(); }, delay);
+}
+
+// ── Issue grid ───────────────────────────────────────────────────────────────
+const ISSUES = [
+  { icon:"⚡", label:"Won't Turn On",   tip:"Power / battery fault" },
+  { icon:"🐌", label:"Very Slow",        tip:"Performance / RAM / HDD" },
+  { icon:"🔵", label:"Blue Screen",      tip:"BSOD / OS crash" },
+  { icon:"🌡️", label:"Overheating",      tip:"Cooling / fan issue" },
+  { icon:"📺", label:"Screen Problem",   tip:"Display / backlight" },
+  { icon:"🔋", label:"Battery Issue",    tip:"Won't charge / drains fast" },
+  { icon:"💧", label:"Liquid Damage",    tip:"Spillage / water exposure" },
+  { icon:"📶", label:"WiFi / Network",   tip:"No connection detected" },
+  { icon:"⌨️", label:"Keyboard/Touchpad",tip:"Keys / trackpad faulty" },
+  { icon:"💾", label:"Data Recovery",    tip:"Lost files / corrupted disk" },
+  { icon:"🔊", label:"No Sound",         tip:"Audio / speaker problem" },
+  { icon:"🔄", label:"OS / Virus",       tip:"Reinstall / malware removal" },
+];
+
+function renderIssueGrid() {
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  const grid = ISSUES.map(i =>
+    `<div class="issue-card" onclick="selectIssue('${i.label}','${i.tip}')">
+      <span class="ic-icon">${i.icon}</span>
+      <div><div style="font-weight:600">${i.label}</div><div style="color:var(--muted);font-size:0.7rem">${i.tip}</div></div>
+    </div>`
+  ).join("");
+  w.innerHTML = `<div class="bot-icon">💻</div>
+    <div class="bubble" style="max-width:94%">
+      <div style="margin-bottom:6px">Which of these best decribes to current condition of your device?</div>
+      <div class="issue-grid">${grid}</div>
+    </div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+}
+
+function selectIssue(label, tip) {
+  state.issue = label;
+  addMsg("user", label);
+  state.step = "urgency";
+  const severity = ["Liquid Damage","Won't Turn On","Blue Screen","Data Recovery"].includes(label) ? "high"
+    : ["Overheating","Battery Issue","Screen Problem"].includes(label) ? "medium" : "low";
+  const sevHtml = severity === "high"
+    ? `<span class="severity sev-high">⚠ HIGH PRIORITY</span>`
+    : severity === "medium"
+    ? `<span class="severity sev-medium">⚡ MODERATE</span>`
+    : `<span class="severity sev-low">✓ STANDARD</span>`;
+
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    addMsg("bot",
+      `Diagnosed: <strong>${label}</strong> — <em>${tip}</em><br>${sevHtml}
+      <div class="tip-box"><strong>Quick tip:</strong> ${getQuickTip(label)}</div>`
+    );
+    setChips([]);
+    updateProgress();
+    setTimeout(()=>{
+      botReply(
+        `How soon would you like us to fix the issue?`,
+        ["🔴 Urgent — fix today", "🟡 Within 2–3 days", "🟢 Flexible — no rush"],
+        800
+      );
+    }, 1100);
+  }, 900);
+}
+
+function getQuickTip(issue) {
+  const tips = {
+    "Won't Turn On":   "Hold the power button for 10 seconds first. If still unresponsive, do <strong>not</strong> attempt to force-open it.",
+    "Very Slow":       "Avoid installing new software before the repair. A quick reboot may help temporarily.",
+    "Blue Screen":     "Note any error codes shown on screen — they help us diagnose faster.",
+    "Overheating":     "Place the device on a flat hard surface and avoid blocking the vents. Stop heavy tasks.",
+    "Screen Problem":  "Check if an external monitor shows a picture — this helps isolate GPU vs screen issues.",
+    "Battery Issue":   "Try a different charger if available. Avoid completely draining the battery.",
+    "Liquid Damage":   "<strong>Turn it off immediately</strong> and do NOT charge it. Bring it in as soon as possible.",
+    "WiFi / Network":  "Try forgetting and reconnecting to the network. If the issue persists, it may be a hardware fault.",
+    "Keyboard/Touchpad": "Try an external keyboard to confirm if the issue is hardware or driver-related.",
+    "Data Recovery":   "Stop using the device now to avoid overwriting recoverable data.",
+    "No Sound":        "Check volume settings and audio output device in system settings first.",
+    "OS / Virus":      "Avoid logging into sensitive accounts on the device until it's cleaned.",
+  };
+  return tips[issue] || "Please describe your problem in as much detail as possible to speed up diagnosis.";
+}
+
+// ── Device type grid ─────────────────────────────────────────────────────────
+const DEVICES = [
+  { icon:"💻", label:"Laptop (Windows)" },
+  { icon:"🍎", label:"MacBook / iMac" },
+  { icon:"🖥️", label:"Desktop PC" },
+  { icon:"🎮", label:"Gaming PC / Setup" },
+  { icon:"📱", label:"Tablet / Phones" },
+  { icon:"🖥", label:"All-in-One PC" },
+];
+
+function renderDeviceGrid() {
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  const grid = DEVICES.map(d =>
+    `<div class="issue-card" onclick="selectDevice('${d.label}')">
+      <span class="ic-icon">${d.icon}</span>
+      <div style="font-weight:600;font-size:0.8rem">${d.label}</div>
+    </div>`
+  ).join("");
+  w.innerHTML = `<div class="bot-icon">💻</div>
+    <div class="bubble" style="max-width:94%">
+      <div style="margin-bottom:8px">Select faulty device type.</div>
+      <div class="issue-grid">${grid}</div>
+    </div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+}
+
+function selectDevice(label) {
+  state.deviceType = label;
+  addMsg("user", label);
+  state.step = "issue";
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    addMsg("bot", `Got it — a <strong>${label}</strong>. What's the brand / model? (e.g. HP Pavilion, Dell XPS 15, iphone X, infinix Hot10, Samsung Fold, Lenovo ThinkPad, Apple M2)`);
+    setChips(["HP", "Dell", "Lenovo", "Asus", "Apple", "Acer", "Toshiba", "Other"]);
+    updateProgress();
+  }, 850);
+}
+
+// ── Flow handler ─────────────────────────────────────────────────────────────
+function handleStep(input) {
+  const v = input.toLowerCase();
+
+  switch(state.step) {
+    case "welcome":
+      if (v.includes("diagnos") || v.includes("check") || v.includes("scan") || v.includes("not sure")) {
+        state.serviceType = "Diagnosis & Assessment";
+        state.step = "device_type";
+        botReply(`Running diagnostic intake… 🔍<br><br>First, what device would you like me to check?`,[], 800);
+        setTimeout(()=> renderDeviceGrid(), 1000);
+        return;
+      }
+      if (v.includes("repair") || v.includes("fix") || v.includes("broken") || v.includes("screen") || v.includes("keyboard")) {
+        state.serviceType = "Physical Repair";
+        state.step = "device_type";
+        botReply(`Let's get that fixed! 🔧<br><br>What type of device needs repair?`,[], 800);
+        setTimeout(()=> renderDeviceGrid(), 1000);
+        return;
+      }
+      if (v.includes("pickup") || v.includes("collect") || v.includes("drop")) {
+        state.serviceType = "Pickup & Repair";
+        state.step = "device_type";
+        botReply(`No problem — we'll come pick it up from you! 🚐<br><br>What type of device is it?`,[], 800);
+        setTimeout(()=> renderDeviceGrid(), 1000);
+        return;
+      }
+      if (v.includes("remote") || v.includes("online") || v.includes("virtual")) {
+        state.serviceType = "Remote / Online Support";
+        state.step = "device_type";
+        botReply(`Remote support initiated 💻→💻<br><br>What type of device are we working on?`,[], 800);
+        setTimeout(()=> renderDeviceGrid(), 1000);
+        return;
+      }
+      return false;
+
+    case "device_type": // handled by selectDevice above; fall through for typed input
+      state.deviceType = input;
+      state.step = "issue";
+      botReply(`Noted — <strong>${input}</strong>. What brand or model is it? (e.g. HP, Dell, Lenovo, Apple, Asus)`, ["HP","Dell","Lenovo","Asus","Apple","Acer","Other"]);
+      return;
+
+    case "issue":
+      if (!state.brand) {
+        state.brand = input;
+        state.step = "issue";
+        showTyping();
+        setTimeout(()=>{
+          removeTyping();
+          addMsg("bot","Now describe the main problem you're experiencing. Select from the grid or type freely:");
+          renderIssueGrid();
+          updateProgress();
+        }, 900);
+        return;
+      }
+      // typed issue (not from grid)
+      state.issue = input;
+      state.step = "urgency";
+      botReply(`Logged: <strong>${input}</strong>.<br><br>How urgent is this?`,
+        ["🔴 Urgent — fix today","🟡 Within 2–3 days","🟢 Flexible — no rush"]);
+      return;
+
+    case "urgency":
+      state.urgency = input.replace(/^[🔴🟡🟢]\s*/,"");
+      state.step = "contact";
+      botReply(`Understood — <code>${state.urgency}</code> ✅<br><br>Almost done! Fill in your contact info so our technician can reach you.`,[], 900);
+      setTimeout(()=> renderContactForm(), 1050);
+      return;
+
+    default:
+      return false;
+  }
+}
+
+// ── Contact form ──────────────────────────────────────────────────────────────
+function renderContactForm() {
+  const isPickup = state.serviceType.includes("Pickup");
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">💻</div>
+    <div class="bubble" style="max-width:93%">
+      <p>Kindly complete the service request form and our certified technician will contact you on WhatsApp. 🔧</p>
+      <div class="inline-input" id="contactForm">
+        <input class="inline-field" id="f_name"  placeholder="Your full name" type="text"/>
+        <input class="inline-field" id="f_phone" placeholder="Phone number (e.g. 08012345678)" type="tel"/>
+        <input class="inline-field" id="f_loc"   placeholder="${isPickup ? "Pickup address / area" : "Your location / area (for home visit or drop-off)"}"/>
+        <input class="inline-field" id="f_note"  placeholder="Extra details, error messages, or anything else (optional)"/>
+        <button class="submit-inline" onclick="submitRepair()">
+          🔧 Submit Repair Request
+        </button>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+function submitRepair() {
+  const name  = document.getElementById("f_name")?.value.trim();
+  const phone = document.getElementById("f_phone")?.value.trim();
+  const loc   = document.getElementById("f_loc")?.value.trim();
+  const note  = document.getElementById("f_note")?.value.trim() || "None";
+
+  if (!name || !phone) { flashErr("Please enter your name and phone number."); return; }
+  if (phone.length < 7) { flashErr("Enter a valid phone number."); return; }
+
+  state.name = name; state.phone = phone; state.location = loc || "Not specified"; state.extraNote = note;
+  document.getElementById("contactForm").style.display = "none";
+  addMsg("user", `${name} · ${phone}`);
+  showTyping();
+  setTimeout(()=>{ removeTyping(); showSummary(); }, 1200);
+}
+
+function flashErr(msg) {
+  document.getElementById("err_f")?.remove();
+  const el = document.createElement("div");
+  el.id = "err_f"; el.className = "err"; el.textContent = "⚠ " + msg;
+  document.getElementById("contactForm")?.appendChild(el);
+  setTimeout(()=> el.remove(), 3000);
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+const WA_SVG = `<svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
+
+function buildWaText() {
+  const { serviceType, deviceType, brand, issue, urgency, name, phone, location, extraNote, payMethod, payRef } = state;
+  return [
+    `💻 *REPAIR REQUEST — DigitalSolution AI*`,``,
+    `*Service:* ${serviceType}`,
+    `*Device:* ${deviceType}`,
+    `*Brand/Model:* ${brand}`,
+    `*Issue:* ${issue}`,
+    `*Urgency:* ${urgency}`,``,
+    `*Name:* ${name}`,
+    `*Phone:* ${phone}`,
+    `*Location:* ${location}`,
+    `*Extra Notes:* ${extraNote || "None"}`,``,
+    `💳 *Payment Method:* ${payMethod || "Not selected"}`,
+    `🔖 *Payment Ref:* ${payRef || "—"}`,``,
+    `Sent via DigitalSolution Diagnostic AI 💻`,
+  ].join("\n");
+}
+
+function getWaUrl() {
+  return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(buildWaText())}`;
+}
+
+// ── Summary ───────────────────────────────────────────────────────────────────
+function showSummary() {
+  const { serviceType, deviceType, brand, issue, urgency, name, phone, location, extraNote } = state;
+  const ticketId = `DS-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+  state.ticketId = ticketId;
+
+  const rows = [
+    ["Ticket",    ticketId],
+    ["Service",   serviceType],
+    ["Device",    deviceType],
+    ["Brand",     brand],
+    ["Issue",     issue],
+    ["Urgency",   urgency],
+    ["Name",      name],
+    ["Phone",     phone],
+    ["Location",  location],
+    ["Notes",     extraNote || "—"],
+  ];
+
+  const rowsHtml = rows.map(([k,v]) =>
+    `<div class="oc-row"><span class="key">${k}</span><span class="val">${v}</span></div>`
+  ).join("");
+
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">💻</div>
+    <div class="bubble" style="max-width:93%">
+      <p>✅ <strong>Request captured!</strong> Here's your full repair summary — please review before we proceed to payment.</p>
+      <div class="order-card">
+        <div class="oc-title">// Repair Ticket · ${ticketId}</div>
+        ${rowsHtml}
+      </div>
+      <div class="badge-strip" style="margin-top:12px">
+        <span class="badge">✓ CERTIFIED TECHS</span>
+        <span class="badge">⚡ FAST TURNAROUND</span>
+        <span class="badge">🔒 DATA SAFE</span>
+        <span class="badge">🏠 HOME PICKUP</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+  updateProgress();
+
+  // Lead into payment
+  setTimeout(() => {
+    showTyping();
+    setTimeout(() => { removeTyping(); renderPayment(); }, 1100);
+  }, 1300);
+}
+
+// ── Payment ───────────────────────────────────────────────────────────────────
+function getAssessmentFee() {
+  const u = (state.urgency || "").toLowerCase();
+  if (u.includes("urgent") || u.includes("today")) return { label: "Urgent Service Fee", amount: "₦5,000" };
+  if (u.includes("2") || u.includes("3"))           return { label: "Standard Service Fee", amount: "₦3,000" };
+  return { label: "Flexible Service Fee", amount: "₦2,000" };
+}
+
+function renderPayment() {
+  const fee = getAssessmentFee();
+  const w = document.createElement("div");
+  w.className = "msg bot";
+  w.innerHTML = `
+    <div class="bot-icon">💻</div>
+    <div class="bubble" style="max-width:93%">
+      <p>💳 To confirm your booking, a <strong>diagnostic assessment fee</strong> is required. Select how you'd like to pay.</p>
+      <div class="pay-card" id="payCard">
+        <div class="pay-header">⚡ Payment Required</div>
+        <div class="pay-amount-box">
+          <div class="pay-amount-label">${fee.label}</div>
+          <div class="pay-amount-val">${fee.amount}</div>
+          <div class="pay-amount-sub">Covers diagnosis + technician dispatch</div>
+        </div>
+        <div class="pay-methods">
+          <div class="pay-method" onclick="pickPayMethod('Transfer',this)">
+            <span class="pm-icon">🏦</span>Bank Transfer
+          </div>
+          <div class="pay-method" onclick="pickPayMethod('Opay',this)">
+            <span class="pm-icon">📲</span>Opay
+          </div>
+          <div class="pay-method" onclick="pickPayMethod('PalmPay',this)">
+            <span class="pm-icon">💚</span>PalmPay
+          </div>
+          <div class="pay-method" onclick="pickPayMethod('Cash',this)">
+            <span class="pm-icon">💵</span>Pay on Arrival
+          </div>
+        </div>
+        <div class="pay-acct" id="payAcctInfo">
+          💡 Account Details:<br>
+          <strong>DigitalSolution</strong><br>
+          <strong>9012 345 678 · Opay / Transfer</strong>
+        </div>
+        <div class="pay-ref-wrap" id="payRefWrap">
+          <input class="inline-field" id="payRefInput" placeholder="Enter payment reference / receipt no."/>
+        </div>
+        <button class="pay-confirm-btn" onclick="confirmPayment()">✅ Confirm &amp; Submit Request</button>
+        <button class="pay-skip-btn" onclick="skipPayment()">⏭ Skip — I'll pay on arrival</button>
+        <div id="payErrMsg"></div>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+  window._payMethod = "";
+}
+
+function pickPayMethod(method, el) {
+  window._payMethod = method;
+  document.querySelectorAll(".pay-method").forEach(e => e.classList.remove("active"));
+  el.classList.add("active");
+  const isCash = method === "Cash";
+  document.getElementById("payAcctInfo").style.display = isCash ? "none" : "block";
+  document.getElementById("payRefWrap").style.display  = isCash ? "none" : "block";
+}
+
+function flashPayErr(msg) {
+  const el = document.getElementById("payErrMsg");
+  if (el) { el.className = "pay-err"; el.textContent = "⚠ " + msg; setTimeout(() => el.textContent = "", 3000); }
+}
+
+function confirmPayment() {
+  const method = window._payMethod;
+  if (!method) { flashPayErr("Please select a payment method."); return; }
+  const ref = document.getElementById("payRefInput")?.value.trim();
+  if (method !== "Cash" && !ref) { flashPayErr("Please enter your payment reference number."); return; }
+  state.payMethod = method;
+  state.payRef    = ref || "Pay on Arrival";
+  document.getElementById("payCard").style.display = "none";
+  addMsg("user", `💳 ${method}${ref ? " · Ref: " + ref : ""}`);
+  showTyping();
+  setTimeout(() => { removeTyping(); triggerWaRedirect(); }, 1000);
+}
+
+function skipPayment() {
+  state.payMethod = "Pay on Arrival";
+  state.payRef    = "—";
+  document.getElementById("payCard").style.display = "none";
+  addMsg("user", "💵 Pay on Arrival");
+  showTyping();
+  setTimeout(() => { removeTyping(); triggerWaRedirect(); }, 900);
+}
+
+// ── WhatsApp Redirect Overlay ─────────────────────────────────────────────────
+function triggerWaRedirect() {
+  const waUrl = getWaUrl();
+
+  // Remove old overlay if any
+  document.getElementById("waOverlay")?.remove();
+
+  const ov = document.createElement("div");
+  ov.className = "wa-overlay"; ov.id = "waOverlay";
+  ov.innerHTML = `
+    <div class="wa-popup">
+      <div class="wa-popup-check">✅</div>
+      <h3>REQUEST SUBMITTED!</h3>
+      <p>Your repair ticket <strong style="color:var(--cyan)">${state.ticketId || ""}</strong> is confirmed.<br>Redirecting you to WhatsApp so our technician gets your request instantly.</p>
+      <div class="wa-countdown" id="waCd">3</div>
+      <a class="wa-now-btn" id="waOpenBtn" href="${waUrl}" target="_blank" rel="noopener">
+        ${WA_SVG} Open WhatsApp Now
+      </a>
+      <button class="wa-dismiss-btn" onclick="dismissWaOverlay()">Dismiss and stay on page</button>
+    </div>`;
+  document.body.appendChild(ov);
+
+  let count = 3;
+  const cdEl = document.getElementById("waCd");
+  const timer = setInterval(() => {
+    count--;
+    if (cdEl) cdEl.textContent = count;
+    if (count <= 0) {
+      clearInterval(timer);
+      document.getElementById("waOpenBtn")?.click();
+      setTimeout(dismissWaOverlay, 600);
+    }
+  }, 1000);
+
+  // Show rating after a delay (whether they dismiss or not)
+  setTimeout(() => showRating(), 5500);
+  setChips(["🔄 New Request", "❓ Help"]);
+}
+
+function dismissWaOverlay() {
+  document.getElementById("waOverlay")?.remove();
+}
+
+// ── Star Rating ───────────────────────────────────────────────────────────────
+const STAR_LABELS = ["", "Terrible 😞", "Poor 😕", "Average 😐", "Good 😊", "Excellent! 🤩"];
+
+function showRating() {
+  // Don't show twice
+  if (document.getElementById("ratingWidget")) return;
+
+  const w = document.createElement("div");
+  w.className = "msg bot"; w.id = "ratingWidget";
+  w.innerHTML = `
+    <div class="bot-icon">💻</div>
+    <div class="bubble" style="max-width:93%">
+      <p>One last thing — how was your experience with <strong>DigitalSolution AI</strong> today?</p>
+      <div class="rating-wrap" id="ratingWrap">
+        <div class="rating-title">// Rate Your Experience</div>
+        <div class="star-row" id="starRow">
+          ${[1,2,3,4,5].map(n => `<button class="star-btn" data-v="${n}" onclick="clickStar(${n})">⭐</button>`).join("")}
+        </div>
+        <div class="rating-mood" id="ratingMood">Tap a star to rate</div>
+        <textarea class="rating-comment" id="ratingComment" rows="2" placeholder="Leave a comment (optional)…"></textarea>
+        <button class="submit-rating-btn" onclick="submitRating()">Submit Feedback</button>
+      </div>
+    </div>`;
+  messagesEl.appendChild(w);
+  scrollBottom();
+  window._chosenStar = 0;
+}
+
+function clickStar(val) {
+  window._chosenStar = val;
+  document.querySelectorAll(".star-btn").forEach((s, i) => {
+    s.classList.toggle("lit", i < val);
+  });
+  const mood = document.getElementById("ratingMood");
+  if (mood) { mood.textContent = STAR_LABELS[val] || ""; mood.style.color = val >= 4 ? "var(--electric)" : val === 3 ? "var(--warn)" : "var(--danger)"; }
+}
+
+function submitRating() {
+  const star = window._chosenStar;
+  if (!star) {
+    const mood = document.getElementById("ratingMood");
+    if (mood) { mood.textContent = "⚠ Please tap a star first."; mood.style.color = "var(--danger)"; }
+    return;
+  }
+  const comment = document.getElementById("ratingComment")?.value.trim();
+  const wrap = document.getElementById("ratingWrap");
+  if (wrap) {
+    wrap.innerHTML = `<div class="rating-done-msg">
+      ${"⭐".repeat(star)}<br><br>
+      Thank you, <strong>${state.name || "valued customer"}</strong>! 🙏<br>
+      Your <strong>${star}-star</strong> rating has been recorded.<br>
+      ${comment ? `<em style="font-size:0.74rem;color:var(--muted);display:block;margin-top:6px">"${comment}"</em>` : ""}
+    </div>`;
+  }
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    addMsg("bot", `We truly appreciate your ${star === 5 ? "amazing " : ""}feedback! 💙<br><br>Your ticket <strong>${state.ticketId || ""}</strong> is confirmed — a technician will contact you on <strong>WhatsApp</strong> very soon.<br><br>Type <em>New Request</em> anytime to book another repair.`);
+    setChips(["🔄 New Request"]);
+  }, 1000);
+}
+
+// ── Core processor ────────────────────────────────────────────────────────────
+function processInput(raw) {
+  if (!raw.trim()) return;
+  const v = raw.toLowerCase();
+  chipsEl.innerHTML = "";
+
+  if (v.includes("new request") || v.includes("start over") || v.includes("new order")) { resetChat(); return; }
+  if (v.includes("help")) {
+    addMsg("user", raw);
+    showTyping();
+    setTimeout(()=>{
+      removeTyping();
+      addMsg("bot",`Need assistance? 🔧<br><br>📞 <strong>+234 815 750 5037</strong><br>💬 WhatsApp: <strong>+234 815 750 5037</strong><br><br>We repair <strong>laptops, desktops, MacBooks, gaming PCs</strong> and more. Home pickup available.<br><br>Type <em>New Request</em> to restart.`);
+      setChips(["🔄 New Request"]);
+    }, 800);
+    return;
+  }
+
+  addMsg("user", raw);
+  const res = handleStep(raw);
+  if (res === false) {
+    showTyping();
+    setTimeout(()=>{
+      removeTyping();
+      addMsg("bot","I didn't catch that. Please pick an option or type your response. 🤖");
+      if (state.step === "welcome") setChips(["🔍 Diagnose my device","🔧 Book a repair","🚐 Request pickup","💻 Remote support"]);
+    }, 700);
+  }
+}
+
+function handleSend() {
+  const val = inputEl.value.trim();
+  if (!val) return;
+  inputEl.value = "";
+  processInput(val);
+}
+inputEl.addEventListener("keydown", e => { if (e.key==="Enter") handleSend(); });
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function resetChat() {
+  Object.assign(state,{step:"welcome",serviceType:"",deviceType:"",brand:"",issue:"",issueDetail:"",urgency:"",name:"",phone:"",location:"",extraNote:"",payMethod:"",payRef:"",ticketId:""});
+  dismissWaOverlay();
+  window._payMethod = ""; window._chosenStar = 0;
+  messagesEl.innerHTML=""; chipsEl.innerHTML="";
+  initChat();
+}
+
+function initChat() {
+  updateProgress();
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    addMsg("bot",
+      `System online. Welcome to <strong>DigitalSolution</strong> — your AI-powered computer repair agent. 💻<br><br>I'll run through a quick diagnostic intake to route you to the right technician.<br><br>What do you need help with today?`
+    );
+    setChips(["🔍 Diagnose my device","🔧 Book a repair","🚐 Request pickup","💻 Remote support"]);
+  }, 900);
+}
+
+initChat();
+</script>
+</body>
+</html>
