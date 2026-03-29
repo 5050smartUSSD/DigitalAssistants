@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⛽GasPro – Cooking Gas Refill & Delivery</title>
+<title>⛽CityGas – Cooking Gas Refill & Delivery</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -335,8 +335,8 @@
 <div class="header">
   <div class="logo">🔥</div>
   <div class="header-text">
-    <h1>GasPro</h1>
-    <p><span class="status-dot"></span>AI Agent · Pickup & Delivery</p>
+    <h1>RefillGas</h1>
+    <p><span class="status-dot"></span>24/7 · Pickup & Delivery</p>
   </div>
 </div>
 
@@ -373,8 +373,8 @@ const state = {
 // ─── Conversation flow ──────────────────────────────────────────────────────
 const flow = {
   welcome: {
-    bot: ["Hi there! 👋 Welcome to <strong>GasPro</strong> – your trusted cooking gas refill service.\n\nI can help you with a quick <strong>pickup</strong> or <strong>home delivery</strong> of your gas cylinder. 🔥\n\nWhat would you like to do today?"],
-    chips: ["🏪 Pickup from store", "🚚 Home Delivery"],
+    bot: ["Hi there! 👋 Welcome to <strong>CityGas</strong> – your trusted cooking gas refill AI Agent service.\n\nI can help you with a quick <strong>pickup</strong> or <strong>home delivery</strong> for your gas refilled cylinder. 🔥\n\nWhat would you like to do today?"],
+    chips: ["🏪 Request Refill", "🚚 Home Delivery"],
     handler(input) {
       const v = input.toLowerCase();
       if (v.includes("pickup") || v.includes("store")) {
