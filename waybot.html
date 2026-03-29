@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WayBot — Smart Wayfinder Assistant</title>
+<title>WayFindr — Smart Wayfinder Assistant</title>
 <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -368,7 +368,7 @@ body::after{content:'';position:fixed;inset:0;
     <div class="hdr-inner">
       <div class="hdr-av">🧭</div>
       <div>
-        <div class="hdr-title">WayBot</div>
+        <div class="hdr-title">WayFindr</div>
         <div class="hdr-sub"><div class="live-dot"></div>SMART WAYFINDER · ONLINE</div>
       </div>
       <div class="hdr-right">
@@ -391,7 +391,7 @@ body::after{content:'';position:fixed;inset:0;
   <!-- INPUT -->
   <div class="inp-area">
     <div class="inp-box">
-      <textarea class="txt-inp" id="inp" rows="1" placeholder="Ask WayBot anything…"></textarea>
+      <textarea class="txt-inp" id="inp" rows="1" placeholder="Ask WayFindr for directions…"></textarea>
     </div>
     <button class="snd" onclick="send()">➤</button>
   </div>
@@ -961,7 +961,7 @@ function directToPlace(id){
 }
 
 function askDirectionsWA(name,floor){
-  toWA(`🧭 *WAYFINDING REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n📍 *Destination:* ${name}\n🏢 *Floor:* ${floor}\n\nPlease send me step-by-step directions or live assistance. 🙏\n\n⏰ ${ts()}`);
+  toWA(`🧭 *WAYFINDING REQUEST — WayFindr*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n📍 *Destination:* ${name}\n🏢 *Floor:* ${floor}\n\nPlease send me step-by-step directions or live assistance. 🙏\n\n⏰ ${ts()}`);
 }
 
 // ══════════════════════════════════════
@@ -993,7 +993,7 @@ function submitDirections(){
   const to=document.getElementById('dirTo').value.trim()||'requested destination';
   const mode=document.getElementById('dirMode').value;
   closeOv('ovDir');
-  toWA(`🧭 *DIRECTIONS REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n🚶 *From:* ${from}\n📍 *To:* ${to}\n♿ *Mode:* ${mode}\n\nPlease provide live step-by-step directions.\n\n⏰ ${ts()}`);
+  toWA(`🧭 *DIRECTIONS REQUEST — WayFindr*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n🚶 *From:* ${from}\n📍 *To:* ${to}\n♿ *Mode:* ${mode}\n\nPlease provide live step-by-step directions.\n\n⏰ ${ts()}`);
   typing(()=>{ botMsg('📲 Redirected to WhatsApp! A staff member will send you live directions or meet you at your location.'); });
 }
 
@@ -1040,7 +1040,7 @@ function submitBooking(){
   const guests=document.getElementById('bkGuests').value;
   const notes=document.getElementById('bkNotes').value.trim();
   if(!name||!phone||!what){ alert('Please fill in name, phone and what to book.'); return; }
-  toWA(`📋 *BOOKING REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📦 *Booking:* ${what}\n📅 *Date:* ${date||'TBD'} at ${time}\n⏱ *Duration:* ${dur}\n👥 *Guests:* ${guests||1}\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()}`);
+  toWA(`📋 *BOOKING REQUEST — WayFindr*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📦 *Booking:* ${what}\n📅 *Date:* ${date||'TBD'} at ${time}\n⏱ *Duration:* ${dur}\n👥 *Guests:* ${guests||1}\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()}`);
   closeOv('ovBook');
   bookings.push({what,date,time});
   document.getElementById('bkBadge').textContent=bookings.length;
@@ -1053,7 +1053,7 @@ function submitSupport(){
   const loc=document.getElementById('spLoc').value.trim();
   const desc=document.getElementById('spDesc').value.trim();
   if(!name||!desc){ alert('Please fill in your name and describe your issue.'); return; }
-  toWA(`🎧 *SUPPORT REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n❓ *Issue:* ${type}\n📍 *Location:* ${loc||'Unknown'}\n📝 *Details:*\n${desc}\n\n⏰ ${ts()}`);
+  toWA(`🎧 *SUPPORT REQUEST — WayFindr*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n❓ *Issue:* ${type}\n📍 *Location:* ${loc||'Unknown'}\n📝 *Details:*\n${desc}\n\n⏰ ${ts()}`);
   closeOv('ovSupport');
   typing(()=>{ botMsg('🎧 <strong>Support request sent!</strong> A staff member will contact you via WhatsApp within 15 minutes.'); });
 }
@@ -1064,7 +1064,7 @@ function submitFeedback(){
   const stars=document.getElementById('fbStars').value;
   const text=document.getElementById('fbText').value.trim();
   if(!about||!text){ alert('Please fill in what the feedback is about and your thoughts.'); return; }
-  toWA(`⭐ *FEEDBACK — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📝 *About:* ${about}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n💬 *Feedback:*\n${text}\n\n⏰ ${ts()}`);
+  toWA(`⭐ *FEEDBACK — WayFindr*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📝 *About:* ${about}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n💬 *Feedback:*\n${text}\n\n⏰ ${ts()}`);
   closeOv('ovFeedback');
   typing(()=>{ botMsg('⭐ <strong>Thank you for your feedback!</strong> It has been shared with the venue management to improve your experience. 💚'); });
 }
@@ -1076,7 +1076,7 @@ function submitLostFound(){
   const item=document.getElementById('lfItem').value.trim();
   const loc=document.getElementById('lfLoc').value.trim();
   if(!name||!item){ alert('Please fill in your name and describe the item.'); return; }
-  toWA(`🔍 *LOST & FOUND — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📋 *Type:* ${type}\n🧳 *Item:* ${item}\n📍 *Location:* ${loc||'Unknown'}\n\n⏰ ${ts()}`);
+  toWA(`🔍 *LOST & FOUND — WayFindr*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📋 *Type:* ${type}\n🧳 *Item:* ${item}\n📍 *Location:* ${loc||'Unknown'}\n\n⏰ ${ts()}`);
   closeOv('ovLost');
   typing(()=>{ botMsg('🔍 <strong>Lost & Found report submitted!</strong> Our security team will respond via WhatsApp. Please keep your phone accessible.'); });
 }
@@ -1086,7 +1086,7 @@ function submitEmergency(){
   const type=document.getElementById('emType').value;
   const loc=document.getElementById('emLoc').value.trim();
   if(!loc){ alert('Please provide your exact location.'); return; }
-  toWA(`🚨 *EMERGENCY ALERT — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name||'Anonymous'}\n🆘 *Emergency:* ${type}\n📍 *Location:* ${loc}\n\n⚠️ IMMEDIATE RESPONSE REQUIRED\n\n⏰ ${ts()}`);
+  toWA(`🚨 *EMERGENCY ALERT — WayFindr*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name||'Anonymous'}\n🆘 *Emergency:* ${type}\n📍 *Location:* ${loc}\n\n⚠️ IMMEDIATE RESPONSE REQUIRED\n\n⏰ ${ts()}`);
   closeOv('ovEmerg');
   typing(()=>{ botMsg('🚨 <strong>Security alerted!</strong> You have been connected to our emergency response team on WhatsApp. Stay calm and remain at your location if safe to do so.',
     `<div class="chips"><div class="chip" style="border-color:var(--rose);color:var(--rose);" onclick="openOv('ovEmerg')">🚨 Re-alert Security</div></div>`); });
@@ -1098,7 +1098,7 @@ function submitParking(){
   const type=document.getElementById('pkType').value;
   const vehicle=document.getElementById('pkVehicle').value.trim();
   if(!name||!plate){ alert('Please fill in your name and plate number.'); return; }
-  toWA(`🅿️ *PARKING REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n🚗 *Plate:* ${plate}\n🚙 *Vehicle:* ${vehicle||'Not specified'}\n📋 *Request:* ${type}\n\n⏰ ${ts()}`);
+  toWA(`🅿️ *PARKING REQUEST — WayFindr*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n🚗 *Plate:* ${plate}\n🚙 *Vehicle:* ${vehicle||'Not specified'}\n📋 *Request:* ${type}\n\n⏰ ${ts()}`);
   closeOv('ovParking');
   typing(()=>{ botMsg('🅿️ <strong>Parking request sent!</strong> Our parking team will assist you via WhatsApp shortly.'); });
 }
@@ -1110,7 +1110,7 @@ function submitAccessibility(){
   const loc=document.getElementById('acLoc').value.trim();
   const dest=document.getElementById('acDest').value.trim();
   if(!name||!phone){ alert('Please fill in your name and phone number.'); return; }
-  toWA(`♿ *ACCESSIBILITY REQUEST — WayBot*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n🦽 *Assistance:* ${type}\n📍 *Current Location:* ${loc||'Main Entrance'}\n🎯 *Destination:* ${dest||'N/A'}\n\n⏰ ${ts()}`);
+  toWA(`♿ *ACCESSIBILITY REQUEST — WayFindr*\n\n🏛️ *Venue:* ${venue?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n🦽 *Assistance:* ${type}\n📍 *Current Location:* ${loc||'Main Entrance'}\n🎯 *Destination:* ${dest||'N/A'}\n\n⏰ ${ts()}`);
   closeOv('ovAccess');
   typing(()=>{ botMsg('♿ <strong>Assistance request sent!</strong> A staff member trained in accessibility support will meet you at your location within 5 minutes.'); });
 }
@@ -1147,7 +1147,7 @@ function liveSearch(q){
     </div>`).join('')}</div>`;
 }
 
-function searchWA(q){ toWA(`🔍 *VENUE SEARCH — WayBot*\n\n🏛️ Venue: ${venue?.name||'N/A'}\nLooking for: *${q}*\n\nPlease help me find this location. ⏰ ${ts()}`); }
+function searchWA(q){ toWA(`🔍 *VENUE SEARCH — WayFindr*\n\n🏛️ Venue: ${venue?.name||'N/A'}\nLooking for: *${q}*\n\nPlease help me find this location. ⏰ ${ts()}`); }
 
 // ══════════════════════════════════════
 // STAR RATING
@@ -1178,7 +1178,7 @@ function send(){
   inp.value=''; inp.style.height='auto';
   userMsg(t); const l=t.toLowerCase();
   if(!venue){ typing(()=>{ botMsg('Please select a venue first to begin wayfinding 🧭',venueGrid()); }); return; }
-  if(/^(hi|hello|hey|good|morn|afternoon|evening)/i.test(l)){ typing(()=>{ botMsg(`Hello! 👋 I'm WayBot, your guide at <strong>${venue.name}</strong>. How can I help you navigate today?`,mainMenu()); }); }
+  if(/^(hi|hello|hey|good|morn|afternoon|evening)/i.test(l)){ typing(()=>{ botMsg(`Hello! 👋 I'm WayFindr, your guide at <strong>${venue.name}</strong>. How can I help you navigate today?`,mainMenu()); }); }
   else if(/map|floor plan|layout/i.test(l)){ go('map'); }
   else if(/direction|navigate|how.*get|find.*way|where.*is/i.test(l)){ openOv('ovDir'); }
   else if(/park|car|vehicle|valet/i.test(l)){ openOv('ovParking'); }
@@ -1226,7 +1226,7 @@ window.onload=()=>{
   const h=new Date().getHours();
   const gr=h<12?'Good morning':'Good afternoon';
   setTimeout(()=>{
-    botMsg(`${gr}! 👋 I'm <strong>WayBot</strong> — your intelligent venue navigation assistant.<br><br>
+    botMsg(`${gr}! 👋 I'm <strong>WayFindr</strong> — your intelligent venue navigation assistant.<br><br>
 I can help you <strong>find places, get turn-by-turn directions, book facilities, report emergencies, request accessibility support</strong> and much more — all connected via WhatsApp. 🧭`);
   },400);
   setTimeout(()=>{
