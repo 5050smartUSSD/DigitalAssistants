@@ -1157,7 +1157,7 @@ function submitBook(){
   const ref='ZB-'+Date.now().toString().slice(-7);
   bookings.push({id:ref,em:'🛺',type,route:`${pickup} → ${dest}`,price:'TBD'});
   updateBadge(); activeRide={type,pickup,dest};
-  toWA(`🛺 *RIDE REQUEST — ZoomBot*\n\n📋 *Ref:* ${ref}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n🚗 *Type:* ${type}\n📍 *From:* ${pickup}\n🏁 *To:* ${dest}\n⏰ *When:* ${when}\n👥 *Passengers:* ${pax}\n💳 *Payment:* ${pay}\n${note?`📝 *Notes:* ${note}\n`:''}\n🕐 Booked at ${ts()}`);
+  toWA(`🛺 *RIDE REQUEST — goRIDES*\n\n📋 *Ref:* ${ref}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n🚗 *Type:* ${type}\n📍 *From:* ${pickup}\n🏁 *To:* ${dest}\n⏰ *When:* ${when}\n👥 *Passengers:* ${pax}\n💳 *Payment:* ${pay}\n${note?`📝 *Notes:* ${note}\n`:''}\n🕐 Booked at ${ts()}`);
   closeOv('ovBook');
   document.getElementById('liveStrip').classList.add('show');
   document.getElementById('liveText').textContent=`🛺 ${type.split(' ')[0]} ${type.split(' ')[1]||''} · ${pickup} → ${dest}`;
@@ -1183,7 +1183,7 @@ function submitSchedule(){
   const repeat=document.getElementById('scRepeat').value;
   const note=document.getElementById('scNote').value.trim();
   if(!name||!phone||!pickup){alert('Please fill in name, phone and pickup location.');return;}
-  toWA(`📅 *SCHEDULED RIDE — ZoomBot*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n🚗 *Type:* ${type}\n📍 *From:* ${pickup}\n🏁 *To:* ${dest||'TBD'}\n📅 *Date:* ${date||'TBD'} at ${time}\n🔄 *Repeat:* ${repeat}\n${note?`📝 *Notes:* ${note}\n`:''}\n🕐 ${ts()}`);
+  toWA(`📅 *SCHEDULED RIDE — goRIDEs*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n🚗 *Type:* ${type}\n📍 *From:* ${pickup}\n🏁 *To:* ${dest||'TBD'}\n📅 *Date:* ${date||'TBD'} at ${time}\n🔄 *Repeat:* ${repeat}\n${note?`📝 *Notes:* ${note}\n`:''}\n🕐 ${ts()}`);
   closeOv('ovSchedule');
   typing(()=>{botMsg(`📅 <strong>Ride scheduled!</strong> Your <strong>${type}</strong> has been set for ${date||'your chosen date'} at ${time}. We'll send a reminder and dispatch a rider at the scheduled time.`);});
 }
@@ -1199,7 +1199,7 @@ function submitCharter(){
   const route=document.getElementById('chRoute').value.trim();
   const pax=document.getElementById('chPax').value;
   if(!name||!phone||!pickup){alert('Please fill in name, phone and pickup location. Provide adequate details.');return;}
-  toWA(`🚌 *CHARTER REQUEST — ZoomBot*\n\n👤 *Name/Org:* ${name}\n📞 *Phone:* ${phone}\n🚌 *Vehicle:* ${veh}\n🎯 *Purpose:* ${purpose}\n📅 *Date:* ${date||'TBD'} · ${dur}\n📍 *Pickup:* ${pickup}\n🗺️ *Route:* ${route||'TBD'}\n👥 *Passengers:* ${pax||'TBD'}\n\n🕐 ${ts()}`);
+  toWA(`🚌 *CHARTER REQUEST — goRIDEs*\n\n👤 *Name/Org:* ${name}\n📞 *Phone:* ${phone}\n🚌 *Vehicle:* ${veh}\n🎯 *Purpose:* ${purpose}\n📅 *Date:* ${date||'TBD'} · ${dur}\n📍 *Pickup:* ${pickup}\n🗺️ *Route:* ${route||'TBD'}\n👥 *Passengers:* ${pax||'TBD'}\n\n🕐 ${ts()}`);
   closeOv('ovCharter');
   typing(()=>{botMsg(`🚌 <strong>Charter request sent!</strong> Our team will confirm vehicle availability, route and pricing via WhatsApp within 30 minutes.`);});
 }
@@ -1215,7 +1215,7 @@ function submitDelivery(){
   const speed=document.getElementById('dlSpeed').value;
   const who=document.getElementById('dlWho').value;
   if(!sender||!phone||!pickup||!drop){alert('Please fill in sender, phone, pickup and drop-off.');return;}
-  toWA(`📦 *DISPATCH / DELIVERY — ZoomBot*\n\n📤 *Sender:* ${sender}\n📞 *Phone:* ${phone}\n📥 *Recipient:* ${recipient||'N/A'}\n📞 *Rec. Phone:* ${recPhone||'N/A'}\n📍 *Pickup:* ${pickup}\n🏁 *Drop:* ${drop}\n📦 *Item:* ${item||'Not specified'}\n⚡ *Speed:* ${speed}\n💳 *Billed to:* ${who}\n\n🕐 ${ts()}`);
+  toWA(`📦 *DISPATCH / DELIVERY — goRIDEs*\n\n📤 *Sender:* ${sender}\n📞 *Phone:* ${phone}\n📥 *Recipient:* ${recipient||'N/A'}\n📞 *Rec. Phone:* ${recPhone||'N/A'}\n📍 *Pickup:* ${pickup}\n🏁 *Drop:* ${drop}\n📦 *Item:* ${item||'Not specified'}\n⚡ *Speed:* ${speed}\n💳 *Billed to:* ${who}\n\n🕐 ${ts()}`);
   closeOv('ovDelivery');
   typing(()=>{botMsg(`📦 <strong>Dispatch booked!</strong> A rider has been notified. Expect <strong>${speed}</strong> delivery with live updates via WhatsApp.`);});
 }
@@ -1228,7 +1228,7 @@ function submitPay(){
   const route=document.getElementById('pyRoute').value.trim();
   const method=document.getElementById('pyMethod').value;
   if(!name||!phone){alert('Please fill in name and phone.');return;}
-  toWA(`💳 *RIDE PAYMENT — ZoomBot*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📋 *Ref:* ${ref||'N/A'}\n🗺️ *Route:* ${route||'N/A'}\n💰 *Amount:* ₦${amount?Number(amount).toLocaleString():'TBD'}\n💳 *Method:* ${method}\n\n🕐 ${ts()}`);
+  toWA(`💳 *RIDE PAYMENT — goRIDEs*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📋 *Ref:* ${ref||'N/A'}\n🗺️ *Route:* ${route||'N/A'}\n💰 *Amount:* ₦${amount?Number(amount).toLocaleString():'TBD'}\n💳 *Method:* ${method}\n\n🕐 ${ts()}`);
   closeOv('ovPay');
   typing(()=>{botMsg(`💳 <strong>Payment confirmed!</strong> ₦${amount?Number(amount).toLocaleString():'TBD'} via <strong>${method}</strong> has been sent to our team. Receipt will follow via WhatsApp.`);});
 }
@@ -1236,7 +1236,7 @@ function submitPay(){
 function submitTrack(){
   const ref=document.getElementById('tkRef').value.trim();
   if(!ref){alert('Please enter your booking reference or phone number.');return;}
-  toWA(`📍 *TRACK RIDE — ZoomBot*\n\n📋 *Ref / Phone:* ${ref}\n\nPlease share my rider's live location. 🕐 ${ts()}`);
+  toWA(`📍 *TRACK RIDE — goRIDEs*\n\n📋 *Ref / Phone:* ${ref}\n\nPlease share my rider's live location. 🕐 ${ts()}`);
   closeOv('ovTrack');
   typing(()=>{botMsg('📍 Connected! Your rider will share their <strong>live WhatsApp location</strong> now. Keep the chat open and monitor the map.');});
 }
@@ -1246,7 +1246,7 @@ function submitVerify(){
   const query=document.getElementById('vfQuery').value.trim();
   const phone=document.getElementById('vfPhone').value.trim();
   if(!query||!phone){alert('Please fill in rider details and your phone.');return;}
-  toWA(`✅ *RIDER VERIFICATION — ZoomBot*\n\n🔍 *Type:* ${type}\n📋 *Query:* ${query}\n📞 *My Phone:* ${phone}\n\n🕐 ${ts()}`);
+  toWA(`✅ *RIDER VERIFICATION — goRIDEs*\n\n🔍 *Type:* ${type}\n📋 *Query:* ${query}\n📞 *My Phone:* ${phone}\n\n🕐 ${ts()}`);
   closeOv('ovVerify');
   typing(()=>{
     botMsg(`✅ <strong>Verification sent!</strong> Our system is checking <strong>${query}</strong> against our registered rider database.`,
@@ -1270,7 +1270,7 @@ function submitReport(){
   const time=document.getElementById('rpTime').value;
   const desc=document.getElementById('rpDesc').value.trim();
   if(!name||!phone||!desc){alert('Please fill in name, phone and description.');return;}
-  toWA(`🚨 *INCIDENT REPORT — ZoomBot*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n❗ *Issue:* ${type}\n🏍️ *Rider:* ${rider||'Unknown'}\n📅 *When:* ${date||'Today'} ${time||''}\n📝 *Details:*\n${desc}\n\n🕐 ${ts()}`);
+  toWA(`🚨 *INCIDENT REPORT — goRIDEs*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n❗ *Issue:* ${type}\n🏍️ *Rider:* ${rider||'Unknown'}\n📅 *When:* ${date||'Today'} ${time||''}\n📝 *Details:*\n${desc}\n\n🕐 ${ts()}`);
   closeOv('ovReport');
   typing(()=>{botMsg(`🚨 <strong>Report submitted!</strong> Our safety team will investigate and respond within <strong>2 hours</strong>. If this is an emergency, call <strong>112</strong> immediately.`);});
 }
@@ -1282,9 +1282,9 @@ function submitRate(){
   const stars=document.getElementById('rtStars').value;
   const text=document.getElementById('rtText').value.trim();
   if(!rider||!text){alert('Please fill in rider name/plate and your review.');return;}
-  toWA(`⭐ *RIDE RATING — ZoomBot*\n\n👤 *Passenger:* ${name}\n🏍️ *Rider:* ${rider}\n🚗 *Type:* ${type}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n💬 *Review:*\n${text}\n\n🕐 ${ts()}`);
+  toWA(`⭐ *RIDE RATING — goRIDEs*\n\n👤 *Passenger:* ${name}\n🏍️ *Rider:* ${rider}\n🚗 *Type:* ${type}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n💬 *Review:*\n${text}\n\n🕐 ${ts()}`);
   closeOv('ovRate');
-  typing(()=>{botMsg(`⭐ <strong>Rating submitted!</strong> Thank you — your feedback makes ZoomBot safer and better for everyone. 🙏`);});
+  typing(()=>{botMsg(`⭐ <strong>Rating submitted!</strong> Thank you — your feedback makes goRIDEs safer and better for everyone. 🙏`);});
 }
 
 // ══════════════════════
@@ -1329,7 +1329,7 @@ function send(){
   const t=inp.value.trim();if(!t)return;
   inp.value='';inp.style.height='auto';
   userMsg(t);const l=t.toLowerCase();
-  if(/^(hi|hello|hey|good|morn|afternoon|evening)/i.test(l)){typing(()=>{botMsg(`Hello! 👋 Welcome to <strong>ZoomBot</strong> — where are you headed?`,mainMenu());});}
+  if(/^(hi|hello|hey|good|morn|afternoon|evening)/i.test(l)){typing(()=>{botMsg(`Hello! 👋 Welcome to <strong>goRIDEs</strong> — where are you headed?`,mainMenu());});}
   else if(/keke|tricycle|napep/i.test(l)){userMsg('');bookRide('keke');}
   else if(/okada|bike|motorcycle/i.test(l)){userMsg('');bookRide('okada');}
   else if(/taxi|cab/i.test(l)){userMsg('');bookRide('taxi');}
@@ -1359,7 +1359,7 @@ window.onload=()=>{
   const gr=h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙';
   const peak=(h>=7&&h<=9)||(h>=17&&h<=20);
   setTimeout(()=>{
-    botMsg(`${gr}! I'm <strong>ZoomBot</strong> — your instant ride-hailing assistant for <strong>Keke, Okada, Taxi, Charter</strong> and Dispatch rides across the city.<br><br>Book, pay, track and verify rides — all confirmed via WhatsApp in real time. 🛺🏍️${peak?`<br><br><span style="color:var(--lime);font-weight:800;">⚡ Peak hours active — book fast before riders fill up!</span>`:''}`);
+    botMsg(`${gr}! I'm <strong>goRIDEs</strong> — your instant ride-hailing assistant for <strong>Keke, Okada, Taxi, Charter</strong> and Dispatch rides across the city.<br><br>Book, pay, track and verify rides — all confirmed via WhatsApp in real time. 🛺🏍️${peak?`<br><br><span style="color:var(--lime);font-weight:800;">⚡ Peak hours active — book fast before riders fill up!</span>`:''}`);
   },400);
   setTimeout(()=>{typing(()=>{botMsg('Where are you headed today? 👇',mainMenu());},1300);},1400);
 };
