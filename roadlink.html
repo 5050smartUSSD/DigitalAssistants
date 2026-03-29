@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RoadLink – Interstate Bus Booking</title>
+<title>🚌goMETRO – Interstate Bus Booking</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;0,900;1,700&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -435,7 +435,7 @@
     <div class="topbar-left">
       <div class="agent-av">🎫</div>
       <div class="agent-info">
-        <strong>RoadLink Agent</strong>
+        <strong>goMETRO Agent</strong>
         <span>Tickets · Seats · Schedules</span>
       </div>
     </div>
@@ -460,7 +460,7 @@
   </div>
 </div>
 
-<div class="footer">[ <span>RoadLink</span> ] · Bookings confirmed via WhatsApp · Nigeria-wide coverage</div>
+<div class="footer">[ <span>goMETRO</span> ] · Bookings confirmed via WhatsApp · Nigeria-wide coverage</div>
 
 <script>
 const WHATSAPP = "2348157505037";
@@ -569,7 +569,7 @@ function askOrigin() {
   showTyping();
   setTimeout(()=>{
     removeTyping();
-    addMsg("bot","Welcome to <strong>RoadLink</strong>! 🚌 Nigeria's smartest interstate bus booking agent.<br><br>Where are you <strong>travelling from</strong>? Pick a popular route or type your city:");
+    addMsg("bot","Welcome to <strong>goMETRO</strong>! 🚌 Africa's smartest interstate bus booking agent.<br><br>Where are you <strong>travelling from</strong>? Pick a popular route or type your city:");
     renderPopularRoutes();
     setChips(NIGERIAN_CITIES.slice(0,6));
   }, 900);
@@ -776,7 +776,7 @@ function showTicket(note) {
   const { from, to, date, departure, selectedSeat, route, name, phone, gender, pickupPoint } = state;
 
   const waText = [
-    `🚌 *BUS TICKET BOOKING – RoadLink*`,
+    `🚌 *BUS TICKET BOOKING – goMETRO*`,
     ``,
     `🎫 *Ref: ${ref}*`,
     `📍 *Route:* ${from} → ${to}`,
@@ -793,7 +793,7 @@ function showTicket(note) {
     ``,
     `💰 *Total Fare: ₦${route.price.toLocaleString()}*`,
     ``,
-    `Booked via RoadLink · Please pay at the terminal or to our agent.`
+    `Booked via goMETRO · Please pay at the terminal or to our agent.`
   ].filter(Boolean).join("\n");
 
   const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waText)}`;
@@ -807,7 +807,7 @@ function showTicket(note) {
       <div class="ticket">
         <div class="ticket-header">
           <div>
-            <div class="ticket-title">🚌 RoadLink Ticket</div>
+            <div class="ticket-title">🚌 goMETRO Ticket</div>
             <div style="font-size:0.65rem;color:var(--muted);margin-top:2px">Interstate Bus Service</div>
           </div>
           <div class="ticket-ref">${ref}</div>
@@ -964,7 +964,7 @@ function initChat() {
     const h = new Date().getHours();
     const g = h<12?"Good morning":h<17?"Good afternoon":"Good evening";
     addMsg("bot",
-      `${g}! 🚌 Welcome to <strong>RoadLink</strong> — Nigeria's fastest interstate bus booking system.<br><br>Book tickets across <strong>12+ routes</strong> nationwide in under 2 minutes. Where are you travelling today?`
+      `${g}! 🚌 Welcome to <strong>goMETRO</strong> — Nigeria's fastest interstate bus booking system.<br><br>Book tickets across <strong>12+ routes</strong> nationwide in under 2 minutes. Where are you travelling today?`
     );
     renderPopularRoutes();
     setChips(NIGERIAN_CITIES.slice(0,6));
