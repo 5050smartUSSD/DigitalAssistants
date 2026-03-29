@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TechFix – Laptop & Computer Repair AI</title>
+<title>DigitalSolution –Repair Laptop & Phones</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -560,9 +560,9 @@
 <div class="header">
   <div class="logo">💻</div>
   <div class="header-text">
-    <h1>Tech<span>Fix</span></h1>
-    <p>// laptop & computer repair AI</p>
-    <div class="status-pill"><span class="status-dot"></span> DIAG_SYSTEM ONLINE</div>
+    <h1>Digital<span>Solution</span></h1>
+    <p>//laptop & phone repair AI</p>
+    <div class="status-pill"><span class="status-dot"></span> GODWIN is ONLINE</div>
   </div>
 </div>
 
@@ -571,8 +571,8 @@
     <div class="topbar-left">
       <div class="agent-avatar">🔧</div>
       <div class="agent-info">
-        <strong>DIAG-BOT v2.1</strong>
-        <span>Certified repair technician</span>
+        <strong>DigitalSolution AI</strong>
+        <span>Expert & Certified repair technician</span>
       </div>
     </div>
     <div class="diag-bar">
@@ -592,7 +592,7 @@
   </div>
 </div>
 
-<div class="footer">[ <span>TechFix AI</span> ] · Repair requests routed via WhatsApp</div>
+<div class="footer">[ <span>DigitalSolution AI</span> ] · Repair requests routed via WhatsApp</div>
 
 <script>
 const WHATSAPP = "2348157505037";
@@ -689,7 +689,7 @@ function renderIssueGrid() {
   ).join("");
   w.innerHTML = `<div class="bot-icon">💻</div>
     <div class="bubble" style="max-width:94%">
-      <div style="margin-bottom:6px">Select the issue closest to what you're experiencing:</div>
+      <div style="margin-bottom:6px">Which of these best decribes to current condition of your device?</div>
       <div class="issue-grid">${grid}</div>
     </div>`;
   messagesEl.appendChild(w);
@@ -719,7 +719,7 @@ function selectIssue(label, tip) {
     updateProgress();
     setTimeout(()=>{
       botReply(
-        `How urgent is this repair for you?`,
+        `How soon would you like us to fix the issue?`,
         ["🔴 Urgent — fix today", "🟡 Within 2–3 days", "🟢 Flexible — no rush"],
         800
       );
@@ -751,7 +751,7 @@ const DEVICES = [
   { icon:"🍎", label:"MacBook / iMac" },
   { icon:"🖥️", label:"Desktop PC" },
   { icon:"🎮", label:"Gaming PC / Setup" },
-  { icon:"📱", label:"Tablet / iPad" },
+  { icon:"📱", label:"Tablet / Phones" },
   { icon:"🖥", label:"All-in-One PC" },
 ];
 
@@ -766,7 +766,7 @@ function renderDeviceGrid() {
   ).join("");
   w.innerHTML = `<div class="bot-icon">💻</div>
     <div class="bubble" style="max-width:94%">
-      <div style="margin-bottom:8px">What type of device needs attention?</div>
+      <div style="margin-bottom:8px">Select faulty device type.</div>
       <div class="issue-grid">${grid}</div>
     </div>`;
   messagesEl.appendChild(w);
@@ -780,7 +780,7 @@ function selectDevice(label) {
   showTyping();
   setTimeout(()=>{
     removeTyping();
-    addMsg("bot", `Got it — a <strong>${label}</strong>. What's the brand / model? (e.g. HP Pavilion, Dell XPS 15, Lenovo ThinkPad, Apple M2)`);
+    addMsg("bot", `Got it — a <strong>${label}</strong>. What's the brand / model? (e.g. HP Pavilion, Dell XPS 15, iphone X, infinix Hot10, Samsung Fold, Lenovo ThinkPad, Apple M2)`);
     setChips(["HP", "Dell", "Lenovo", "Asus", "Apple", "Acer", "Toshiba", "Other"]);
     updateProgress();
   }, 850);
@@ -795,7 +795,7 @@ function handleStep(input) {
       if (v.includes("diagnos") || v.includes("check") || v.includes("scan") || v.includes("not sure")) {
         state.serviceType = "Diagnosis & Assessment";
         state.step = "device_type";
-        botReply(`Running diagnostic intake… 🔍<br><br>First, let me know what device we're dealing with.`,[], 800);
+        botReply(`Running diagnostic intake… 🔍<br><br>First, what device would you like me to check?`,[], 800);
         setTimeout(()=> renderDeviceGrid(), 1000);
         return;
       }
@@ -868,7 +868,7 @@ function renderContactForm() {
   w.innerHTML = `
     <div class="bot-icon">💻</div>
     <div class="bubble" style="max-width:93%">
-      <p>Enter your details and we'll connect you with a certified technician on WhatsApp. 🔧</p>
+      <p>Kindly complete the service request form and our certified technician will contact you on WhatsApp. 🔧</p>
       <div class="inline-input" id="contactForm">
         <input class="inline-field" id="f_name"  placeholder="Your full name" type="text"/>
         <input class="inline-field" id="f_phone" placeholder="Phone number (e.g. 08012345678)" type="tel"/>
@@ -926,7 +926,7 @@ function showSummary() {
     `*Location:* ${location}`,
     `*Extra Notes:* ${extraNote}`,
     ``,
-    `Sent via TechFix AI Diagnostic Bot 💻`
+    `Sent via DigitalSolution Diagnostic AI 💻`
   ].join("\n");
 
   const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waText)}`;
@@ -1025,7 +1025,7 @@ function initChat() {
   setTimeout(()=>{
     removeTyping();
     addMsg("bot",
-      `System online. Welcome to <strong>TechFix</strong> — your AI-powered computer repair agent. 💻<br><br>I'll run through a quick diagnostic intake to route you to the right technician.<br><br>What do you need help with today?`
+      `System online. Welcome to <strong>DigitalSolution</strong> — your AI-powered computer repair agent. 💻<br><br>I'll run through a quick diagnostic intake to route you to the right technician.<br><br>What do you need help with today?`
     );
     setChips(["🔍 Diagnose my device","🔧 Book a repair","🚐 Request pickup","💻 Remote support"]);
   }, 900);
