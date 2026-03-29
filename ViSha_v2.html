@@ -861,7 +861,7 @@ function doAddStore(){
     });
   } else {
     typing(()=>{
-      botMsg(`🏪 <strong>Add My Store</strong><br><br>Turn your physical business into a <strong>digital online store</strong> — reach more customers, manage products, and accept orders via ShopBot!`,
+      botMsg(`🏪 <strong>Add My Store</strong><br><br>Turn your physical business into a <strong>digital online store</strong> — reach more customers, manage products, and accept orders via goSHOPs!`,
         `<div class="store-hero">
           <div class="sh-title">Your Store, Online Today</div>
           <div class="sh-sub">Register your physical business & get a free digital storefront instantly.</div>
@@ -1031,7 +1031,7 @@ function renderStoreStep(step){
       </div>
       <div class="info-card" style="margin-top:8px;background:rgba(0,201,167,0.04);border-color:rgba(0,201,167,0.2);">
         <div class="ic-row"><div class="ic-icon">🆓</div><div class="ic-text"><div class="ic-label">Free tier</div>Upload up to <strong>10 products</strong> for free. Buy an Upload PIN (₦5,000) for unlimited CSV bulk uploads.</div></div>
-        <div class="ic-row"><div class="ic-icon">🔗</div><div class="ic-text"><div class="ic-label">Digital Store</div>Your store will appear in ShopBot's mall listing immediately.</div></div>
+        <div class="ic-row"><div class="ic-icon">🔗</div><div class="ic-text"><div class="ic-label">Digital Store</div>Your store will appear in goSHOPs's mall listing immediately.</div></div>
       </div>`;
     footer.innerHTML = `
       <button class="store-btn" onclick="finalizeStoreReg()">🚀 Launch My Store</button>
@@ -1091,11 +1091,11 @@ function finalizeStoreReg(){
   closeOverlay('overlayAddStore');
 
   // notify WA
-  const msg = `🏪 *NEW STORE REGISTRATION — ShopBot*\n\n🆔 *Store ID:* ${storeId}\n🏪 *Store:* ${myStore.name}\n📦 *Category:* ${myStore.cat}\n👤 *Owner:* ${myStore.ownerName}\n📞 *Phone:* ${myStore.phone}\n📍 *Address:* ${myStore.address}, ${myStore.city}\n🚚 *Delivery:* ${myStore.delivery}\n\n⏰ Registered: ${ts()} via ShopBot`;
+  const msg = `🏪 *NEW STORE REGISTRATION — goSHOPs*\n\n🆔 *Store ID:* ${storeId}\n🏪 *Store:* ${myStore.name}\n📦 *Category:* ${myStore.cat}\n👤 *Owner:* ${myStore.ownerName}\n📞 *Phone:* ${myStore.phone}\n📍 *Address:* ${myStore.address}, ${myStore.city}\n🚚 *Delivery:* ${myStore.delivery}\n\n⏰ Registered: ${ts()} via goSHOPs`;
   wa(msg);
 
   typing(()=>{
-    botMsg(`🎉 <strong>Congratulations, ${myStore.ownerName}!</strong><br><br>Your store <strong>${myStore.name}</strong> is now <strong>live on ShopBot</strong>! 🏪✨<br><br>Start adding products — first <strong>10 are FREE</strong>. You'll be redirected to WhatsApp to confirm your registration.`,
+    botMsg(`🎉 <strong>Congratulations, ${myStore.ownerName}!</strong><br><br>Your store <strong>${myStore.name}</strong> is now <strong>live on goSHOPs</strong>! 🏪✨<br><br>Start adding products — first <strong>10 are FREE</strong>. You'll be redirected to WhatsApp to confirm your registration.`,
       `<div class="chips">
         <div class="chip store-chip" onclick="openStoreDashboard()">⚙️ Manage My Store</div>
         <div class="chip" onclick="openOverlay('overlayAddProduct');checkQuotaWarning()">➕ Add First Product</div>
@@ -1174,7 +1174,7 @@ function deleteStoreProduct(idx){
 
 function shareStore(){
   if(!myStore) return;
-  wa(`🏪 *${myStore.name}*\n\n📍 ${myStore.address}, ${myStore.city}\n📦 Category: ${myStore.cat}\n🆔 Store ID: ${myStore.storeId}\n\nShop with us on ShopBot! Send this message to browse our catalogue. 💚`);
+  wa(`🏪 *${myStore.name}*\n\n📍 ${myStore.address}, ${myStore.city}\n📦 Category: ${myStore.cat}\n🆔 Store ID: ${myStore.storeId}\n\nShop with us goSHOPs! Send this message to browse our catalogue. 💚`);
 }
 
 // ════════════════════════════════
@@ -1423,7 +1423,7 @@ function confirmCSVImport(){
 // ════════════════════════════════
 function buyPinViaWA(){
   if(!myStore){ alert('Register your store first.'); return; }
-  wa(`🔑 *UPLOAD PIN PURCHASE — ShopBot*\n\n🏪 *Store:* ${myStore.name}\n🆔 *Store ID:* ${myStore.storeId}\n👤 *Owner:* ${myStore.ownerName}\n📞 *Phone:* ${myStore.phone}\n\n💰 *Amount:* ₦5,000 (one-time)\n\nPlease confirm payment and send my Upload PIN. Thank you! 🙏`);
+  wa(`🔑 *UPLOAD PIN PURCHASE — goSHOPs*\n\n🏪 *Store:* ${myStore.name}\n🆔 *Store ID:* ${myStore.storeId}\n👤 *Owner:* ${myStore.ownerName}\n📞 *Phone:* ${myStore.phone}\n\n💰 *Amount:* ₦5,000 (one-time)\n\nPlease confirm payment and send my Upload PIN. Thank you! 🙏`);
   closeOverlay('overlayBuyPin');
   typing(()=>{ botMsg('📲 <strong>Redirected to WhatsApp!</strong> Our team will confirm your payment and send your Upload PIN instantly.<br><br><strong>Demo PIN:</strong> <code>VISHA2025</code> (for testing)'); });
 }
@@ -1590,7 +1590,7 @@ function submitCompare(){
   const all=getAllDisplayProducts();
   const items=compareList.map(id=>all.find(p=>p.id===id)).filter(Boolean);
   if(!items.length) return;
-  wa(`⚖️ *PRODUCT COMPARISON REQUEST — ShopBot*\n\nI'd like a recommendation between:\n\n${items.map(p=>`• *${p.name}* — ${p.price} (${p.store})`).join('\n')}\n\n🏬 Mall: ${mall?.name||'Any'}\n\nWhich one do you recommend? ⏰ ${ts()}`);
+  wa(`⚖️ *PRODUCT COMPARISON REQUEST — goSHOPs*\n\nI'd like a recommendation between:\n\n${items.map(p=>`• *${p.name}* — ${p.price} (${p.store})`).join('\n')}\n\n🏬 Mall: ${mall?.name||'Any'}\n\nWhich one do you recommend? ⏰ ${ts()}`);
   closeOverlay('overlayCompare');
 }
 
@@ -1647,14 +1647,14 @@ function submitOrder(){
   if(!name||!phone||!addr){ alert('Please fill in name, phone and delivery address.'); return; }
   const items=cart.length?cart.map(p=>`• ${p.name} — ${p.price}`).join('\n'):'(Inquiry)';
   const total=cart.reduce((a,b)=>a+b.num,0);
-  const msg=`🛍️ *NEW ORDER — ShopBot*\n\n🏬 *Mall:* ${mall?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${addr}, ${city}, ${state}\n💳 *Payment:* ${payment}\n\n🛒 *Items:*\n${items}\n\n💰 *Total:* ₦${total.toLocaleString()}\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()} via ShopBot`;
+  const msg=`🛍️ *NEW ORDER — goSHOPs*\n\n🏬 *Mall:* ${mall?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${addr}, ${city}, ${state}\n💳 *Payment:* ${payment}\n\n🛒 *Items:*\n${items}\n\n💰 *Total:* ₦${total.toLocaleString()}\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()} via goSHOPs`;
   closeOverlay('overlayOrder'); wa(msg); cart=[];
   typing(()=>{ botMsg('🎉 <strong>Order sent!</strong> You\'ve been redirected to WhatsApp to confirm with our team.',`<div class="chips"><div class="chip" onclick="go('track')">🚚 Track Later</div><div class="chip" onclick="go('browse')">🛍️ Shop More</div></div>`); }, 600);
 }
 function submitTrack(){
   const id=document.getElementById('trackId').value.trim();
   if(!id){ alert('Please enter your order ID or phone number.'); return; }
-  wa(`🚚 *ORDER TRACKING — ShopBot*\n\n📦 *Order ID/Phone:* ${id}\n🏬 *Mall:* ${mall?.name||'N/A'}\n⏰ ${ts()}`);
+  wa(`🚚 *ORDER TRACKING — goSHOPs*\n\n📦 *Order ID/Phone:* ${id}\n🏬 *Mall:* ${mall?.name||'N/A'}\n⏰ ${ts()}`);
   closeOverlay('overlayTrack');
   typing(()=>{ botMsg('🚚 Redirected to WhatsApp! Our team will reply with your live order status.'); });
 }
@@ -1664,7 +1664,7 @@ function submitSupport(){
   const order=document.getElementById('sOrder').value.trim();
   const desc=document.getElementById('sDesc').value.trim();
   if(!name||!desc){ alert('Please fill in your name and describe the issue.'); return; }
-  wa(`🎧 *SUPPORT TICKET — ShopBot*\n\n👤 *Name:* ${name}\n🏬 *Mall:* ${mall?.name||'N/A'}\n❓ *Issue:* ${type}\n📦 *Order ID:* ${order||'N/A'}\n📝 *Details:*\n${desc}\n\n⏰ ${ts()}`);
+  wa(`🎧 *SUPPORT TICKET — goSHOPs*\n\n👤 *Name:* ${name}\n🏬 *Mall:* ${mall?.name||'N/A'}\n❓ *Issue:* ${type}\n📦 *Order ID:* ${order||'N/A'}\n📝 *Details:*\n${desc}\n\n⏰ ${ts()}`);
   closeOverlay('overlaySupport');
   typing(()=>{ botMsg('🎧 <strong>Ticket submitted!</strong> Our support team will respond within 30 minutes.'); });
 }
@@ -1674,7 +1674,7 @@ function submitReturn(){
   const reason=document.getElementById('rReason').value;
   const res=document.getElementById('rResolution').value;
   if(!order||!item){ alert('Please enter order ID and item name.'); return; }
-  wa(`↩️ *RETURN REQUEST — ShopBot*\n\n📦 *Order ID:* ${order}\n🏷️ *Item:* ${item}\n🏬 *Mall:* ${mall?.name||'N/A'}\n❓ *Reason:* ${reason}\n✅ *Resolution:* ${res}\n\n⏰ ${ts()}`);
+  wa(`↩️ *RETURN REQUEST — goSHOPs*\n\n📦 *Order ID:* ${order}\n🏷️ *Item:* ${item}\n🏬 *Mall:* ${mall?.name||'N/A'}\n❓ *Reason:* ${reason}\n✅ *Resolution:* ${res}\n\n⏰ ${ts()}`);
   closeOverlay('overlayReturn');
   typing(()=>{ botMsg('↩️ <strong>Return request submitted!</strong> Our returns team will respond within 3–5 business days.'); });
 }
@@ -1685,7 +1685,7 @@ function submitBulk(){
   const budget=document.getElementById('bBudget').value.trim();
   const loc=document.getElementById('bLocation').value.trim();
   if(!name||!prod||!qty){ alert('Please fill in name, product and quantity.'); return; }
-  wa(`📋 *BULK/WHOLESALE REQUEST — ShopBot*\n\n👤 *Name:* ${name}\n📦 *Products:*\n${prod}\n🔢 *Quantity:* ${qty} units\n💰 *Budget:* ${budget||'Open'}\n📍 *Delivery:* ${loc||'TBD'}\n\n⏰ ${ts()}`);
+  wa(`📋 *BULK/WHOLESALE REQUEST — goSHOPs*\n\n👤 *Name:* ${name}\n📦 *Products:*\n${prod}\n🔢 *Quantity:* ${qty} units\n💰 *Budget:* ${budget||'Open'}\n📍 *Delivery:* ${loc||'TBD'}\n\n⏰ ${ts()}`);
   closeOverlay('overlayRFQ');
   typing(()=>{ botMsg('📋 <strong>Bulk request sent!</strong> Our wholesale team will respond with a custom quote within 2 hours.'); });
 }
@@ -1695,7 +1695,7 @@ function submitAlert(){
   const phone=document.getElementById('alPhone').value.trim();
   const when=document.getElementById('alWhen').value;
   if(!prod||!phone){ alert('Please enter the product name and your WhatsApp number.'); return; }
-  wa(`🔔 *PRICE ALERT — ShopBot*\n\n📦 *Product:* ${prod}\n💰 *Target Price:* ${price?'₦'+Number(price).toLocaleString():'Any drop'}\n📱 *Alert Number:* ${phone}\n🔔 *When:* ${when}\n\n⏰ ${ts()}`);
+  wa(`🔔 *PRICE ALERT — goSHOPs*\n\n📦 *Product:* ${prod}\n💰 *Target Price:* ${price?'₦'+Number(price).toLocaleString():'Any drop'}\n📱 *Alert Number:* ${phone}\n🔔 *When:* ${when}\n\n⏰ ${ts()}`);
   closeOverlay('overlayAlert');
   typing(()=>{ botMsg('🔔 <strong>Price alert set!</strong> We\'ll notify you on WhatsApp when the price drops.'); });
 }
@@ -1705,7 +1705,7 @@ function submitReview(){
   const stars=document.getElementById('rvStars').value;
   const text=document.getElementById('rvText').value.trim();
   if(!name||!prod||!text){ alert('Please fill in all review fields.'); return; }
-  wa(`⭐ *REVIEW — ShopBot*\n\n👤 *Reviewer:* ${name}\n📦 *Product/Store:* ${prod}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n📝 *Review:*\n${text}\n\n⏰ ${ts()}`);
+  wa(`⭐ *REVIEW — goSHOPs*\n\n👤 *Reviewer:* ${name}\n📦 *Product/Store:* ${prod}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n📝 *Review:*\n${text}\n\n⏰ ${ts()}`);
   closeOverlay('overlayReview');
   typing(()=>{ botMsg('⭐ <strong>Thank you for your review!</strong> It helps other shoppers. 💚'); });
 }
@@ -1756,7 +1756,7 @@ function liveSearch(q){
     ? `<div class="product-list">${res.slice(0,8).map(pcard).join('')}</div>`
     : `<div style="text-align:center;padding:24px;color:var(--text-muted);">No results for "${q}"<br><br><button class="wa-btn" style="width:auto;padding:10px 18px;" onclick="searchOnWA('${q}')">📲 Ask on WhatsApp</button></div>`;
 }
-function searchOnWA(q){ wa(`🔍 *PRODUCT SEARCH — ShopBot*\n\nI'm looking for: *${q}*\n🏬 Mall: ${mall?.name||'Any'}\n\nDo you have this available?`); }
+function searchOnWA(q){ wa(`🔍 *PRODUCT SEARCH — goSHOPs*\n\nI'm looking for: *${q}*\n🏬 Mall: ${mall?.name||'Any'}\n\nDo you have this available?`); }
 
 // ════════════════════════════════
 // OVERLAY
@@ -1835,7 +1835,7 @@ window.onload=()=>{
   const h=new Date().getHours();
   const g=h<12?'Good morning ☀️':'Good afternoon 🌤️';
   setTimeout(()=>{
-    botMsg(`${g}! 👋 I'm <strong>ShopBot</strong> — your smart personal shopping assistant.<br><br>
+    botMsg(`${g}! 👋 I'm <strong>ViShA</strong> — your smart personal shopping assistant.<br><br>
 I can help you <strong>find products, compare prices, place orders</strong> — and now you can <strong>list your own store</strong> with a free digital storefront! 🏪💚`);
   }, 500);
   setTimeout(()=>{
