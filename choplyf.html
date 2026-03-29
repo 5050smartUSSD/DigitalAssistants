@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FoodBot — Order Delicious Food</title>
+<title>goCHOPs — ChopLyf with Delicious Food</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -293,8 +293,8 @@ body{display:flex;align-items:center;justify-content:center;
     <div class="hdr-inner">
       <div class="hdr-av">🍽️</div>
       <div>
-        <div class="hdr-name">FoodBot</div>
-        <div class="hdr-sub"><div class="online-dot"></div>Order food · Fast delivery</div>
+        <div class="hdr-name">goCHOPs</div>
+        <div class="hdr-sub"><div class="online-dot"></div>Order good food · Healthy & Fast delivery</div>
       </div>
       <div class="hdr-right">
         <div class="hbtn cart-badge" onclick="openCart()" title="Cart">
@@ -869,7 +869,7 @@ function addToCartFromDetail(id){ addToCart(id,qtyVal); qtyVal=1; closeOv('ovDet
 function quickOrderItem(id){
   const item=menuItems.find(i=>i.id===id)||specials.find(i=>i.id===id);
   closeOv('ovDetail');
-  toWA(`⚡ *QUICK ORDER — FoodBot*\n\n🍽️ *Restaurant:* ${rest?.name||'N/A'}\n🍴 *Item:* ${item?.name} x${qtyVal}\n💰 *Price:* ${item?.price}\n\n📲 Please send my delivery address.`);
+  toWA(`⚡ *QUICK ORDER — goCHOPs*\n\n🍽️ *Restaurant:* ${rest?.name||'N/A'}\n🍴 *Item:* ${item?.name} x${qtyVal}\n💰 *Price:* ${item?.price}\n\n📲 Please send my delivery address.`);
 }
 
 // ════════════════════════════════════
@@ -948,7 +948,7 @@ function submitOrder(){
   if(!name||!phone||!addr){ alert('Please fill in name, phone and delivery address.'); return; }
   const items=cart.length?cart.map(i=>`• ${i.emoji} ${i.name} ×${i.qty} — ₦${(i.num*i.qty).toLocaleString()}`).join('\n'):'(Inquiry)';
   const total=cart.reduce((a,b)=>a+b.num*b.qty,0);
-  const msg=`🍽️ *NEW FOOD ORDER — FoodBot*\n\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${addr}${area?', '+area:''}, ${city}\n🕐 *Delivery:* ${time}\n💳 *Payment:* ${pay}\n\n🛒 *Order:*\n${items}\n\n💰 *Total:* ₦${total.toLocaleString()} + delivery\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()} via FoodBot`;
+  const msg=`🍽️ *NEW FOOD ORDER — goCHOPs*\n\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${addr}${area?', '+area:''}, ${city}\n🕐 *Delivery:* ${time}\n💳 *Payment:* ${pay}\n\n🛒 *Order:*\n${items}\n\n💰 *Total:* ₦${total.toLocaleString()} + delivery\n${notes?`📝 *Notes:* ${notes}\n`:''}\n⏰ ${ts()} via goCHOPs`;
   closeOv('ovOrder'); toWA(msg); cart=[]; updateCartBadge();
   typing(()=>{ botMsg('🎉 <strong>Order sent!</strong> You\'ve been redirected to WhatsApp to confirm with our team. Your rider will be assigned shortly! 🚴',`<div class="chips"><div class="chip" onclick="go('track')">🚴 Track Order</div><div class="chip" onclick="go('menu')">🍽️ Order More</div></div>`); },600);
 }
@@ -956,7 +956,7 @@ function submitOrder(){
 function submitTrack(){
   const id=document.getElementById('trkId').value.trim();
   if(!id){ alert('Please enter your order ID or phone number.'); return; }
-  toWA(`🚴 *ORDER TRACKING — FoodBot*\n\n📦 *Order ID/Phone:* ${id}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n⏰ ${ts()}`);
+  toWA(`🚴 *ORDER TRACKING — goCHOPs*\n\n📦 *Order ID/Phone:* ${id}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n⏰ ${ts()}`);
   closeOv('ovTrack');
   typing(()=>{ botMsg('🚴 Redirected to WhatsApp! Our rider will send you their live location now. 📍'); });
 }
@@ -967,7 +967,7 @@ function submitSupport(){
   const order=document.getElementById('sOrder').value.trim();
   const desc=document.getElementById('sDesc').value.trim();
   if(!name||!desc){ alert('Please fill in your name and describe the issue.'); return; }
-  toWA(`🎧 *SUPPORT TICKET — FoodBot*\n\n👤 *Name:* ${name}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n❓ *Issue:* ${type}\n📦 *Order ID:* ${order||'N/A'}\n📝 *Details:*\n${desc}\n\n⏰ ${ts()}`);
+  toWA(`🎧 *SUPPORT TICKET — goCHOPs*\n\n👤 *Name:* ${name}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n❓ *Issue:* ${type}\n📦 *Order ID:* ${order||'N/A'}\n📝 *Details:*\n${desc}\n\n⏰ ${ts()}`);
   closeOv('ovSupport');
   typing(()=>{ botMsg('🎧 <strong>Ticket sent!</strong> Our support team will reply via WhatsApp within 15 minutes.'); });
 }
@@ -978,7 +978,7 @@ function submitRefund(){
   const reason=document.getElementById('rfReason').value;
   const res=document.getElementById('rfRes').value;
   if(!id||!item){ alert('Please enter order ID and item name.'); return; }
-  toWA(`💸 *REFUND REQUEST — FoodBot*\n\n📦 *Order ID:* ${id}\n🍴 *Item:* ${item}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n❓ *Reason:* ${reason}\n✅ *Resolution:* ${res}\n\n⏰ ${ts()}`);
+  toWA(`💸 *REFUND REQUEST — goCHOPs*\n\n📦 *Order ID:* ${id}\n🍴 *Item:* ${item}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n❓ *Reason:* ${reason}\n✅ *Resolution:* ${res}\n\n⏰ ${ts()}`);
   closeOv('ovRefund');
   typing(()=>{ botMsg('💸 <strong>Refund request submitted!</strong> Our team will process it within 24–48 hours and contact you on WhatsApp.'); });
 }
@@ -989,7 +989,7 @@ function submitReview(){
   const stars=document.getElementById('rvStars').value;
   const text=document.getElementById('rvText').value.trim();
   if(!name||!meal||!text){ alert('Please complete all review fields.'); return; }
-  toWA(`⭐ *MEAL REVIEW — FoodBot*\n\n👤 *Name:* ${name}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n🍴 *Meal:* ${meal}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n📝 *Review:*\n${text}\n\n⏰ ${ts()}`);
+  toWA(`⭐ *MEAL REVIEW — goCHOPs*\n\n👤 *Name:* ${name}\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n🍴 *Meal:* ${meal}\n⭐ *Rating:* ${'⭐'.repeat(parseInt(stars))} (${stars}/5)\n📝 *Review:*\n${text}\n\n⏰ ${ts()}`);
   closeOv('ovReview');
   typing(()=>{ botMsg('⭐ <strong>Thank you for your review!</strong> We\'ve shared it with the restaurant to keep standards high. 💚'); });
 }
@@ -1003,7 +1003,7 @@ function submitReservation(){
   const occ=document.getElementById('resOcc').value;
   const notes=document.getElementById('resNotes').value.trim();
   if(!name||!phone||!date){ alert('Please fill in name, phone and date.'); return; }
-  toWA(`🪑 *TABLE RESERVATION — FoodBot*\n\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📅 *Date:* ${date} at ${time}\n👥 *Guests:* ${guests}\n🎉 *Occasion:* ${occ}\n${notes?`📝 *Requests:* ${notes}\n`:''}\n⏰ ${ts()}`);
+  toWA(`🪑 *TABLE RESERVATION — goCHOPs*\n\n🏪 *Restaurant:* ${rest?.name||'N/A'}\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📅 *Date:* ${date} at ${time}\n👥 *Guests:* ${guests}\n🎉 *Occasion:* ${occ}\n${notes?`📝 *Requests:* ${notes}\n`:''}\n⏰ ${ts()}`);
   closeOv('ovReserve');
   typing(()=>{ botMsg(`🪑 <strong>Reservation request sent!</strong> ${rest?.name||'The restaurant'} will confirm your table via WhatsApp. 🎉`); });
 }
@@ -1109,7 +1109,7 @@ function liveSearch(q){
     </div>`).join('')}</div>`;
 }
 
-function searchWA(q){ toWA(`🔍 *MENU SEARCH — FoodBot*\n\nLooking for: *${q}*\n🏪 Restaurant: ${rest?.name||'Any'}\n\nDo you have this on the menu?`); }
+function searchWA(q){ toWA(`🔍 *MENU SEARCH — goCHOPs*\n\nLooking for: *${q}*\n🏪 Restaurant: ${rest?.name||'Any'}\n\nDo you have this on the menu?`); }
 
 // ════════════════════════════════════
 // STAR RATING
@@ -1183,7 +1183,7 @@ window.onload=()=>{
   const h=new Date().getHours();
   const meal=h<11?'breakfast 🍳':h<15?'lunch 🍽️':h<18?'a snack 🍡':'dinner 🌙';
   setTimeout(()=>{
-    botMsg(`Hey there! 👋 I'm <strong>FoodBot</strong>, your personal food ordering assistant.<br><br>
+    botMsg(`Hey there! 👋 I'm <strong>goCHOPs</strong>, your personal food ordering assistant.<br><br>
 I'll help you <strong>browse menus, order food, track your rider</strong>, reserve tables and much more — all via WhatsApp for instant service. 🍽️🚴`);
   }, 400);
   setTimeout(()=>{
