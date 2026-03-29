@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🛺goKEKE — Keke & Okada Ride Hailing</title>
+<title>🛺goRIDEs —Order Keke Okada or Ride</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1012,7 +1012,7 @@ function showTrackDemo(){
   typing(()=>{
     botMsg('📍 <strong>Live Tracking — Emeka is on his way!</strong>',
       `<div class="track-card">
-        <div class="trk-hdr"><div class="trk-dot"></div><div class="trk-status">EN ROUTE TO PICKUP</div></div>
+        <div class="trk-hdr"><div class="trk-dot"></div><div class="trk-status">ENROUTE TO PICKUP</div></div>
         <div class="trk-steps">
           ${['Booked','Assigned','En Route','Arrived','In Trip','Done'].map((s,i)=>`
             <div class="ts ${i<3?'done':''}">
@@ -1153,7 +1153,7 @@ function submitBook(){
   const pax=document.getElementById('bkPax').value;
   const note=document.getElementById('bkNote').value.trim();
   const pay=document.getElementById('bkPay').value;
-  if(!name||!phone||!pickup||!dest){alert('Please fill in name, phone, pickup and destination.');return;}
+  if(!name||!phone||!pickup||!dest){alert('Please fill in name, phone, pickup and destination. Try to be as detailed as possible for easy locating.');return;}
   const ref='ZB-'+Date.now().toString().slice(-7);
   bookings.push({id:ref,em:'🛺',type,route:`${pickup} → ${dest}`,price:'TBD'});
   updateBadge(); activeRide={type,pickup,dest};
@@ -1182,7 +1182,7 @@ function submitSchedule(){
   const time=document.getElementById('scTime').value;
   const repeat=document.getElementById('scRepeat').value;
   const note=document.getElementById('scNote').value.trim();
-  if(!name||!phone||!pickup){alert('Please fill in name, phone and pickup.');return;}
+  if(!name||!phone||!pickup){alert('Please fill in name, phone and pickup location.');return;}
   toWA(`📅 *SCHEDULED RIDE — ZoomBot*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n🚗 *Type:* ${type}\n📍 *From:* ${pickup}\n🏁 *To:* ${dest||'TBD'}\n📅 *Date:* ${date||'TBD'} at ${time}\n🔄 *Repeat:* ${repeat}\n${note?`📝 *Notes:* ${note}\n`:''}\n🕐 ${ts()}`);
   closeOv('ovSchedule');
   typing(()=>{botMsg(`📅 <strong>Ride scheduled!</strong> Your <strong>${type}</strong> has been set for ${date||'your chosen date'} at ${time}. We'll send a reminder and dispatch a rider at the scheduled time.`);});
@@ -1198,7 +1198,7 @@ function submitCharter(){
   const pickup=document.getElementById('chPickup').value.trim();
   const route=document.getElementById('chRoute').value.trim();
   const pax=document.getElementById('chPax').value;
-  if(!name||!phone||!pickup){alert('Please fill in name, phone and pickup location.');return;}
+  if(!name||!phone||!pickup){alert('Please fill in name, phone and pickup location. Provide adequate details.');return;}
   toWA(`🚌 *CHARTER REQUEST — ZoomBot*\n\n👤 *Name/Org:* ${name}\n📞 *Phone:* ${phone}\n🚌 *Vehicle:* ${veh}\n🎯 *Purpose:* ${purpose}\n📅 *Date:* ${date||'TBD'} · ${dur}\n📍 *Pickup:* ${pickup}\n🗺️ *Route:* ${route||'TBD'}\n👥 *Passengers:* ${pax||'TBD'}\n\n🕐 ${ts()}`);
   closeOv('ovCharter');
   typing(()=>{botMsg(`🚌 <strong>Charter request sent!</strong> Our team will confirm vehicle availability, route and pricing via WhatsApp within 30 minutes.`);});
