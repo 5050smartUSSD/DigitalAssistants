@@ -743,8 +743,8 @@ body::after{content:'';position:fixed;top:-100px;right:-80px;width:420px;height:
 <script>
 // ════════════════════════════════
 // CONFIG
-const WA = '2348000000000'; // ← Change to your WhatsApp number
-const CRISIS_LINE = '08000-HEALTH'; // National crisis line
+const WA = '2348157505037'; // ← Change to your WhatsApp number
+const CRISIS_LINE = 'WhatsApp *5050*122# (24/7)'; // National crisis line
 
 // ════════════════════════════════
 // DATA
@@ -825,7 +825,7 @@ const firstAidGuides = {
 };
 
 const faqs = {
-  hmo:{q:'🏥 HMO / Insurance',a:'We accept most major HMOs including <b>NHIA, Hygeia, AXA Mansard, AIICO, Leadway, NNPC Health Scheme</b> and more.<br><br>Present your HMO card at the hospital or mention your HMO when booking with us. We will verify your cover and liaise with your insurer.'},
+  hmo:{q:'🏥 HMO / Insurance',a:'We accept most major HMOs including <b>NHIA, Hygeia, NHIS, AXA Mansard, AIICO, Leadway, NNPC Health Scheme</b> and more.<br><br>Present your HMO card at the hospital or mention your HMO when booking with us. We will verify your cover and liaise with your insurer.'},
   cost:{q:'💰 Service Costs',a:'Costs vary by service:<br>• GP Consultation: <b>₦3,500 – ₦8,000</b><br>• Specialist: <b>₦8,000 – ₦25,000</b><br>• Ambulance: <b>₦15,000 – ₦80,000</b><br>• Lab Tests: <b>₦2,000 – ₦45,000</b><br>• Drug Delivery: <b>₦500 delivery fee</b><br><br>HMO and government subsidies available.'},
   delivery:{q:'🚚 Drug Delivery',a:'We deliver medications across Abuja FCT:<br>• <b>Express 2–4 hours</b>: Available for verified pharmacies<br>• <b>Same day</b>: Order before 3pm<br>• <b>Next day</b>: For specialised medications<br><br>Prescription medications require a valid prescription. We verify with licensed pharmacists.'},
   emergency:{q:'🚨 Emergency Response',a:'Emergency services are available <b>24/7</b>.<br><br>For life-threatening emergencies, <b>call 112 or 199 first</b>. Our goMEDIC team will dispatch emergency responders and keep you connected via WhatsApp throughout.<br><br>Response time: <b>8–15 minutes</b> in FCT Abuja.'},
@@ -1031,9 +1031,9 @@ function doEmergency(){
     botMsg('🚨 <strong>Emergency Services — 24/7 Response</strong><br><br>⚠️ For immediate life-threatening emergencies:<br><strong style="color:var(--red2);font-size:16px;">Call 112 or 199 NOW</strong>',
       `<button class="emrg-btn" onclick="openOv('ovEmerg')">🚨 Alert Our Emergency Team</button>
       <div class="info-card" style="margin-top:10px;">
-        <div class="ir"><div class="ir-icon">🚑</div><div class="ir-text"><b>Response Time:</b> 8–15 minutes (FCT Abuja)</div></div>
-        <div class="ir"><div class="ir-icon">📞</div><div class="ir-text"><b>Emergency Hotline:</b> 112 · 199 · 0803-000-0000</div></div>
-        <div class="ir"><div class="ir-icon">🏥</div><div class="ir-text"><b>Nearest Emergency:</b> National Hospital, Maitama District Hospital</div></div>
+        <div class="ir"><div class="ir-icon">🚑</div><div class="ir-text"><b>Response Time:</b> appx 20 minutes</div></div>
+        <div class="ir"><div class="ir-icon">📞</div><div class="ir-text"><b>Emergency Hotline:</b> +2348157505037</div></div>
+        <div class="ir"><div class="ir-icon">🏥</div><div class="ir-text"><b>Nearest Emergency:</b> JUTH Hospital</div></div>
       </div>
       <div class="chips" style="margin-top:8px;">
         <div class="chip" onclick="go('ambulance')">🚑 Order Ambulance</div>
